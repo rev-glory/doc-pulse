@@ -2,17 +2,28 @@
   "name": "@docpulse/backend",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
-    "build": "tsc --build",
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "nest start",
+    "start:prod": "node dist/main.js",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "node --test"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.1.27",
+    "@nestjs/core": "^11.1.27",
+    "@nestjs/platform-express": "^11.1.27",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1"
   },
   "devDependencies": {
     "@docpulse/shared-config": "workspace:*",
     "@docpulse/shared-types": "workspace:*",
     "@docpulse/shared-utils": "workspace:*",
+    "@nestjs/cli": "^11.0.23",
+    "@nestjs/schematics": "^11.0.9",
+    "@types/express": "^5.0.0",
     "@types/node": "^22.10.5",
     "typescript": "catalog:"
   }
