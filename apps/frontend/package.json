@@ -2,17 +2,26 @@
   "name": "@docpulse/frontend",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
-    "build": "tsc -p tsconfig.json --noEmit",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "tsc -p tsconfig.json --noEmit",
     "test": "node --test"
+  },
+  "dependencies": {
+    "next": "^16.2.9",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@docpulse/shared-config": "workspace:*",
     "@docpulse/shared-types": "workspace:*",
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/node": "^22.10.5",
     "@types/react": "^19.0.2",
+    "@types/react-dom": "^19.0.2",
+    "tailwindcss": "^4.3.1",
     "typescript": "catalog:"
   }
 }
