@@ -1,0 +1,98 @@
+# =============================================================================
+# DocPulse — Local Development Infrastructure
+# =============================================================================
+#
+# Provides: PostgreSQL 16 + Redis 7
+#
+# Usage:
+#   docker compose up -d          Start all services
+#   docker compose down           Stop all services (data persists)
+#   docker compose down -v        Stop + delete all volumes (full reset)
+#   docker compose logs -f        Stream all logs
+#
+# See docker/README.md for full usage guide.
+# =============================================================================
+
+name: docpulse
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16 — Primary relational data store
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:16-alpine
+    container_name: docpulse-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-docpulse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-docpulse_dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-docpulse_dev}
+      # Locale settings for deterministic collation
+      POSTGRES_INITDB_ARGS: "--locale=en_US.UTF-8 --encoding=UTF8"
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - docpulse_network
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-docpulse} -d ${POSTGRES_DB:-docpulse_dev}",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ---------------------------------------------------------------------------
+  # Redis 7 — BullMQ job queues + LangGraph checkpoints
+  # ---------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: docpulse-redis
+    restart: unless-stopped
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-docpulse_dev_password}
+      --maxmemory ${REDIS_MAX_MEMORY:-256mb}
+      --maxmemory-policy allkeys-lru
+      --save 60 1
+      --loglevel notice
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - docpulse_network
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "redis-cli",
+          "-a",
+          "${REDIS_PASSWORD:-docpulse_dev_password}",
+          "ping",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# =============================================================================
+# Named Volumes — data survives `docker compose down`
+# =============================================================================
+volumes:
+  postgres_data:
+    name: docpulse_postgres_data
+  redis_data:
+    name: docpulse_redis_data
+
+# =============================================================================
+# Network — all services share one isolated bridge network
+# =============================================================================
+networks:
+  docpulse_network:
+    name: docpulse_network
+    driver: bridge
