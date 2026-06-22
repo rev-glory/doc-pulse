@@ -1,0 +1,18 @@
+{
+  "name": "@docpulse/frontend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsc -p tsconfig.json --watch --preserveWatchOutput",
+    "build": "tsc -p tsconfig.json --noEmit",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "@docpulse/shared-config": "workspace:*",
+    "@docpulse/shared-types": "workspace:*",
+    "@types/react": "^19.0.2",
+    "typescript": "catalog:"
+  }
+}
