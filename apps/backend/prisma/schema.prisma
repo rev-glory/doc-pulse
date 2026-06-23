@@ -80,6 +80,7 @@ model User {
   githubAvatarUrl String? @map("github_avatar_url")
   email          String? // May be null if user has no public email on GitHub
   displayName    String? @map("display_name")
+  settings       Json    @default("{}")
 
   // Relations
   installations Installation[]

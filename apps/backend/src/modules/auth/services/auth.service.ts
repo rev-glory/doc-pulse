@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
 import { PrismaService } from '@/database';
+import { UsersMapper } from '@/modules/users/mappers/users.mapper';
 import type { JwtConfig } from '@/config';
 import type { GithubProfile, AuthJwtPayload, Tokens } from '../types/auth.types';
 import type { User } from '@/generated/prisma/client';
@@ -17,6 +18,7 @@ export class AuthService {
 
   async upsertUser(githubProfile: GithubProfile): Promise<User> {
     const { githubId, githubLogin, displayName, githubAvatarUrl, email } = githubProfile;
+    const defaultSettings = UsersMapper.getDefaultSettings();
 
     return this.prisma.user.upsert({
       where: { githubId },
@@ -26,6 +28,7 @@ export class AuthService {
         displayName: displayName ?? null,
         githubAvatarUrl: githubAvatarUrl ?? null,
         email: email ?? null,
+        settings: defaultSettings as any,
       },
       update: {
         githubLogin,

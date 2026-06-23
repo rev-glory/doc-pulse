@@ -66,6 +66,7 @@ export type UserCountAggregateOutputType = {
   githubAvatarUrl: number
   email: number
   displayName: number
+  settings: number
   _all: number
 }
 
@@ -109,6 +110,7 @@ export type UserCountAggregateInputType = {
   githubAvatarUrl?: true
   email?: true
   displayName?: true
+  settings?: true
   _all?: true
 }
 
@@ -207,6 +209,7 @@ export type UserGroupByOutputType = {
   githubAvatarUrl: string | null
   email: string | null
   displayName: string | null
+  settings: runtime.JsonValue
   _count: UserCountAggregateOutputType | null
   _avg: UserAvgAggregateOutputType | null
   _sum: UserSumAggregateOutputType | null
@@ -241,6 +244,7 @@ export type UserWhereInput = {
   githubAvatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
   email?: Prisma.StringNullableFilter<"User"> | string | null
   displayName?: Prisma.StringNullableFilter<"User"> | string | null
+  settings?: Prisma.JsonFilter<"User">
   installations?: Prisma.InstallationListRelationFilter
   repositories?: Prisma.RepositoryListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
@@ -256,6 +260,7 @@ export type UserOrderByWithRelationInput = {
   githubAvatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   displayName?: Prisma.SortOrderInput | Prisma.SortOrder
+  settings?: Prisma.SortOrder
   installations?: Prisma.InstallationOrderByRelationAggregateInput
   repositories?: Prisma.RepositoryOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
@@ -274,6 +279,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   githubAvatarUrl?: Prisma.StringNullableFilter<"User"> | string | null
   email?: Prisma.StringNullableFilter<"User"> | string | null
   displayName?: Prisma.StringNullableFilter<"User"> | string | null
+  settings?: Prisma.JsonFilter<"User">
   installations?: Prisma.InstallationListRelationFilter
   repositories?: Prisma.RepositoryListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
@@ -289,6 +295,7 @@ export type UserOrderByWithAggregationInput = {
   githubAvatarUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   email?: Prisma.SortOrderInput | Prisma.SortOrder
   displayName?: Prisma.SortOrderInput | Prisma.SortOrder
+  settings?: Prisma.SortOrder
   _count?: Prisma.UserCountOrderByAggregateInput
   _avg?: Prisma.UserAvgOrderByAggregateInput
   _max?: Prisma.UserMaxOrderByAggregateInput
@@ -308,6 +315,7 @@ export type UserScalarWhereWithAggregatesInput = {
   githubAvatarUrl?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   email?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
   displayName?: Prisma.StringNullableWithAggregatesFilter<"User"> | string | null
+  settings?: Prisma.JsonWithAggregatesFilter<"User">
 }
 
 export type UserCreateInput = {
@@ -319,6 +327,7 @@ export type UserCreateInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationCreateNestedManyWithoutUserInput
   repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
@@ -334,6 +343,7 @@ export type UserUncheckedCreateInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedCreateNestedManyWithoutUserInput
   repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -349,6 +359,7 @@ export type UserUpdateInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUpdateManyWithoutUserNestedInput
   repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
@@ -364,6 +375,7 @@ export type UserUncheckedUpdateInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedUpdateManyWithoutUserNestedInput
   repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -379,6 +391,7 @@ export type UserCreateManyInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 export type UserUpdateManyMutationInput = {
@@ -390,6 +403,7 @@ export type UserUpdateManyMutationInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 export type UserUncheckedUpdateManyInput = {
@@ -401,6 +415,7 @@ export type UserUncheckedUpdateManyInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 export type UserCountOrderByAggregateInput = {
@@ -412,6 +427,7 @@ export type UserCountOrderByAggregateInput = {
   githubAvatarUrl?: Prisma.SortOrder
   email?: Prisma.SortOrder
   displayName?: Prisma.SortOrder
+  settings?: Prisma.SortOrder
 }
 
 export type UserAvgOrderByAggregateInput = {
@@ -541,6 +557,7 @@ export type UserCreateWithoutInstallationsInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutTriggeredByInput
@@ -555,6 +572,7 @@ export type UserUncheckedCreateWithoutInstallationsInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutTriggeredByInput
@@ -585,6 +603,7 @@ export type UserUpdateWithoutInstallationsInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutTriggeredByNestedInput
@@ -599,6 +618,7 @@ export type UserUncheckedUpdateWithoutInstallationsInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutTriggeredByNestedInput
@@ -613,6 +633,7 @@ export type UserCreateWithoutRepositoriesInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
   workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutTriggeredByInput
@@ -627,6 +648,7 @@ export type UserUncheckedCreateWithoutRepositoriesInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedCreateNestedManyWithoutUserInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutTriggeredByInput
@@ -657,6 +679,7 @@ export type UserUpdateWithoutRepositoriesInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
   workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutTriggeredByNestedInput
@@ -671,6 +694,7 @@ export type UserUncheckedUpdateWithoutRepositoriesInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedUpdateManyWithoutUserNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutTriggeredByNestedInput
@@ -685,6 +709,7 @@ export type UserCreateWithoutWorkflowRunsInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationCreateNestedManyWithoutUserInput
   repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
@@ -699,6 +724,7 @@ export type UserUncheckedCreateWithoutWorkflowRunsInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedCreateNestedManyWithoutUserInput
   repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
@@ -729,6 +755,7 @@ export type UserUpdateWithoutWorkflowRunsInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUpdateManyWithoutUserNestedInput
   repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
@@ -743,6 +770,7 @@ export type UserUncheckedUpdateWithoutWorkflowRunsInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedUpdateManyWithoutUserNestedInput
   repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
@@ -757,6 +785,7 @@ export type UserCreateWithoutNotificationsInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationCreateNestedManyWithoutUserInput
   repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
   workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutTriggeredByInput
@@ -771,6 +800,7 @@ export type UserUncheckedCreateWithoutNotificationsInput = {
   githubAvatarUrl?: string | null
   email?: string | null
   displayName?: string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedCreateNestedManyWithoutUserInput
   repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutTriggeredByInput
@@ -801,6 +831,7 @@ export type UserUpdateWithoutNotificationsInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUpdateManyWithoutUserNestedInput
   repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
   workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutTriggeredByNestedInput
@@ -815,6 +846,7 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
   githubAvatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedUpdateManyWithoutUserNestedInput
   repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutTriggeredByNestedInput
@@ -887,6 +919,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   githubAvatarUrl?: boolean
   email?: boolean
   displayName?: boolean
+  settings?: boolean
   installations?: boolean | Prisma.User$installationsArgs<ExtArgs>
   repositories?: boolean | Prisma.User$repositoriesArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
@@ -903,6 +936,7 @@ export type UserSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   githubAvatarUrl?: boolean
   email?: boolean
   displayName?: boolean
+  settings?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -914,6 +948,7 @@ export type UserSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensio
   githubAvatarUrl?: boolean
   email?: boolean
   displayName?: boolean
+  settings?: boolean
 }, ExtArgs["result"]["user"]>
 
 export type UserSelectScalar = {
@@ -925,9 +960,10 @@ export type UserSelectScalar = {
   githubAvatarUrl?: boolean
   email?: boolean
   displayName?: boolean
+  settings?: boolean
 }
 
-export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "githubId" | "githubLogin" | "githubAvatarUrl" | "email" | "displayName", ExtArgs["result"]["user"]>
+export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "githubId" | "githubLogin" | "githubAvatarUrl" | "email" | "displayName" | "settings", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   installations?: boolean | Prisma.User$installationsArgs<ExtArgs>
   repositories?: boolean | Prisma.User$repositoriesArgs<ExtArgs>
@@ -955,6 +991,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     githubAvatarUrl: string | null
     email: string | null
     displayName: string | null
+    settings: runtime.JsonValue
   }, ExtArgs["result"]["user"]>
   composites: {}
 }
@@ -1390,6 +1427,7 @@ export interface UserFieldRefs {
   readonly githubAvatarUrl: Prisma.FieldRef<"User", 'String'>
   readonly email: Prisma.FieldRef<"User", 'String'>
   readonly displayName: Prisma.FieldRef<"User", 'String'>
+  readonly settings: Prisma.FieldRef<"User", 'Json'>
 }
     
 
