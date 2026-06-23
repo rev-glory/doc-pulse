@@ -8,7 +8,11 @@
     "module": "CommonJS",
     "moduleResolution": "Node10",
     "emitDecoratorMetadata": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "baseUrl": "src",
+    "paths": {
+      "@/*": ["*"]
+    }
   },
   "include": ["src/**/*"],
   "references": [
