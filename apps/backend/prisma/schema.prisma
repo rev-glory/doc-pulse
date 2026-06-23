@@ -1,0 +1,248 @@
+// =============================================================================
+// DocPulse — Prisma Schema
+// =============================================================================
+//
+// Datasource:  PostgreSQL (connection string from DATABASE_URL env var)
+// Generator:   Prisma Client (TypeScript)
+//
+// Entity map (matches ARCHITECTURE.md § Data Flow › Core Entities):
+//   User            → authenticated GitHub account
+//   Installation    → GitHub App installation record per user/org
+//   Repository      → connected repository with doc config
+//   WorkflowRun     → single pipeline execution (alias: Run in the task spec)
+//   Review          → human review record linked to a run
+//   PullRequest     → created GitHub PR record
+//   Notification    → in-app notification for a user
+//
+// Conventions:
+//   • UUID primary keys via @default(uuid())
+//   • createdAt / updatedAt on every model
+//   • Snake_case column names via @map() where Prisma's default would differ
+//   • Nullable fields for data that arrives in later pipeline stages
+//   • No soft-delete, audit tables, or speculative indexes
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// =============================================================================
+// Enums
+// =============================================================================
+
+/// Pipeline execution statuses — drives dashboard display and routing logic.
+enum RunStatus {
+  QUEUED           // Webhook received, job enqueued
+  CLONING          // git-operations: cloning repository
+  ANALYZING        // workflow: Repository Analyzer agent
+  WRITING          // workflow: Technical Writer agent
+  REVIEWING        // Review Coordinator routed to human
+  AWAITING_REVIEW  // Waiting for human approve/reject
+  CREATING_PR      // pull-requests: safety checks + PR creation
+  COMPLETED        // Terminal success — PR opened
+  REJECTED         // Documentation Critic or coordinator rejected
+  FAILED           // Unrecoverable error or DLQ
+}
+
+/// Human review decision states.
+enum ReviewStatus {
+  PENDING           // Created, awaiting reviewer action
+  APPROVED          // Reviewer approved — trigger PR creation
+  REJECTED          // Reviewer rejected — run marked rejected
+  CHANGES_REQUESTED // Reviewer requested changes — returned to workflow
+}
+
+/// Notification delivery states.
+enum NotificationStatus {
+  UNREAD
+  READ
+}
+
+// =============================================================================
+// Models
+// =============================================================================
+
+/// Authenticated DocPulse account.
+/// One User has one GitHub OAuth identity and may own many Installations.
+model User {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // GitHub OAuth identity fields
+  githubId       Int     @unique @map("github_id")
+  githubLogin    String  @map("github_login")
+  githubAvatarUrl String? @map("github_avatar_url")
+  email          String? // May be null if user has no public email on GitHub
+  displayName    String? @map("display_name")
+
+  // Relations
+  installations Installation[]
+  repositories  Repository[]
+  notifications Notification[]
+  workflowRuns  WorkflowRun[]
+
+  @@map("users")
+}
+
+/// GitHub App installation record.
+/// One User may have installations across multiple GitHub organisations/accounts.
+model Installation {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // GitHub App installation fields
+  installationId Int     @unique @map("installation_id") // GitHub-assigned numeric ID
+  accountLogin   String  @map("account_login")           // Org or personal account slug
+  accountType    String  @map("account_type")            // 'Organization' | 'User'
+  isActive       Boolean @default(true) @map("is_active")
+
+  // Relations
+  userId       String       @map("user_id")
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  repositories Repository[]
+
+  @@map("installations")
+}
+
+/// Connected GitHub repository with documentation configuration.
+model Repository {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // GitHub identity
+  githubRepoId   Int    @unique @map("github_repo_id") // GitHub-assigned numeric ID
+  fullName       String @map("full_name")              // e.g. "acme/docs"
+  defaultBranch  String @default("main") @map("default_branch")
+  isPrivate      Boolean @default(false) @map("is_private")
+
+  // DocPulse configuration
+  // JSON array of glob patterns for tracked documentation paths.
+  // Example: ["docs/**/*.md", "README.md"]
+  docPaths       String[] @map("doc_paths")
+  webhookId      Int?     @map("webhook_id")  // GitHub webhook ID — set after webhook registration
+  isWebhookActive Boolean  @default(false) @map("is_webhook_active")
+
+  // Relations
+  ownerId        String       @map("owner_id")
+  owner          User         @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  installationId String       @map("installation_id")
+  installation   Installation @relation(fields: [installationId], references: [id])
+  workflowRuns   WorkflowRun[]
+
+  @@map("repositories")
+}
+
+/// Single pipeline execution triggered by one GitHub push webhook.
+/// System of record for all pipeline visibility in the dashboard.
+model WorkflowRun {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  status    RunStatus @default(QUEUED)
+
+  // Correlation and idempotency (ARCHITECTURE.md § Correlation and Idempotency)
+  correlationId      String  @unique @map("correlation_id")      // Internal trace ID
+  webhookDeliveryId  String  @unique @map("webhook_delivery_id") // GitHub delivery GUID — prevents duplicate runs
+
+  // Git context captured at webhook time
+  commitSha   String  @map("commit_sha")
+  branch      String
+  commitMessage String? @map("commit_message")
+
+  // Timing
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
+  // Error capture for failed runs
+  errorMessage String? @map("error_message")
+
+  // Relations
+  repositoryId String     @map("repository_id")
+  repository   Repository @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
+  triggeredById String?   @map("triggered_by_id") // Null for automated webhook triggers
+  triggeredBy   User?     @relation(fields: [triggeredById], references: [id], onDelete: SetNull)
+
+  review      Review?
+  pullRequest PullRequest?
+  notifications Notification[]
+
+  @@map("workflow_runs")
+}
+
+/// Human review record.
+/// Created by the Review Coordinator when it routes to 'needs_review'.
+model Review {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  status  ReviewStatus @default(PENDING)
+  comment String?      // Reviewer's optional comment (rejection reason, notes)
+
+  // Timing
+  reviewedAt DateTime? @map("reviewed_at")
+
+  // Relations
+  workflowRunId String      @unique @map("workflow_run_id")
+  workflowRun   WorkflowRun @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
+
+/// GitHub pull request created by the pull-requests module.
+model PullRequest {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // GitHub PR fields populated after successful creation
+  githubPrNumber Int?    @map("github_pr_number")
+  githubPrUrl    String? @map("github_pr_url")
+  title          String
+  body           String? // PR description generated by Pull Request Generator agent
+  headBranch     String  @map("head_branch")
+  baseBranch     String  @map("base_branch")
+  isMerged       Boolean @default(false) @map("is_merged")
+  mergedAt       DateTime? @map("merged_at")
+
+  // Relations
+  workflowRunId String      @unique @map("workflow_run_id")
+  workflowRun   WorkflowRun @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+
+  @@map("pull_requests")
+}
+
+/// In-app notification record.
+/// Covers events: review.required, run.rejected, pull-request.created, run.failed, run.completed.
+model Notification {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Notification content
+  type    String              // Event type string (e.g. 'review.required')
+  title   String
+  message String?
+  status  NotificationStatus  @default(UNREAD)
+  readAt  DateTime?           @map("read_at")
+
+  // Contextual link — optional, used to route the user to the relevant page
+  linkUrl String? @map("link_url")
+
+  // Relations
+  userId        String       @map("user_id")
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workflowRunId String?      @map("workflow_run_id")
+  workflowRun   WorkflowRun? @relation(fields: [workflowRunId], references: [id], onDelete: SetNull)
+
+  @@map("notifications")
+}

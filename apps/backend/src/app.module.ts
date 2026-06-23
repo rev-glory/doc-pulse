@@ -14,6 +14,7 @@ import {
   redisConfig,
   validateEnv,
 } from './config';
+import { PrismaModule } from './database';
 import { HealthModule } from './modules/health/health.module';
 
 @Module({
@@ -42,11 +43,12 @@ import { HealthModule } from './modules/health/health.module';
         queueConfig,
         notificationConfig,
       ],
-      envFilePath: ['.env'],
+      envFilePath: ['../../.env'],
       ignoreEnvFile: process.env['NODE_ENV'] === 'production',
       expandVariables: false,
     }),
 
+    PrismaModule,
     HealthModule,
   ],
   controllers: [AppController],
