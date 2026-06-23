@@ -13,7 +13,8 @@ import type { Env } from './env.validation';
 // ---------------------------------------------------------------------------
 
 export interface JwtConfig {
-  secret: string;
+  accessSecret: string;
+  refreshSecret: string;
   accessExpiresIn: string;
   refreshExpiresIn: string;
 }
@@ -22,7 +23,8 @@ export const jwtConfig = registerAs('jwt', (): JwtConfig => {
   const env = process.env as unknown as Env;
 
   return {
-    secret: env.JWT_SECRET,
+    accessSecret: env.JWT_ACCESS_SECRET,
+    refreshSecret: env.JWT_REFRESH_SECRET,
     accessExpiresIn: env.JWT_ACCESS_EXPIRES_IN,
     refreshExpiresIn: env.JWT_REFRESH_EXPIRES_IN,
   };

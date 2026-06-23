@@ -29,7 +29,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
           return request?.cookies?.['refresh_token'];
         },
       ]),
-      secretOrKey: jwtCfg.secret,
+      secretOrKey: jwtCfg.refreshSecret,
     });
   }
 
