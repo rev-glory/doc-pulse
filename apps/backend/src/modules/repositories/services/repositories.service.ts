@@ -83,67 +83,27 @@ export class RepositoriesService {
   }
 
   /**
-   * Sync all repositories accessible to a GitHub App installation.
+   * Sync all repositories accessible to a GitHub App installation (internal method).
    *
-   * The caller must own the installation — ownership is verified against
-   * the authenticated user before any GitHub API call is made.
-   *
-   * Flow:
-   *   1. Load the Installation record from the database (source of truth).
-   *   2. Assert that installation.userId matches the authenticated user.
-   *   3. Fetch every accessible repository from GitHub using an Installation
-   *      Access Token — pagination is handled by GitHubRepositoryService.
-   *   4. Upsert every repository inside a single transaction so the operation
-   *      is atomic: either all repos are updated or none are.
-   *   5. Repositories that are no longer returned by GitHub are NOT deleted —
-   *      they are left in place so historical data is preserved.
-   *
-   * @param githubInstallationId - GitHub's integer installation ID
-   * @param user                 - The authenticated DocPulse user
+   * @param installation - The installation record from the database
    * @returns A summary of the sync operation
    */
-  async syncInstallationRepositories(
-    githubInstallationId: number,
-    user: User,
+  private async syncInstallationRepositoriesInternal(
+    installation: { id: string; installationId: number; userId: string },
   ): Promise<{
     installationId: number;
     synced: number;
     created: number;
     updated: number;
   }> {
-    const logCtx = { githubInstallationId };
+    const logCtx = { githubInstallationId: installation.installationId };
     const startedAt = Date.now();
 
     this.logger.log('Starting repository sync for installation', logCtx);
 
-    // Step 1 — Resolve the installation record.
-    // We need the DocPulse Installation UUID (installation.id) to use as the
-    // foreign key on each Repository row, and the userId to set as ownerId.
-    const installation = await this.installationsPersistence.findByInstallationId(
-      githubInstallationId,
-    );
-
-    if (!installation) {
-      throw new NotFoundException(
-        `Installation ${githubInstallationId} not found in database. ` +
-          'Ensure the installation webhook has been received before syncing.',
-      );
-    }
-
-    // Step 2 — Enforce ownership.
-    // Verify that the authenticated user owns this installation before making
-    // any GitHub API call. Mirrors the pattern used by findOwnedInstallation().
-    if (installation.userId !== user.id) {
-      this.logger.warn(
-        `User ${user.id} attempted to sync installation ${githubInstallationId} ` +
-          `which belongs to user ${installation.userId}`,
-      );
-      throw new ForbiddenException('Not authorized to sync this installation');
-    }
-
-    // Step 3 — Fetch all repos from GitHub (handles pagination internally).
+    // Fetch all repos from GitHub (handles pagination internally).
     const githubRepos = await this.gitHubRepositoryService.listInstallationRepositories(
-      githubInstallationId,
+      installation.installationId,
     );
 
     this.logger.log(
@@ -151,15 +111,12 @@ export class RepositoriesService {
       { ...logCtx, count: githubRepos.length },
     );
 
-    // Step 3 — Upsert all repositories atomically.
-    // We collect per-repo isNew flags outside the transaction closure so we
-    // can report created vs. updated counts in the summary.
+    // Upsert all repositories atomically.
     let createdCount = 0;
     let updatedCount = 0;
 
     await this.prisma.$transaction(async (tx) => {
       for (const repo of githubRepos) {
-        // Check existence before upsert so we can track created vs. updated.
         const existing = await tx.repository.findUnique({
           where: { githubRepositoryId: repo.githubRepositoryId },
           select: { id: true },
@@ -168,7 +125,7 @@ export class RepositoriesService {
         await this.repositoriesPersistence.syncUpsert(
           {
             githubRepositoryId: repo.githubRepositoryId,
-            installationId: installation.id,   // DocPulse UUID
+            installationId: installation.id,
             repositoryOwner: repo.owner,
             name: repo.name,
             fullName: repo.fullName,
@@ -203,11 +160,106 @@ export class RepositoriesService {
     });
 
     return {
-      installationId: githubInstallationId,
+      installationId: installation.installationId,
       synced: githubRepos.length,
       created: createdCount,
       updated: updatedCount,
     };
+  }
+
+  /**
+   * Sync all repositories accessible to a GitHub App installation.
+   *
+   * The caller must own the installation — ownership is verified against
+   * the authenticated user before any GitHub API call is made.
+   *
+   * @param githubInstallationId - GitHub's integer installation ID
+   * @param user                 - The authenticated DocPulse user
+   * @returns A summary of the sync operation
+   */
+  async syncInstallationRepositories(
+    githubInstallationId: number,
+    user: User,
+  ): Promise<{
+    installationId: number;
+    synced: number;
+    created: number;
+    updated: number;
+  }> {
+    const installation = await this.installationsPersistence.findByInstallationId(
+      githubInstallationId,
+    );
+
+    if (!installation) {
+      throw new NotFoundException(
+        `Installation ${githubInstallationId} not found in database. ` +
+          'Ensure the installation webhook has been received before syncing.',
+      );
+    }
+
+    if (installation.userId !== user.id) {
+      this.logger.warn(
+        `User ${user.id} attempted to sync installation ${githubInstallationId} ` +
+          `which belongs to user ${installation.userId}`,
+      );
+      throw new ForbiddenException('Not authorized to sync this installation');
+    }
+
+    return this.syncInstallationRepositoriesInternal(installation);
+  }
+
+  /**
+   * Sync all repositories accessible to a GitHub App installation (for webhook use).
+   *
+   * Does not require a User parameter — used by webhook handlers.
+   *
+   * @param githubInstallationId - GitHub's integer installation ID
+   * @returns A summary of the sync operation
+   */
+  async syncInstallationRepositoriesFromWebhook(
+    githubInstallationId: number,
+  ): Promise<{
+    installationId: number;
+    synced: number;
+    created: number;
+    updated: number;
+  } | null> {
+    const installation = await this.installationsPersistence.findByInstallationId(
+      githubInstallationId,
+    );
+
+    if (!installation) {
+      this.logger.warn(
+        `Installation ${githubInstallationId} not found in database — skipping sync`,
+      );
+      return null;
+    }
+
+    return this.syncInstallationRepositoriesInternal(installation);
+  }
+
+  /**
+   * Mark repositories as inactive (soft delete) for a given installation.
+   *
+   * @param githubRepositoryIds - Array of GitHub repository IDs to mark inactive
+   */
+  async markRepositoriesInactive(
+    githubRepositoryIds: number[],
+  ): Promise<void> {
+    if (githubRepositoryIds.length === 0) {
+      return;
+    }
+
+    const now = new Date();
+    await this.prisma.repository.updateMany({
+      where: { githubRepositoryId: { in: githubRepositoryIds } },
+      data: { isActive: false, lastSyncedAt: now },
+    });
+
+    this.logger.log(
+      `Marked ${githubRepositoryIds.length} repositories as inactive`,
+      { githubRepositoryIds },
+    );
   }
 
   async connectRepository(

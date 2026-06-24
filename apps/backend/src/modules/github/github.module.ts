@@ -1,8 +1,9 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { githubConfig } from '@/config';
-import { PrismaModule } from '@/database/prisma/prisma.module';
+import { PrismaModule } from '@/database';
+import { RepositoriesModule } from '@/modules/repositories/repositories.module';
 
 import { GitHubController } from './controllers/github.controller';
 import { GitHubWebhooksController } from './controllers/github-webhooks.controller';
@@ -14,7 +15,7 @@ import { GitHubWebhookService } from './services/github-webhook.service';
 import { InstallationsPersistence } from './persistence/installations.persistence';
 
 @Module({
-  imports: [ConfigModule.forFeature(githubConfig), PrismaModule],
+  imports: [ConfigModule.forFeature(githubConfig), PrismaModule, forwardRef(() => RepositoriesModule)],
   controllers: [GitHubController, GitHubWebhooksController],
   providers: [
     GitHubAuthService,

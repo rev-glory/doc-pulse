@@ -5,6 +5,7 @@ import * as crypto from 'node:crypto';
 import type { GitHubConfig } from '@/config';
 import { GitHubInstallationService } from './github-installation.service';
 import { InstallationsPersistence } from '../persistence/installations.persistence';
+import { RepositoriesService } from '@/modules/repositories/services/repositories.service';
 import { PrismaService } from '@/database';
 
 // ---------------------------------------------------------------------------
@@ -68,6 +69,7 @@ export class GitHubWebhookService {
     private readonly configService: ConfigService,
     private readonly gitHubInstallationService: GitHubInstallationService,
     private readonly installationsPersistence: InstallationsPersistence,
+    private readonly repositoriesService: RepositoriesService,
     private readonly prisma: PrismaService,
   ) {
     const config = this.configService.get<GitHubConfig>('github')!;
@@ -224,8 +226,17 @@ export class GitHubWebhookService {
       removed: repositories_removed?.length ?? 0,
     });
 
-    // TODO: Phase 2 — Automatically sync repository access changes.
-    // When repositories are added/removed from an installation, update
-    // the repository records accordingly. For now, log only.
+    // When repositories are added, perform a full sync
+    if (repositories_added && repositories_added.length > 0) {
+      await this.repositoriesService.syncInstallationRepositoriesFromWebhook(
+        installation.id,
+      );
+    }
+
+    // When repositories are removed, mark them inactive
+    if (repositories_removed && repositories_removed.length > 0) {
+      const removedRepoIds = repositories_removed.map(repo => repo.id);
+      await this.repositoriesService.markRepositoriesInactive(removedRepoIds);
+    }
   }
 }
