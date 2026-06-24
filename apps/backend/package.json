@@ -21,6 +21,8 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.1.27",
     "@nestjs/swagger": "^11.4.4",
+    "@octokit/auth-app": "^8.2.0",
+    "@octokit/rest": "^22.0.1",
     "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "^7.8.0",
     "@types/cookie-parser": "^1.4.10",

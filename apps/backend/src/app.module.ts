@@ -18,6 +18,7 @@ import { PrismaModule } from './database';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { GitHubModule } from './modules/github/github.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { UsersModule } from './modules/users/users.module';
     HealthModule,
     AuthModule,
     UsersModule,
+    GitHubModule,
   ],
   controllers: [AppController],
   providers: [AppService],
