@@ -89,9 +89,6 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
   async update(
     id: string,
     data: Partial<{
-      defaultBranch: string;
-      description: string | null;
-      language: string | null;
       isActive: boolean;
       docPaths: string[];
     }>,
@@ -103,8 +100,9 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
   }
 
   async delete(id: string): Promise<Repository> {
-    return this.prisma.repository.delete({
+    return this.prisma.repository.update({
       where: { id },
+      data: { isActive: false },
     });
   }
 
@@ -122,7 +120,7 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
 
   async listRepositories(ownerId: string): Promise<Repository[]> {
     return this.prisma.repository.findMany({
-      where: { ownerId },
+      where: { ownerId, isActive: true },
     });
   }
 }

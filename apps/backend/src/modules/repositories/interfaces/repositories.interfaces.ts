@@ -40,9 +40,6 @@ export interface IRepositoriesRepository {
   update(
     id: string,
     data: Partial<{
-      defaultBranch: string;
-      description: string | null;
-      language: string | null;
       isActive: boolean;
       docPaths: string[];
     }>,
