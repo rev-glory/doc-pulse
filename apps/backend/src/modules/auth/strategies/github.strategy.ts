@@ -4,6 +4,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-github2';
 
 import type { GitHubConfig } from '@/config';
+import type { GithubProfile } from '../types/auth.types';
 
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
@@ -18,19 +19,23 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       clientID: githubCfg.clientId,
       clientSecret: githubCfg.clientSecret,
       callbackURL: `${configService.get('BACKEND_URL')}/auth/github/callback`,
-      scope: ['user:email'],
+      // Minimum scope required to identify the user.
+      // Repository access uses Installation Access Tokens — never OAuth tokens.
+      scope: ['user:email', 'read:user'],
     });
   }
 
   async validate(
-    accessToken: string,
-    refreshToken: string,
+    _accessToken: string,
+    _refreshToken: string,
     profile: any,
-    done: (err: any, user?: any, info?: any) => void,
+    done: (err: any, user?: GithubProfile, info?: any) => void,
   ): Promise<void> {
     const { id, username, displayName, photos, emails } = profile;
 
-    const user = {
+    // Extract identity fields only. The OAuth token is intentionally discarded
+    // here — it has no role in the GitHub App architecture.
+    const user: GithubProfile = {
       githubId: Number(id),
       githubLogin: username,
       displayName: displayName,
@@ -41,3 +46,4 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     done(null, user);
   }
 }
+

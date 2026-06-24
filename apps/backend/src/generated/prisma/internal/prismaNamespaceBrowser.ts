@@ -109,15 +109,24 @@ export const RepositoryScalarFieldEnum = {
   id: 'id',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
-  githubRepoId: 'githubRepoId',
+  githubRepositoryId: 'githubRepositoryId',
+  installationId: 'installationId',
+  repositoryOwner: 'repositoryOwner',
+  name: 'name',
   fullName: 'fullName',
   defaultBranch: 'defaultBranch',
-  isPrivate: 'isPrivate',
+  private: 'private',
+  description: 'description',
+  language: 'language',
+  cloneUrl: 'cloneUrl',
+  htmlUrl: 'htmlUrl',
+  visibility: 'visibility',
+  isActive: 'isActive',
+  lastSyncedAt: 'lastSyncedAt',
   docPaths: 'docPaths',
   webhookId: 'webhookId',
   isWebhookActive: 'isWebhookActive',
-  ownerId: 'ownerId',
-  installationId: 'installationId'
+  ownerId: 'ownerId'
 } as const
 
 export type RepositoryScalarFieldEnum = (typeof RepositoryScalarFieldEnum)[keyof typeof RepositoryScalarFieldEnum]

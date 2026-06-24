@@ -10,7 +10,9 @@ import { AppModule } from './app.module';
 import type { AppConfig } from './config';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // rawBody: true buffers the raw request bytes on req.rawBody.
+  // Required by GitHubWebhooksController to verify HMAC-SHA256 signatures.
+  const app = await NestFactory.create(AppModule, { rawBody: true });
 
   app.useGlobalPipes(
     new ValidationPipe({

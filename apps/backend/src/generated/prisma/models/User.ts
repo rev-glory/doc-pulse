@@ -16,6 +16,10 @@ import type * as Prisma from "../internal/prismaNamespace.ts"
  * Model User
  * Authenticated DocPulse account.
  * One User has one GitHub OAuth identity and may own many Installations.
+ * 
+ * OAuth access tokens are intentionally NOT stored here.
+ * GitHub OAuth exists only to authenticate a user into DocPulse.
+ * All GitHub API operations use App JWTs or Installation Access Tokens.
  */
 export type UserModel = runtime.Types.Result.DefaultSelection<Prisma.$UserPayload>
 
@@ -246,8 +250,8 @@ export type UserWhereInput = {
   displayName?: Prisma.StringNullableFilter<"User"> | string | null
   settings?: Prisma.JsonFilter<"User">
   installations?: Prisma.InstallationListRelationFilter
-  repositories?: Prisma.RepositoryListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  repositories?: Prisma.RepositoryListRelationFilter
   workflowRuns?: Prisma.WorkflowRunListRelationFilter
 }
 
@@ -262,8 +266,8 @@ export type UserOrderByWithRelationInput = {
   displayName?: Prisma.SortOrderInput | Prisma.SortOrder
   settings?: Prisma.SortOrder
   installations?: Prisma.InstallationOrderByRelationAggregateInput
-  repositories?: Prisma.RepositoryOrderByRelationAggregateInput
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
+  repositories?: Prisma.RepositoryOrderByRelationAggregateInput
   workflowRuns?: Prisma.WorkflowRunOrderByRelationAggregateInput
 }
 
@@ -281,8 +285,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   displayName?: Prisma.StringNullableFilter<"User"> | string | null
   settings?: Prisma.JsonFilter<"User">
   installations?: Prisma.InstallationListRelationFilter
-  repositories?: Prisma.RepositoryListRelationFilter
   notifications?: Prisma.NotificationListRelationFilter
+  repositories?: Prisma.RepositoryListRelationFilter
   workflowRuns?: Prisma.WorkflowRunListRelationFilter
 }, "id" | "githubId">
 
@@ -329,8 +333,8 @@ export type UserCreateInput = {
   displayName?: string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationCreateNestedManyWithoutUserInput
-  repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
   workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutTriggeredByInput
 }
 
@@ -345,8 +349,8 @@ export type UserUncheckedCreateInput = {
   displayName?: string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedCreateNestedManyWithoutUserInput
-  repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutTriggeredByInput
 }
 
@@ -361,8 +365,8 @@ export type UserUpdateInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUpdateManyWithoutUserNestedInput
-  repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
   workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutTriggeredByNestedInput
 }
 
@@ -377,8 +381,8 @@ export type UserUncheckedUpdateInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedUpdateManyWithoutUserNestedInput
-  repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutTriggeredByNestedInput
 }
 
@@ -558,8 +562,8 @@ export type UserCreateWithoutInstallationsInput = {
   email?: string | null
   displayName?: string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
   workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutTriggeredByInput
 }
 
@@ -573,8 +577,8 @@ export type UserUncheckedCreateWithoutInstallationsInput = {
   email?: string | null
   displayName?: string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutTriggeredByInput
 }
 
@@ -604,8 +608,8 @@ export type UserUpdateWithoutInstallationsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
   workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutTriggeredByNestedInput
 }
 
@@ -619,8 +623,8 @@ export type UserUncheckedUpdateWithoutInstallationsInput = {
   email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
-  repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutTriggeredByNestedInput
 }
 
@@ -711,8 +715,8 @@ export type UserCreateWithoutWorkflowRunsInput = {
   displayName?: string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationCreateNestedManyWithoutUserInput
-  repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutUserInput
+  repositories?: Prisma.RepositoryCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateWithoutWorkflowRunsInput = {
@@ -726,8 +730,8 @@ export type UserUncheckedCreateWithoutWorkflowRunsInput = {
   displayName?: string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedCreateNestedManyWithoutUserInput
-  repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutUserInput
+  repositories?: Prisma.RepositoryUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserCreateOrConnectWithoutWorkflowRunsInput = {
@@ -757,8 +761,8 @@ export type UserUpdateWithoutWorkflowRunsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUpdateManyWithoutUserNestedInput
-  repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutUserNestedInput
+  repositories?: Prisma.RepositoryUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutWorkflowRunsInput = {
@@ -772,8 +776,8 @@ export type UserUncheckedUpdateWithoutWorkflowRunsInput = {
   displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   settings?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installations?: Prisma.InstallationUncheckedUpdateManyWithoutUserNestedInput
-  repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutUserNestedInput
+  repositories?: Prisma.RepositoryUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserCreateWithoutNotificationsInput = {
@@ -859,15 +863,15 @@ export type UserUncheckedUpdateWithoutNotificationsInput = {
 
 export type UserCountOutputType = {
   installations: number
-  repositories: number
   notifications: number
+  repositories: number
   workflowRuns: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   installations?: boolean | UserCountOutputTypeCountInstallationsArgs
-  repositories?: boolean | UserCountOutputTypeCountRepositoriesArgs
   notifications?: boolean | UserCountOutputTypeCountNotificationsArgs
+  repositories?: boolean | UserCountOutputTypeCountRepositoriesArgs
   workflowRuns?: boolean | UserCountOutputTypeCountWorkflowRunsArgs
 }
 
@@ -891,15 +895,15 @@ export type UserCountOutputTypeCountInstallationsArgs<ExtArgs extends runtime.Ty
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountRepositoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.RepositoryWhereInput
+export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.NotificationWhereInput
 }
 
 /**
  * UserCountOutputType without action
  */
-export type UserCountOutputTypeCountNotificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  where?: Prisma.NotificationWhereInput
+export type UserCountOutputTypeCountRepositoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.RepositoryWhereInput
 }
 
 /**
@@ -921,8 +925,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   displayName?: boolean
   settings?: boolean
   installations?: boolean | Prisma.User$installationsArgs<ExtArgs>
-  repositories?: boolean | Prisma.User$repositoriesArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  repositories?: boolean | Prisma.User$repositoriesArgs<ExtArgs>
   workflowRuns?: boolean | Prisma.User$workflowRunsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
@@ -966,8 +970,8 @@ export type UserSelectScalar = {
 export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "githubId" | "githubLogin" | "githubAvatarUrl" | "email" | "displayName" | "settings", ExtArgs["result"]["user"]>
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   installations?: boolean | Prisma.User$installationsArgs<ExtArgs>
-  repositories?: boolean | Prisma.User$repositoriesArgs<ExtArgs>
   notifications?: boolean | Prisma.User$notificationsArgs<ExtArgs>
+  repositories?: boolean | Prisma.User$repositoriesArgs<ExtArgs>
   workflowRuns?: boolean | Prisma.User$workflowRunsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -978,8 +982,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   name: "User"
   objects: {
     installations: Prisma.$InstallationPayload<ExtArgs>[]
-    repositories: Prisma.$RepositoryPayload<ExtArgs>[]
     notifications: Prisma.$NotificationPayload<ExtArgs>[]
+    repositories: Prisma.$RepositoryPayload<ExtArgs>[]
     workflowRuns: Prisma.$WorkflowRunPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1387,8 +1391,8 @@ readonly fields: UserFieldRefs;
 export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   installations<T extends Prisma.User$installationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$installationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InstallationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
-  repositories<T extends Prisma.User$repositoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$repositoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RepositoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   notifications<T extends Prisma.User$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  repositories<T extends Prisma.User$repositoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$repositoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RepositoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workflowRuns<T extends Prisma.User$workflowRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$workflowRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1845,30 +1849,6 @@ export type User$installationsArgs<ExtArgs extends runtime.Types.Extensions.Inte
 }
 
 /**
- * User.repositories
- */
-export type User$repositoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Repository
-   */
-  select?: Prisma.RepositorySelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Repository
-   */
-  omit?: Prisma.RepositoryOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.RepositoryInclude<ExtArgs> | null
-  where?: Prisma.RepositoryWhereInput
-  orderBy?: Prisma.RepositoryOrderByWithRelationInput | Prisma.RepositoryOrderByWithRelationInput[]
-  cursor?: Prisma.RepositoryWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.RepositoryScalarFieldEnum | Prisma.RepositoryScalarFieldEnum[]
-}
-
-/**
  * User.notifications
  */
 export type User$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1890,6 +1870,30 @@ export type User$notificationsArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+}
+
+/**
+ * User.repositories
+ */
+export type User$repositoriesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Repository
+   */
+  select?: Prisma.RepositorySelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Repository
+   */
+  omit?: Prisma.RepositoryOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.RepositoryInclude<ExtArgs> | null
+  where?: Prisma.RepositoryWhereInput
+  orderBy?: Prisma.RepositoryOrderByWithRelationInput | Prisma.RepositoryOrderByWithRelationInput[]
+  cursor?: Prisma.RepositoryWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.RepositoryScalarFieldEnum | Prisma.RepositoryScalarFieldEnum[]
 }
 
 /**

@@ -255,11 +255,11 @@ export type WorkflowRunWhereInput = {
   errorMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   repositoryId?: Prisma.StringFilter<"WorkflowRun"> | string
   triggeredById?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  notifications?: Prisma.NotificationListRelationFilter
+  pullRequest?: Prisma.XOR<Prisma.PullRequestNullableScalarRelationFilter, Prisma.PullRequestWhereInput> | null
+  review?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
   repository?: Prisma.XOR<Prisma.RepositoryScalarRelationFilter, Prisma.RepositoryWhereInput>
   triggeredBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  review?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
-  pullRequest?: Prisma.XOR<Prisma.PullRequestNullableScalarRelationFilter, Prisma.PullRequestWhereInput> | null
-  notifications?: Prisma.NotificationListRelationFilter
 }
 
 export type WorkflowRunOrderByWithRelationInput = {
@@ -277,11 +277,11 @@ export type WorkflowRunOrderByWithRelationInput = {
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   repositoryId?: Prisma.SortOrder
   triggeredById?: Prisma.SortOrderInput | Prisma.SortOrder
+  notifications?: Prisma.NotificationOrderByRelationAggregateInput
+  pullRequest?: Prisma.PullRequestOrderByWithRelationInput
+  review?: Prisma.ReviewOrderByWithRelationInput
   repository?: Prisma.RepositoryOrderByWithRelationInput
   triggeredBy?: Prisma.UserOrderByWithRelationInput
-  review?: Prisma.ReviewOrderByWithRelationInput
-  pullRequest?: Prisma.PullRequestOrderByWithRelationInput
-  notifications?: Prisma.NotificationOrderByRelationAggregateInput
 }
 
 export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
@@ -302,11 +302,11 @@ export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
   errorMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   repositoryId?: Prisma.StringFilter<"WorkflowRun"> | string
   triggeredById?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  notifications?: Prisma.NotificationListRelationFilter
+  pullRequest?: Prisma.XOR<Prisma.PullRequestNullableScalarRelationFilter, Prisma.PullRequestWhereInput> | null
+  review?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
   repository?: Prisma.XOR<Prisma.RepositoryScalarRelationFilter, Prisma.RepositoryWhereInput>
   triggeredBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
-  review?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
-  pullRequest?: Prisma.XOR<Prisma.PullRequestNullableScalarRelationFilter, Prisma.PullRequestWhereInput> | null
-  notifications?: Prisma.NotificationListRelationFilter
 }, "id" | "correlationId" | "webhookDeliveryId">
 
 export type WorkflowRunOrderByWithAggregationInput = {
@@ -362,11 +362,11 @@ export type WorkflowRunCreateInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
+  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
+  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
   repository: Prisma.RepositoryCreateNestedOneWithoutWorkflowRunsInput
   triggeredBy?: Prisma.UserCreateNestedOneWithoutWorkflowRunsInput
-  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
-  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
-  notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateInput = {
@@ -384,9 +384,9 @@ export type WorkflowRunUncheckedCreateInput = {
   errorMessage?: string | null
   repositoryId: string
   triggeredById?: string | null
-  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
-  pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
+  pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
+  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUpdateInput = {
@@ -402,11 +402,11 @@ export type WorkflowRunUpdateInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
+  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
   repository?: Prisma.RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput
   triggeredBy?: Prisma.UserUpdateOneWithoutWorkflowRunsNestedInput
-  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
-  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
-  notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateInput = {
@@ -424,9 +424,9 @@ export type WorkflowRunUncheckedUpdateInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
-  pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunCreateManyInput = {
@@ -637,10 +637,6 @@ export type EnumRunStatusFieldUpdateOperationsInput = {
   set?: $Enums.RunStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type WorkflowRunCreateNestedOneWithoutReviewInput = {
   create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutReviewInput, Prisma.WorkflowRunUncheckedCreateWithoutReviewInput>
   connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutReviewInput
@@ -698,10 +694,10 @@ export type WorkflowRunCreateWithoutTriggeredByInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
-  repository: Prisma.RepositoryCreateNestedOneWithoutWorkflowRunsInput
-  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
-  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
+  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
+  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
+  repository: Prisma.RepositoryCreateNestedOneWithoutWorkflowRunsInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutTriggeredByInput = {
@@ -718,9 +714,9 @@ export type WorkflowRunUncheckedCreateWithoutTriggeredByInput = {
   completedAt?: Date | string | null
   errorMessage?: string | null
   repositoryId: string
-  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
-  pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
+  pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
+  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutTriggeredByInput = {
@@ -782,10 +778,10 @@ export type WorkflowRunCreateWithoutRepositoryInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
-  triggeredBy?: Prisma.UserCreateNestedOneWithoutWorkflowRunsInput
-  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
-  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
   notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
+  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
+  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
+  triggeredBy?: Prisma.UserCreateNestedOneWithoutWorkflowRunsInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutRepositoryInput = {
@@ -802,9 +798,9 @@ export type WorkflowRunUncheckedCreateWithoutRepositoryInput = {
   completedAt?: Date | string | null
   errorMessage?: string | null
   triggeredById?: string | null
-  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
-  pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
+  pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
+  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutRepositoryInput = {
@@ -846,10 +842,10 @@ export type WorkflowRunCreateWithoutReviewInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
+  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
   repository: Prisma.RepositoryCreateNestedOneWithoutWorkflowRunsInput
   triggeredBy?: Prisma.UserCreateNestedOneWithoutWorkflowRunsInput
-  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
-  notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutReviewInput = {
@@ -867,8 +863,8 @@ export type WorkflowRunUncheckedCreateWithoutReviewInput = {
   errorMessage?: string | null
   repositoryId: string
   triggeredById?: string | null
-  pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
+  pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutReviewInput = {
@@ -900,10 +896,10 @@ export type WorkflowRunUpdateWithoutReviewInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
+  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
   repository?: Prisma.RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput
   triggeredBy?: Prisma.UserUpdateOneWithoutWorkflowRunsNestedInput
-  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
-  notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutReviewInput = {
@@ -921,8 +917,8 @@ export type WorkflowRunUncheckedUpdateWithoutReviewInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunCreateWithoutPullRequestInput = {
@@ -938,10 +934,10 @@ export type WorkflowRunCreateWithoutPullRequestInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
+  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
   repository: Prisma.RepositoryCreateNestedOneWithoutWorkflowRunsInput
   triggeredBy?: Prisma.UserCreateNestedOneWithoutWorkflowRunsInput
-  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
-  notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutPullRequestInput = {
@@ -959,8 +955,8 @@ export type WorkflowRunUncheckedCreateWithoutPullRequestInput = {
   errorMessage?: string | null
   repositoryId: string
   triggeredById?: string | null
-  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
+  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutPullRequestInput = {
@@ -992,10 +988,10 @@ export type WorkflowRunUpdateWithoutPullRequestInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
   repository?: Prisma.RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput
   triggeredBy?: Prisma.UserUpdateOneWithoutWorkflowRunsNestedInput
-  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
-  notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutPullRequestInput = {
@@ -1013,8 +1009,8 @@ export type WorkflowRunUncheckedUpdateWithoutPullRequestInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunCreateWithoutNotificationsInput = {
@@ -1030,10 +1026,10 @@ export type WorkflowRunCreateWithoutNotificationsInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
+  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
   repository: Prisma.RepositoryCreateNestedOneWithoutWorkflowRunsInput
   triggeredBy?: Prisma.UserCreateNestedOneWithoutWorkflowRunsInput
-  review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
-  pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
 }
 
 export type WorkflowRunUncheckedCreateWithoutNotificationsInput = {
@@ -1051,8 +1047,8 @@ export type WorkflowRunUncheckedCreateWithoutNotificationsInput = {
   errorMessage?: string | null
   repositoryId: string
   triggeredById?: string | null
-  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
   pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
+  review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
 }
 
 export type WorkflowRunCreateOrConnectWithoutNotificationsInput = {
@@ -1084,10 +1080,10 @@ export type WorkflowRunUpdateWithoutNotificationsInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
   repository?: Prisma.RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput
   triggeredBy?: Prisma.UserUpdateOneWithoutWorkflowRunsNestedInput
-  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
-  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutNotificationsInput = {
@@ -1105,8 +1101,8 @@ export type WorkflowRunUncheckedUpdateWithoutNotificationsInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
   pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunCreateManyTriggeredByInput = {
@@ -1138,10 +1134,10 @@ export type WorkflowRunUpdateWithoutTriggeredByInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  repository?: Prisma.RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput
-  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
-  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
+  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
+  repository?: Prisma.RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutTriggeredByInput = {
@@ -1158,9 +1154,9 @@ export type WorkflowRunUncheckedUpdateWithoutTriggeredByInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
-  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
-  pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateManyWithoutTriggeredByInput = {
@@ -1208,10 +1204,10 @@ export type WorkflowRunUpdateWithoutRepositoryInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  triggeredBy?: Prisma.UserUpdateOneWithoutWorkflowRunsNestedInput
-  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
-  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
   notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
+  pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
+  triggeredBy?: Prisma.UserUpdateOneWithoutWorkflowRunsNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateWithoutRepositoryInput = {
@@ -1228,9 +1224,9 @@ export type WorkflowRunUncheckedUpdateWithoutRepositoryInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
-  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
-  pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
+  pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
+  review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
 }
 
 export type WorkflowRunUncheckedUpdateManyWithoutRepositoryInput = {
@@ -1295,11 +1291,11 @@ export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   errorMessage?: boolean
   repositoryId?: boolean
   triggeredById?: boolean
+  notifications?: boolean | Prisma.WorkflowRun$notificationsArgs<ExtArgs>
+  pullRequest?: boolean | Prisma.WorkflowRun$pullRequestArgs<ExtArgs>
+  review?: boolean | Prisma.WorkflowRun$reviewArgs<ExtArgs>
   repository?: boolean | Prisma.RepositoryDefaultArgs<ExtArgs>
   triggeredBy?: boolean | Prisma.WorkflowRun$triggeredByArgs<ExtArgs>
-  review?: boolean | Prisma.WorkflowRun$reviewArgs<ExtArgs>
-  pullRequest?: boolean | Prisma.WorkflowRun$pullRequestArgs<ExtArgs>
-  notifications?: boolean | Prisma.WorkflowRun$notificationsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowRunCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["workflowRun"]>
 
@@ -1360,11 +1356,11 @@ export type WorkflowRunSelectScalar = {
 
 export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "correlationId" | "webhookDeliveryId" | "commitSha" | "branch" | "commitMessage" | "startedAt" | "completedAt" | "errorMessage" | "repositoryId" | "triggeredById", ExtArgs["result"]["workflowRun"]>
 export type WorkflowRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  notifications?: boolean | Prisma.WorkflowRun$notificationsArgs<ExtArgs>
+  pullRequest?: boolean | Prisma.WorkflowRun$pullRequestArgs<ExtArgs>
+  review?: boolean | Prisma.WorkflowRun$reviewArgs<ExtArgs>
   repository?: boolean | Prisma.RepositoryDefaultArgs<ExtArgs>
   triggeredBy?: boolean | Prisma.WorkflowRun$triggeredByArgs<ExtArgs>
-  review?: boolean | Prisma.WorkflowRun$reviewArgs<ExtArgs>
-  pullRequest?: boolean | Prisma.WorkflowRun$pullRequestArgs<ExtArgs>
-  notifications?: boolean | Prisma.WorkflowRun$notificationsArgs<ExtArgs>
   _count?: boolean | Prisma.WorkflowRunCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type WorkflowRunIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1379,11 +1375,11 @@ export type WorkflowRunIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.
 export type $WorkflowRunPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "WorkflowRun"
   objects: {
+    notifications: Prisma.$NotificationPayload<ExtArgs>[]
+    pullRequest: Prisma.$PullRequestPayload<ExtArgs> | null
+    review: Prisma.$ReviewPayload<ExtArgs> | null
     repository: Prisma.$RepositoryPayload<ExtArgs>
     triggeredBy: Prisma.$UserPayload<ExtArgs> | null
-    review: Prisma.$ReviewPayload<ExtArgs> | null
-    pullRequest: Prisma.$PullRequestPayload<ExtArgs> | null
-    notifications: Prisma.$NotificationPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1794,11 +1790,11 @@ readonly fields: WorkflowRunFieldRefs;
  */
 export interface Prisma__WorkflowRunClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  notifications<T extends Prisma.WorkflowRun$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  pullRequest<T extends Prisma.WorkflowRun$pullRequestArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$pullRequestArgs<ExtArgs>>): Prisma.Prisma__PullRequestClient<runtime.Types.Result.GetResult<Prisma.$PullRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  review<T extends Prisma.WorkflowRun$reviewArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$reviewArgs<ExtArgs>>): Prisma.Prisma__ReviewClient<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   repository<T extends Prisma.RepositoryDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.RepositoryDefaultArgs<ExtArgs>>): Prisma.Prisma__RepositoryClient<runtime.Types.Result.GetResult<Prisma.$RepositoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   triggeredBy<T extends Prisma.WorkflowRun$triggeredByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$triggeredByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  review<T extends Prisma.WorkflowRun$reviewArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$reviewArgs<ExtArgs>>): Prisma.Prisma__ReviewClient<runtime.Types.Result.GetResult<Prisma.$ReviewPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  pullRequest<T extends Prisma.WorkflowRun$pullRequestArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$pullRequestArgs<ExtArgs>>): Prisma.Prisma__PullRequestClient<runtime.Types.Result.GetResult<Prisma.$PullRequestPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
-  notifications<T extends Prisma.WorkflowRun$notificationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRun$notificationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$NotificationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2243,41 +2239,27 @@ export type WorkflowRunDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.I
 }
 
 /**
- * WorkflowRun.triggeredBy
+ * WorkflowRun.notifications
  */
-export type WorkflowRun$triggeredByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type WorkflowRun$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the User
+   * Select specific fields to fetch from the Notification
    */
-  select?: Prisma.UserSelect<ExtArgs> | null
+  select?: Prisma.NotificationSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the User
+   * Omit specific fields from the Notification
    */
-  omit?: Prisma.UserOmit<ExtArgs> | null
+  omit?: Prisma.NotificationOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.UserInclude<ExtArgs> | null
-  where?: Prisma.UserWhereInput
-}
-
-/**
- * WorkflowRun.review
- */
-export type WorkflowRun$reviewArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  /**
-   * Select specific fields to fetch from the Review
-   */
-  select?: Prisma.ReviewSelect<ExtArgs> | null
-  /**
-   * Omit specific fields from the Review
-   */
-  omit?: Prisma.ReviewOmit<ExtArgs> | null
-  /**
-   * Choose, which related nodes to fetch as well
-   */
-  include?: Prisma.ReviewInclude<ExtArgs> | null
-  where?: Prisma.ReviewWhereInput
+  include?: Prisma.NotificationInclude<ExtArgs> | null
+  where?: Prisma.NotificationWhereInput
+  orderBy?: Prisma.NotificationOrderByWithRelationInput | Prisma.NotificationOrderByWithRelationInput[]
+  cursor?: Prisma.NotificationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
 }
 
 /**
@@ -2300,27 +2282,41 @@ export type WorkflowRun$pullRequestArgs<ExtArgs extends runtime.Types.Extensions
 }
 
 /**
- * WorkflowRun.notifications
+ * WorkflowRun.review
  */
-export type WorkflowRun$notificationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+export type WorkflowRun$reviewArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   /**
-   * Select specific fields to fetch from the Notification
+   * Select specific fields to fetch from the Review
    */
-  select?: Prisma.NotificationSelect<ExtArgs> | null
+  select?: Prisma.ReviewSelect<ExtArgs> | null
   /**
-   * Omit specific fields from the Notification
+   * Omit specific fields from the Review
    */
-  omit?: Prisma.NotificationOmit<ExtArgs> | null
+  omit?: Prisma.ReviewOmit<ExtArgs> | null
   /**
    * Choose, which related nodes to fetch as well
    */
-  include?: Prisma.NotificationInclude<ExtArgs> | null
-  where?: Prisma.NotificationWhereInput
-  orderBy?: Prisma.NotificationOrderByWithRelationInput | Prisma.NotificationOrderByWithRelationInput[]
-  cursor?: Prisma.NotificationWhereUniqueInput
-  take?: number
-  skip?: number
-  distinct?: Prisma.NotificationScalarFieldEnum | Prisma.NotificationScalarFieldEnum[]
+  include?: Prisma.ReviewInclude<ExtArgs> | null
+  where?: Prisma.ReviewWhereInput
+}
+
+/**
+ * WorkflowRun.triggeredBy
+ */
+export type WorkflowRun$triggeredByArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the User
+   */
+  select?: Prisma.UserSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the User
+   */
+  omit?: Prisma.UserOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserInclude<ExtArgs> | null
+  where?: Prisma.UserWhereInput
 }
 
 /**

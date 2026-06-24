@@ -9,6 +9,10 @@ datasource db {
 
 /// Authenticated DocPulse account.
 /// One User has one GitHub OAuth identity and may own many Installations.
+///
+/// OAuth access tokens are intentionally NOT stored here.
+/// GitHub OAuth exists only to authenticate a user into DocPulse.
+/// All GitHub API operations use App JWTs or Installation Access Tokens.
 model User {
   id              String         @id @default(uuid())
   createdAt       DateTime       @default(now()) @map("created_at")
@@ -46,22 +50,35 @@ model Installation {
 
 /// Connected GitHub repository with documentation configuration.
 model Repository {
-  id              String        @id @default(uuid())
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
-  githubRepoId    Int           @unique @map("github_repo_id")
-  fullName        String        @map("full_name")
-  defaultBranch   String        @default("main") @map("default_branch")
-  isPrivate       Boolean       @default(false) @map("is_private")
-  docPaths        String[]      @map("doc_paths")
-  webhookId       Int?          @map("webhook_id")
-  isWebhookActive Boolean       @default(false) @map("is_webhook_active")
-  ownerId         String        @map("owner_id")
-  installationId  String        @map("installation_id")
-  installation    Installation  @relation(fields: [installationId], references: [id])
-  owner           User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  workflowRuns    WorkflowRun[]
+  id               String        @id @default(uuid())
+  createdAt        DateTime      @default(now()) @map("created_at")
+  updatedAt        DateTime      @updatedAt @map("updated_at")
+  githubRepositoryId Int         @unique @map("github_repository_id")
+  installationId   String        @map("installation_id")
+  repositoryOwner  String        @map("repository_owner")
+  name             String        @map("name")
+  fullName         String        @map("full_name")
+  defaultBranch    String        @default("main") @map("default_branch")
+  private          Boolean       @default(false) @map("private")
+  description      String?       @map("description")
+  language         String?       @map("language")
+  cloneUrl         String        @map("clone_url")
+  htmlUrl          String        @map("html_url")
+  visibility       String        @map("visibility")
+  isActive         Boolean       @default(true) @map("is_active")
+  lastSyncedAt     DateTime?     @map("last_synced_at")
+  docPaths         String[]      @default([]) @map("doc_paths")
+  webhookId        Int?          @map("webhook_id")
+  isWebhookActive  Boolean       @default(false) @map("is_webhook_active")
+  ownerId          String        @map("owner_id")
+  installation     Installation  @relation(fields: [installationId], references: [id])
+  owner            User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  workflowRuns     WorkflowRun[]
 
+  @@index([githubRepositoryId])
+  @@index([installationId])
+  @@index([ownerId])
+  @@index([isActive])
   @@map("repositories")
 }
 

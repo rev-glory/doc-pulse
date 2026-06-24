@@ -21,6 +21,10 @@ export * from './enums.ts';
  * Model User
  * Authenticated DocPulse account.
  * One User has one GitHub OAuth identity and may own many Installations.
+ * 
+ * OAuth access tokens are intentionally NOT stored here.
+ * GitHub OAuth exists only to authenticate a user into DocPulse.
+ * All GitHub API operations use App JWTs or Installation Access Tokens.
  */
 export type User = Prisma.UserModel
 /**

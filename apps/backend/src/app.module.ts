@@ -19,6 +19,7 @@ import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { GitHubModule } from './modules/github/github.module';
+import { RepositoriesModule } from './modules/repositories/repositories.module';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { GitHubModule } from './modules/github/github.module';
     AuthModule,
     UsersModule,
     GitHubModule,
+    RepositoriesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

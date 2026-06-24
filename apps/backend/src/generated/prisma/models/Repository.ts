@@ -27,12 +27,12 @@ export type AggregateRepository = {
 }
 
 export type RepositoryAvgAggregateOutputType = {
-  githubRepoId: number | null
+  githubRepositoryId: number | null
   webhookId: number | null
 }
 
 export type RepositorySumAggregateOutputType = {
-  githubRepoId: number | null
+  githubRepositoryId: number | null
   webhookId: number | null
 }
 
@@ -40,54 +40,81 @@ export type RepositoryMinAggregateOutputType = {
   id: string | null
   createdAt: Date | null
   updatedAt: Date | null
-  githubRepoId: number | null
+  githubRepositoryId: number | null
+  installationId: string | null
+  repositoryOwner: string | null
+  name: string | null
   fullName: string | null
   defaultBranch: string | null
-  isPrivate: boolean | null
+  private: boolean | null
+  description: string | null
+  language: string | null
+  cloneUrl: string | null
+  htmlUrl: string | null
+  visibility: string | null
+  isActive: boolean | null
+  lastSyncedAt: Date | null
   webhookId: number | null
   isWebhookActive: boolean | null
   ownerId: string | null
-  installationId: string | null
 }
 
 export type RepositoryMaxAggregateOutputType = {
   id: string | null
   createdAt: Date | null
   updatedAt: Date | null
-  githubRepoId: number | null
+  githubRepositoryId: number | null
+  installationId: string | null
+  repositoryOwner: string | null
+  name: string | null
   fullName: string | null
   defaultBranch: string | null
-  isPrivate: boolean | null
+  private: boolean | null
+  description: string | null
+  language: string | null
+  cloneUrl: string | null
+  htmlUrl: string | null
+  visibility: string | null
+  isActive: boolean | null
+  lastSyncedAt: Date | null
   webhookId: number | null
   isWebhookActive: boolean | null
   ownerId: string | null
-  installationId: string | null
 }
 
 export type RepositoryCountAggregateOutputType = {
   id: number
   createdAt: number
   updatedAt: number
-  githubRepoId: number
+  githubRepositoryId: number
+  installationId: number
+  repositoryOwner: number
+  name: number
   fullName: number
   defaultBranch: number
-  isPrivate: number
+  private: number
+  description: number
+  language: number
+  cloneUrl: number
+  htmlUrl: number
+  visibility: number
+  isActive: number
+  lastSyncedAt: number
   docPaths: number
   webhookId: number
   isWebhookActive: number
   ownerId: number
-  installationId: number
   _all: number
 }
 
 
 export type RepositoryAvgAggregateInputType = {
-  githubRepoId?: true
+  githubRepositoryId?: true
   webhookId?: true
 }
 
 export type RepositorySumAggregateInputType = {
-  githubRepoId?: true
+  githubRepositoryId?: true
   webhookId?: true
 }
 
@@ -95,43 +122,70 @@ export type RepositoryMinAggregateInputType = {
   id?: true
   createdAt?: true
   updatedAt?: true
-  githubRepoId?: true
+  githubRepositoryId?: true
+  installationId?: true
+  repositoryOwner?: true
+  name?: true
   fullName?: true
   defaultBranch?: true
-  isPrivate?: true
+  private?: true
+  description?: true
+  language?: true
+  cloneUrl?: true
+  htmlUrl?: true
+  visibility?: true
+  isActive?: true
+  lastSyncedAt?: true
   webhookId?: true
   isWebhookActive?: true
   ownerId?: true
-  installationId?: true
 }
 
 export type RepositoryMaxAggregateInputType = {
   id?: true
   createdAt?: true
   updatedAt?: true
-  githubRepoId?: true
+  githubRepositoryId?: true
+  installationId?: true
+  repositoryOwner?: true
+  name?: true
   fullName?: true
   defaultBranch?: true
-  isPrivate?: true
+  private?: true
+  description?: true
+  language?: true
+  cloneUrl?: true
+  htmlUrl?: true
+  visibility?: true
+  isActive?: true
+  lastSyncedAt?: true
   webhookId?: true
   isWebhookActive?: true
   ownerId?: true
-  installationId?: true
 }
 
 export type RepositoryCountAggregateInputType = {
   id?: true
   createdAt?: true
   updatedAt?: true
-  githubRepoId?: true
+  githubRepositoryId?: true
+  installationId?: true
+  repositoryOwner?: true
+  name?: true
   fullName?: true
   defaultBranch?: true
-  isPrivate?: true
+  private?: true
+  description?: true
+  language?: true
+  cloneUrl?: true
+  htmlUrl?: true
+  visibility?: true
+  isActive?: true
+  lastSyncedAt?: true
   docPaths?: true
   webhookId?: true
   isWebhookActive?: true
   ownerId?: true
-  installationId?: true
   _all?: true
 }
 
@@ -225,15 +279,24 @@ export type RepositoryGroupByOutputType = {
   id: string
   createdAt: Date
   updatedAt: Date
-  githubRepoId: number
+  githubRepositoryId: number
+  installationId: string
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch: string
-  isPrivate: boolean
+  private: boolean
+  description: string | null
+  language: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive: boolean
+  lastSyncedAt: Date | null
   docPaths: string[]
   webhookId: number | null
   isWebhookActive: boolean
   ownerId: string
-  installationId: string
   _count: RepositoryCountAggregateOutputType | null
   _avg: RepositoryAvgAggregateOutputType | null
   _sum: RepositorySumAggregateOutputType | null
@@ -263,17 +326,26 @@ export type RepositoryWhereInput = {
   id?: Prisma.StringFilter<"Repository"> | string
   createdAt?: Prisma.DateTimeFilter<"Repository"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Repository"> | Date | string
-  githubRepoId?: Prisma.IntFilter<"Repository"> | number
+  githubRepositoryId?: Prisma.IntFilter<"Repository"> | number
+  installationId?: Prisma.StringFilter<"Repository"> | string
+  repositoryOwner?: Prisma.StringFilter<"Repository"> | string
+  name?: Prisma.StringFilter<"Repository"> | string
   fullName?: Prisma.StringFilter<"Repository"> | string
   defaultBranch?: Prisma.StringFilter<"Repository"> | string
-  isPrivate?: Prisma.BoolFilter<"Repository"> | boolean
+  private?: Prisma.BoolFilter<"Repository"> | boolean
+  description?: Prisma.StringNullableFilter<"Repository"> | string | null
+  language?: Prisma.StringNullableFilter<"Repository"> | string | null
+  cloneUrl?: Prisma.StringFilter<"Repository"> | string
+  htmlUrl?: Prisma.StringFilter<"Repository"> | string
+  visibility?: Prisma.StringFilter<"Repository"> | string
+  isActive?: Prisma.BoolFilter<"Repository"> | boolean
+  lastSyncedAt?: Prisma.DateTimeNullableFilter<"Repository"> | Date | string | null
   docPaths?: Prisma.StringNullableListFilter<"Repository">
   webhookId?: Prisma.IntNullableFilter<"Repository"> | number | null
   isWebhookActive?: Prisma.BoolFilter<"Repository"> | boolean
   ownerId?: Prisma.StringFilter<"Repository"> | string
-  installationId?: Prisma.StringFilter<"Repository"> | string
-  owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   installation?: Prisma.XOR<Prisma.InstallationScalarRelationFilter, Prisma.InstallationWhereInput>
+  owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   workflowRuns?: Prisma.WorkflowRunListRelationFilter
 }
 
@@ -281,54 +353,81 @@ export type RepositoryOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  githubRepoId?: Prisma.SortOrder
+  githubRepositoryId?: Prisma.SortOrder
+  installationId?: Prisma.SortOrder
+  repositoryOwner?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
-  isPrivate?: Prisma.SortOrder
+  private?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  language?: Prisma.SortOrderInput | Prisma.SortOrder
+  cloneUrl?: Prisma.SortOrder
+  htmlUrl?: Prisma.SortOrder
+  visibility?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   docPaths?: Prisma.SortOrder
   webhookId?: Prisma.SortOrderInput | Prisma.SortOrder
   isWebhookActive?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
-  installationId?: Prisma.SortOrder
-  owner?: Prisma.UserOrderByWithRelationInput
   installation?: Prisma.InstallationOrderByWithRelationInput
+  owner?: Prisma.UserOrderByWithRelationInput
   workflowRuns?: Prisma.WorkflowRunOrderByRelationAggregateInput
 }
 
 export type RepositoryWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  githubRepoId?: number
+  githubRepositoryId?: number
   AND?: Prisma.RepositoryWhereInput | Prisma.RepositoryWhereInput[]
   OR?: Prisma.RepositoryWhereInput[]
   NOT?: Prisma.RepositoryWhereInput | Prisma.RepositoryWhereInput[]
   createdAt?: Prisma.DateTimeFilter<"Repository"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Repository"> | Date | string
+  installationId?: Prisma.StringFilter<"Repository"> | string
+  repositoryOwner?: Prisma.StringFilter<"Repository"> | string
+  name?: Prisma.StringFilter<"Repository"> | string
   fullName?: Prisma.StringFilter<"Repository"> | string
   defaultBranch?: Prisma.StringFilter<"Repository"> | string
-  isPrivate?: Prisma.BoolFilter<"Repository"> | boolean
+  private?: Prisma.BoolFilter<"Repository"> | boolean
+  description?: Prisma.StringNullableFilter<"Repository"> | string | null
+  language?: Prisma.StringNullableFilter<"Repository"> | string | null
+  cloneUrl?: Prisma.StringFilter<"Repository"> | string
+  htmlUrl?: Prisma.StringFilter<"Repository"> | string
+  visibility?: Prisma.StringFilter<"Repository"> | string
+  isActive?: Prisma.BoolFilter<"Repository"> | boolean
+  lastSyncedAt?: Prisma.DateTimeNullableFilter<"Repository"> | Date | string | null
   docPaths?: Prisma.StringNullableListFilter<"Repository">
   webhookId?: Prisma.IntNullableFilter<"Repository"> | number | null
   isWebhookActive?: Prisma.BoolFilter<"Repository"> | boolean
   ownerId?: Prisma.StringFilter<"Repository"> | string
-  installationId?: Prisma.StringFilter<"Repository"> | string
-  owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   installation?: Prisma.XOR<Prisma.InstallationScalarRelationFilter, Prisma.InstallationWhereInput>
+  owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   workflowRuns?: Prisma.WorkflowRunListRelationFilter
-}, "id" | "githubRepoId">
+}, "id" | "githubRepositoryId">
 
 export type RepositoryOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  githubRepoId?: Prisma.SortOrder
+  githubRepositoryId?: Prisma.SortOrder
+  installationId?: Prisma.SortOrder
+  repositoryOwner?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
-  isPrivate?: Prisma.SortOrder
+  private?: Prisma.SortOrder
+  description?: Prisma.SortOrderInput | Prisma.SortOrder
+  language?: Prisma.SortOrderInput | Prisma.SortOrder
+  cloneUrl?: Prisma.SortOrder
+  htmlUrl?: Prisma.SortOrder
+  visibility?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   docPaths?: Prisma.SortOrder
   webhookId?: Prisma.SortOrderInput | Prisma.SortOrder
   isWebhookActive?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
-  installationId?: Prisma.SortOrder
   _count?: Prisma.RepositoryCountOrderByAggregateInput
   _avg?: Prisma.RepositoryAvgOrderByAggregateInput
   _max?: Prisma.RepositoryMaxOrderByAggregateInput
@@ -343,30 +442,48 @@ export type RepositoryScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"Repository"> | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Repository"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Repository"> | Date | string
-  githubRepoId?: Prisma.IntWithAggregatesFilter<"Repository"> | number
+  githubRepositoryId?: Prisma.IntWithAggregatesFilter<"Repository"> | number
+  installationId?: Prisma.StringWithAggregatesFilter<"Repository"> | string
+  repositoryOwner?: Prisma.StringWithAggregatesFilter<"Repository"> | string
+  name?: Prisma.StringWithAggregatesFilter<"Repository"> | string
   fullName?: Prisma.StringWithAggregatesFilter<"Repository"> | string
   defaultBranch?: Prisma.StringWithAggregatesFilter<"Repository"> | string
-  isPrivate?: Prisma.BoolWithAggregatesFilter<"Repository"> | boolean
+  private?: Prisma.BoolWithAggregatesFilter<"Repository"> | boolean
+  description?: Prisma.StringNullableWithAggregatesFilter<"Repository"> | string | null
+  language?: Prisma.StringNullableWithAggregatesFilter<"Repository"> | string | null
+  cloneUrl?: Prisma.StringWithAggregatesFilter<"Repository"> | string
+  htmlUrl?: Prisma.StringWithAggregatesFilter<"Repository"> | string
+  visibility?: Prisma.StringWithAggregatesFilter<"Repository"> | string
+  isActive?: Prisma.BoolWithAggregatesFilter<"Repository"> | boolean
+  lastSyncedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Repository"> | Date | string | null
   docPaths?: Prisma.StringNullableListFilter<"Repository">
   webhookId?: Prisma.IntNullableWithAggregatesFilter<"Repository"> | number | null
   isWebhookActive?: Prisma.BoolWithAggregatesFilter<"Repository"> | boolean
   ownerId?: Prisma.StringWithAggregatesFilter<"Repository"> | string
-  installationId?: Prisma.StringWithAggregatesFilter<"Repository"> | string
 }
 
 export type RepositoryCreateInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
-  owner: Prisma.UserCreateNestedOneWithoutRepositoriesInput
   installation: Prisma.InstallationCreateNestedOneWithoutRepositoriesInput
+  owner: Prisma.UserCreateNestedOneWithoutRepositoriesInput
   workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutRepositoryInput
 }
 
@@ -374,15 +491,24 @@ export type RepositoryUncheckedCreateInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  installationId: string
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
   ownerId: string
-  installationId: string
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutRepositoryInput
 }
 
@@ -390,15 +516,24 @@ export type RepositoryUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  owner?: Prisma.UserUpdateOneRequiredWithoutRepositoriesNestedInput
   installation?: Prisma.InstallationUpdateOneRequiredWithoutRepositoriesNestedInput
+  owner?: Prisma.UserUpdateOneRequiredWithoutRepositoriesNestedInput
   workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutRepositoryNestedInput
 }
 
@@ -406,15 +541,24 @@ export type RepositoryUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  installationId?: Prisma.StringFieldUpdateOperationsInput | string
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
-  installationId?: Prisma.StringFieldUpdateOperationsInput | string
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutRepositoryNestedInput
 }
 
@@ -422,25 +566,43 @@ export type RepositoryCreateManyInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  installationId: string
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
   ownerId: string
-  installationId: string
 }
 
 export type RepositoryUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -450,15 +612,24 @@ export type RepositoryUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  installationId?: Prisma.StringFieldUpdateOperationsInput | string
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
-  installationId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type RepositoryListRelationFilter = {
@@ -483,19 +654,28 @@ export type RepositoryCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  githubRepoId?: Prisma.SortOrder
+  githubRepositoryId?: Prisma.SortOrder
+  installationId?: Prisma.SortOrder
+  repositoryOwner?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
-  isPrivate?: Prisma.SortOrder
+  private?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  cloneUrl?: Prisma.SortOrder
+  htmlUrl?: Prisma.SortOrder
+  visibility?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrder
   docPaths?: Prisma.SortOrder
   webhookId?: Prisma.SortOrder
   isWebhookActive?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
-  installationId?: Prisma.SortOrder
 }
 
 export type RepositoryAvgOrderByAggregateInput = {
-  githubRepoId?: Prisma.SortOrder
+  githubRepositoryId?: Prisma.SortOrder
   webhookId?: Prisma.SortOrder
 }
 
@@ -503,32 +683,50 @@ export type RepositoryMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  githubRepoId?: Prisma.SortOrder
+  githubRepositoryId?: Prisma.SortOrder
+  installationId?: Prisma.SortOrder
+  repositoryOwner?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
-  isPrivate?: Prisma.SortOrder
+  private?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  cloneUrl?: Prisma.SortOrder
+  htmlUrl?: Prisma.SortOrder
+  visibility?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrder
   webhookId?: Prisma.SortOrder
   isWebhookActive?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
-  installationId?: Prisma.SortOrder
 }
 
 export type RepositoryMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
-  githubRepoId?: Prisma.SortOrder
+  githubRepositoryId?: Prisma.SortOrder
+  installationId?: Prisma.SortOrder
+  repositoryOwner?: Prisma.SortOrder
+  name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
-  isPrivate?: Prisma.SortOrder
+  private?: Prisma.SortOrder
+  description?: Prisma.SortOrder
+  language?: Prisma.SortOrder
+  cloneUrl?: Prisma.SortOrder
+  htmlUrl?: Prisma.SortOrder
+  visibility?: Prisma.SortOrder
+  isActive?: Prisma.SortOrder
+  lastSyncedAt?: Prisma.SortOrder
   webhookId?: Prisma.SortOrder
   isWebhookActive?: Prisma.SortOrder
   ownerId?: Prisma.SortOrder
-  installationId?: Prisma.SortOrder
 }
 
 export type RepositorySumOrderByAggregateInput = {
-  githubRepoId?: Prisma.SortOrder
+  githubRepositoryId?: Prisma.SortOrder
   webhookId?: Prisma.SortOrder
 }
 
@@ -625,6 +823,10 @@ export type RepositoryCreatedocPathsInput = {
   set: string[]
 }
 
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
 export type RepositoryUpdatedocPathsInput = {
   set?: string[]
   push?: string | string[]
@@ -656,10 +858,19 @@ export type RepositoryCreateWithoutOwnerInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
@@ -671,14 +882,23 @@ export type RepositoryUncheckedCreateWithoutOwnerInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  installationId: string
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
-  installationId: string
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutRepositoryInput
 }
 
@@ -715,25 +935,43 @@ export type RepositoryScalarWhereInput = {
   id?: Prisma.StringFilter<"Repository"> | string
   createdAt?: Prisma.DateTimeFilter<"Repository"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Repository"> | Date | string
-  githubRepoId?: Prisma.IntFilter<"Repository"> | number
+  githubRepositoryId?: Prisma.IntFilter<"Repository"> | number
+  installationId?: Prisma.StringFilter<"Repository"> | string
+  repositoryOwner?: Prisma.StringFilter<"Repository"> | string
+  name?: Prisma.StringFilter<"Repository"> | string
   fullName?: Prisma.StringFilter<"Repository"> | string
   defaultBranch?: Prisma.StringFilter<"Repository"> | string
-  isPrivate?: Prisma.BoolFilter<"Repository"> | boolean
+  private?: Prisma.BoolFilter<"Repository"> | boolean
+  description?: Prisma.StringNullableFilter<"Repository"> | string | null
+  language?: Prisma.StringNullableFilter<"Repository"> | string | null
+  cloneUrl?: Prisma.StringFilter<"Repository"> | string
+  htmlUrl?: Prisma.StringFilter<"Repository"> | string
+  visibility?: Prisma.StringFilter<"Repository"> | string
+  isActive?: Prisma.BoolFilter<"Repository"> | boolean
+  lastSyncedAt?: Prisma.DateTimeNullableFilter<"Repository"> | Date | string | null
   docPaths?: Prisma.StringNullableListFilter<"Repository">
   webhookId?: Prisma.IntNullableFilter<"Repository"> | number | null
   isWebhookActive?: Prisma.BoolFilter<"Repository"> | boolean
   ownerId?: Prisma.StringFilter<"Repository"> | string
-  installationId?: Prisma.StringFilter<"Repository"> | string
 }
 
 export type RepositoryCreateWithoutInstallationInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
@@ -745,10 +983,19 @@ export type RepositoryUncheckedCreateWithoutInstallationInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
@@ -786,30 +1033,48 @@ export type RepositoryCreateWithoutWorkflowRunsInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
-  owner: Prisma.UserCreateNestedOneWithoutRepositoriesInput
   installation: Prisma.InstallationCreateNestedOneWithoutRepositoriesInput
+  owner: Prisma.UserCreateNestedOneWithoutRepositoriesInput
 }
 
 export type RepositoryUncheckedCreateWithoutWorkflowRunsInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  installationId: string
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
   ownerId: string
-  installationId: string
 }
 
 export type RepositoryCreateOrConnectWithoutWorkflowRunsInput = {
@@ -832,54 +1097,90 @@ export type RepositoryUpdateWithoutWorkflowRunsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  owner?: Prisma.UserUpdateOneRequiredWithoutRepositoriesNestedInput
   installation?: Prisma.InstallationUpdateOneRequiredWithoutRepositoriesNestedInput
+  owner?: Prisma.UserUpdateOneRequiredWithoutRepositoriesNestedInput
 }
 
 export type RepositoryUncheckedUpdateWithoutWorkflowRunsInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  installationId?: Prisma.StringFieldUpdateOperationsInput | string
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
-  installationId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type RepositoryCreateManyOwnerInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  installationId: string
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
-  installationId: string
 }
 
 export type RepositoryUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -891,14 +1192,23 @@ export type RepositoryUncheckedUpdateWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  installationId?: Prisma.StringFieldUpdateOperationsInput | string
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  installationId?: Prisma.StringFieldUpdateOperationsInput | string
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutRepositoryNestedInput
 }
 
@@ -906,24 +1216,42 @@ export type RepositoryUncheckedUpdateManyWithoutOwnerInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  installationId?: Prisma.StringFieldUpdateOperationsInput | string
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
-  installationId?: Prisma.StringFieldUpdateOperationsInput | string
 }
 
 export type RepositoryCreateManyInstallationInput = {
   id?: string
   createdAt?: Date | string
   updatedAt?: Date | string
-  githubRepoId: number
+  githubRepositoryId: number
+  repositoryOwner: string
+  name: string
   fullName: string
   defaultBranch?: string
-  isPrivate?: boolean
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
   docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
   webhookId?: number | null
   isWebhookActive?: boolean
@@ -934,10 +1262,19 @@ export type RepositoryUpdateWithoutInstallationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -949,10 +1286,19 @@ export type RepositoryUncheckedUpdateWithoutInstallationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -964,10 +1310,19 @@ export type RepositoryUncheckedUpdateManyWithoutInstallationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  githubRepoId?: Prisma.IntFieldUpdateOperationsInput | number
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
-  isPrivate?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
@@ -1009,17 +1364,26 @@ export type RepositorySelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   id?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  githubRepoId?: boolean
+  githubRepositoryId?: boolean
+  installationId?: boolean
+  repositoryOwner?: boolean
+  name?: boolean
   fullName?: boolean
   defaultBranch?: boolean
-  isPrivate?: boolean
+  private?: boolean
+  description?: boolean
+  language?: boolean
+  cloneUrl?: boolean
+  htmlUrl?: boolean
+  visibility?: boolean
+  isActive?: boolean
+  lastSyncedAt?: boolean
   docPaths?: boolean
   webhookId?: boolean
   isWebhookActive?: boolean
   ownerId?: boolean
-  installationId?: boolean
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   workflowRuns?: boolean | Prisma.Repository$workflowRunsArgs<ExtArgs>
   _count?: boolean | Prisma.RepositoryCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["repository"]>
@@ -1028,87 +1392,123 @@ export type RepositorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  githubRepoId?: boolean
+  githubRepositoryId?: boolean
+  installationId?: boolean
+  repositoryOwner?: boolean
+  name?: boolean
   fullName?: boolean
   defaultBranch?: boolean
-  isPrivate?: boolean
+  private?: boolean
+  description?: boolean
+  language?: boolean
+  cloneUrl?: boolean
+  htmlUrl?: boolean
+  visibility?: boolean
+  isActive?: boolean
+  lastSyncedAt?: boolean
   docPaths?: boolean
   webhookId?: boolean
   isWebhookActive?: boolean
   ownerId?: boolean
-  installationId?: boolean
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["repository"]>
 
 export type RepositorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  githubRepoId?: boolean
+  githubRepositoryId?: boolean
+  installationId?: boolean
+  repositoryOwner?: boolean
+  name?: boolean
   fullName?: boolean
   defaultBranch?: boolean
-  isPrivate?: boolean
+  private?: boolean
+  description?: boolean
+  language?: boolean
+  cloneUrl?: boolean
+  htmlUrl?: boolean
+  visibility?: boolean
+  isActive?: boolean
+  lastSyncedAt?: boolean
   docPaths?: boolean
   webhookId?: boolean
   isWebhookActive?: boolean
   ownerId?: boolean
-  installationId?: boolean
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["repository"]>
 
 export type RepositorySelectScalar = {
   id?: boolean
   createdAt?: boolean
   updatedAt?: boolean
-  githubRepoId?: boolean
+  githubRepositoryId?: boolean
+  installationId?: boolean
+  repositoryOwner?: boolean
+  name?: boolean
   fullName?: boolean
   defaultBranch?: boolean
-  isPrivate?: boolean
+  private?: boolean
+  description?: boolean
+  language?: boolean
+  cloneUrl?: boolean
+  htmlUrl?: boolean
+  visibility?: boolean
+  isActive?: boolean
+  lastSyncedAt?: boolean
   docPaths?: boolean
   webhookId?: boolean
   isWebhookActive?: boolean
   ownerId?: boolean
-  installationId?: boolean
 }
 
-export type RepositoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "githubRepoId" | "fullName" | "defaultBranch" | "isPrivate" | "docPaths" | "webhookId" | "isWebhookActive" | "ownerId" | "installationId", ExtArgs["result"]["repository"]>
+export type RepositoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "githubRepositoryId" | "installationId" | "repositoryOwner" | "name" | "fullName" | "defaultBranch" | "private" | "description" | "language" | "cloneUrl" | "htmlUrl" | "visibility" | "isActive" | "lastSyncedAt" | "docPaths" | "webhookId" | "isWebhookActive" | "ownerId", ExtArgs["result"]["repository"]>
 export type RepositoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   workflowRuns?: boolean | Prisma.Repository$workflowRunsArgs<ExtArgs>
   _count?: boolean | Prisma.RepositoryCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RepositoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type RepositoryIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
-  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
+  owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 
 export type $RepositoryPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Repository"
   objects: {
-    owner: Prisma.$UserPayload<ExtArgs>
     installation: Prisma.$InstallationPayload<ExtArgs>
+    owner: Prisma.$UserPayload<ExtArgs>
     workflowRuns: Prisma.$WorkflowRunPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     createdAt: Date
     updatedAt: Date
-    githubRepoId: number
+    githubRepositoryId: number
+    installationId: string
+    repositoryOwner: string
+    name: string
     fullName: string
     defaultBranch: string
-    isPrivate: boolean
+    private: boolean
+    description: string | null
+    language: string | null
+    cloneUrl: string
+    htmlUrl: string
+    visibility: string
+    isActive: boolean
+    lastSyncedAt: Date | null
     docPaths: string[]
     webhookId: number | null
     isWebhookActive: boolean
     ownerId: string
-    installationId: string
   }, ExtArgs["result"]["repository"]>
   composites: {}
 }
@@ -1503,8 +1903,8 @@ readonly fields: RepositoryFieldRefs;
  */
 export interface Prisma__RepositoryClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
-  owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   installation<T extends Prisma.InstallationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InstallationDefaultArgs<ExtArgs>>): Prisma.Prisma__InstallationClient<runtime.Types.Result.GetResult<Prisma.$InstallationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   workflowRuns<T extends Prisma.Repository$workflowRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Repository$workflowRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1538,15 +1938,24 @@ export interface RepositoryFieldRefs {
   readonly id: Prisma.FieldRef<"Repository", 'String'>
   readonly createdAt: Prisma.FieldRef<"Repository", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Repository", 'DateTime'>
-  readonly githubRepoId: Prisma.FieldRef<"Repository", 'Int'>
+  readonly githubRepositoryId: Prisma.FieldRef<"Repository", 'Int'>
+  readonly installationId: Prisma.FieldRef<"Repository", 'String'>
+  readonly repositoryOwner: Prisma.FieldRef<"Repository", 'String'>
+  readonly name: Prisma.FieldRef<"Repository", 'String'>
   readonly fullName: Prisma.FieldRef<"Repository", 'String'>
   readonly defaultBranch: Prisma.FieldRef<"Repository", 'String'>
-  readonly isPrivate: Prisma.FieldRef<"Repository", 'Boolean'>
+  readonly private: Prisma.FieldRef<"Repository", 'Boolean'>
+  readonly description: Prisma.FieldRef<"Repository", 'String'>
+  readonly language: Prisma.FieldRef<"Repository", 'String'>
+  readonly cloneUrl: Prisma.FieldRef<"Repository", 'String'>
+  readonly htmlUrl: Prisma.FieldRef<"Repository", 'String'>
+  readonly visibility: Prisma.FieldRef<"Repository", 'String'>
+  readonly isActive: Prisma.FieldRef<"Repository", 'Boolean'>
+  readonly lastSyncedAt: Prisma.FieldRef<"Repository", 'DateTime'>
   readonly docPaths: Prisma.FieldRef<"Repository", 'String[]'>
   readonly webhookId: Prisma.FieldRef<"Repository", 'Int'>
   readonly isWebhookActive: Prisma.FieldRef<"Repository", 'Boolean'>
   readonly ownerId: Prisma.FieldRef<"Repository", 'String'>
-  readonly installationId: Prisma.FieldRef<"Repository", 'String'>
 }
     
 

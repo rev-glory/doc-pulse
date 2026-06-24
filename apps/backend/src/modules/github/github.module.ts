@@ -2,16 +2,34 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { githubConfig } from '@/config';
+import { PrismaModule } from '@/database/prisma/prisma.module';
 
 import { GitHubController } from './controllers/github.controller';
+import { GitHubWebhooksController } from './controllers/github-webhooks.controller';
 import { GitHubAuthService } from './services/github-auth.service';
 import { GitHubApiService } from './services/github-api.service';
-import { GitHubService } from './services/github.service';
+import { GitHubInstallationService } from './services/github-installation.service';
+import { GitHubRepositoryService } from './services/github-repository.service';
+import { GitHubWebhookService } from './services/github-webhook.service';
+import { InstallationsPersistence } from './persistence/installations.persistence';
 
 @Module({
-  imports: [ConfigModule.forFeature(githubConfig)],
-  controllers: [GitHubController],
-  providers: [GitHubAuthService, GitHubApiService, GitHubService],
-  exports: [GitHubAuthService, GitHubApiService, GitHubService],
+  imports: [ConfigModule.forFeature(githubConfig), PrismaModule],
+  controllers: [GitHubController, GitHubWebhooksController],
+  providers: [
+    GitHubAuthService,
+    GitHubApiService,
+    GitHubInstallationService,
+    GitHubRepositoryService,
+    GitHubWebhookService,
+    InstallationsPersistence,
+  ],
+  exports: [
+    GitHubAuthService,
+    GitHubApiService,
+    GitHubInstallationService,
+    GitHubRepositoryService,
+    InstallationsPersistence,
+  ],
 })
 export class GitHubModule {}

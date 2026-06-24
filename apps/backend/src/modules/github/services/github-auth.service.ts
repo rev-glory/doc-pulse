@@ -1,14 +1,9 @@
 import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createAppAuth } from '@octokit/auth-app';
-import { Octokit } from '@octokit/rest';
 
 import type { GitHubConfig } from '@/config';
-
-interface CachedToken {
-  token: string;
-  expiresAt: number;
-}
+import type { CachedToken } from '../interfaces/github.interfaces';
 
 @Injectable()
 export class GitHubAuthService {
@@ -22,6 +17,8 @@ export class GitHubAuthService {
     this.appAuth = createAppAuth({
       appId: config.appId,
       privateKey: config.privateKey,
+      clientId: config.clientId,
+      clientSecret: config.clientSecret,
     });
   }
 
@@ -52,20 +49,25 @@ export class GitHubAuthService {
     this.logger.debug(`Requesting new installation access token for installation ${installationId}`);
 
     try {
-      const appOctokit = new Octokit({ auth: await this.getAppJwt() });
-
-      const { data } = await appOctokit.apps.createInstallationAccessToken({
-        installation_id: installationId,
+      // Delegate token creation to @octokit/auth-app — it constructs the
+      // App JWT internally and exchanges it for an installation token.
+      // This avoids creating a raw Octokit instance here and keeps the
+      // responsibility for retry/rate-limit handling in GitHubApiService.
+      const auth = await this.appAuth({
+        type: 'installation',
+        installationId,
       });
 
-      const expiresAt = new Date(data.expires_at).getTime() - 60 * 1000; // 1 minute buffer
+      // GitHub installation tokens expire after 1 hour. We subtract 60 s
+      // as a safety buffer to avoid using a token in its final second.
+      const expiresAt = new Date(auth.expiresAt).getTime() - 60 * 1000;
 
       this.installationTokens.set(installationId, {
-        token: data.token,
+        token: auth.token,
         expiresAt,
       });
 
-      return data.token;
+      return auth.token;
     } catch (error) {
       this.logger.error(`Failed to get installation token for ${installationId}`, error);
       throw new UnauthorizedException('Failed to authenticate with GitHub');

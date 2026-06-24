@@ -80,8 +80,7 @@ Desktop.ini
 
 .idea/
 
-# Cursor (keep AI rules private)
-.cursor/
+docpulse.mdc
 
 # ==========================================================
 # Testing
