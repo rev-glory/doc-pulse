@@ -30,5 +30,8 @@ export type { QueueConfig, QueueName } from './queue.config';
 export { redisConfig } from './redis.config';
 export type { RedisConfig } from './redis.config';
 
+export { storageConfig } from './storage.config';
+export type { StorageConfig } from './storage.config';
+
 export { validateEnv } from './env.validation';
 export type { Env } from './env.validation';

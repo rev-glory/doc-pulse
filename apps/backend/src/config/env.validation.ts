@@ -97,6 +97,12 @@ const envSchema = z.object({
   // The SMTP transport library validates the address when sending.
   SMTP_FROM: optionalString,
 
+  // ── Storage ───────────────────────────────────────────────────────────────
+  STORAGE_ROOT: z.string().default('./storage'),
+  CLONES_DIR: z.string().default('clones'),
+  WORKSPACE_DIR: z.string().default('workspace'),
+  ARTIFACTS_DIR: z.string().default('artifacts'),
+
   // ── Logging ───────────────────────────────────────────────────────────────
   LOG_LEVEL: z
     .enum(['error', 'warn', 'log', 'debug', 'verbose'])

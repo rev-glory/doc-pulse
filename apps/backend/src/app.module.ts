@@ -12,6 +12,7 @@ import {
   notificationConfig,
   queueConfig,
   redisConfig,
+  storageConfig,
   validateEnv,
 } from './config';
 import { PrismaModule } from './database';
@@ -20,6 +21,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { GitHubModule } from './modules/github/github.module';
 import { RepositoriesModule } from './modules/repositories/repositories.module';
+import { GitOperationsModule } from './modules/git-operations';
 
 @Module({
   imports: [
@@ -46,6 +48,7 @@ import { RepositoriesModule } from './modules/repositories/repositories.module';
         aiConfig,
         queueConfig,
         notificationConfig,
+        storageConfig,
       ],
       envFilePath: ['../../.env'],
       ignoreEnvFile: process.env['NODE_ENV'] === 'production',
@@ -58,6 +61,7 @@ import { RepositoriesModule } from './modules/repositories/repositories.module';
     UsersModule,
     GitHubModule,
     RepositoriesModule,
+    GitOperationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
