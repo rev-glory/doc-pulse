@@ -7,6 +7,9 @@ import {
   UseGuards,
   Body,
   Param,
+  ParseIntPipe,
+  HttpCode,
+  HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiOperation, ApiOkResponse } from '@nestjs/swagger';
 
@@ -51,6 +54,33 @@ export class RepositoriesController {
     @CurrentUser() user: User,
   ): Promise<RepositoryResponseDto> {
     return this.repositoriesService.connectRepository(connectRepositoryDto, user);
+  }
+
+  @Post('installations/:installationId/sync')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Sync all repositories for a GitHub App installation',
+    description:
+      'Fetches every repository accessible to the installation from GitHub ' +
+      'and upserts them into the database. Existing repositories not returned ' +
+      'by GitHub are left unchanged (soft-retain). Returns a sync summary.',
+  })
+  @ApiOkResponse({
+    description: 'Sync summary',
+    schema: {
+      properties: {
+        installationId: { type: 'number' },
+        synced: { type: 'number' },
+        created: { type: 'number' },
+        updated: { type: 'number' },
+      },
+    },
+  })
+  async syncInstallationRepositories(
+    @Param('installationId', ParseIntPipe) installationId: number,
+    @CurrentUser() user: User,
+  ): Promise<{ installationId: number; synced: number; created: number; updated: number }> {
+    return this.repositoriesService.syncInstallationRepositories(installationId, user);
   }
 
   @Patch(':id')

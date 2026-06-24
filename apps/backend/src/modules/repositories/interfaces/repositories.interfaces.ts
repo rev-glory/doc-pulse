@@ -1,5 +1,22 @@
 import type { Repository } from '@/generated/prisma/client';
 
+export interface SyncUpsertRepositoryData {
+  githubRepositoryId: number;
+  /** DocPulse Installation UUID (not the GitHub integer ID). */
+  installationId: string;
+  repositoryOwner: string;
+  name: string;
+  fullName: string;
+  defaultBranch: string;
+  private: boolean;
+  description: string | null;
+  language: string | null;
+  cloneUrl: string;
+  htmlUrl: string;
+  visibility: string;
+  ownerId: string;
+}
+
 export interface IRepositoriesRepository {
   create(data: {
     githubRepositoryId: number;
@@ -17,6 +34,8 @@ export interface IRepositoriesRepository {
     isActive: boolean;
     ownerId: string;
   }): Promise<Repository>;
+
+  syncUpsert(data: SyncUpsertRepositoryData, tx?: unknown): Promise<Repository>;
 
   update(
     id: string,

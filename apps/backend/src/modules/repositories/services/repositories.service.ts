@@ -8,6 +8,7 @@ import {
 import { plainToInstance, ClassTransformer } from 'class-transformer';
 
 import { GitHubRepositoryService } from '@/modules/github/services/github-repository.service';
+import { InstallationsPersistence } from '@/modules/github/persistence/installations.persistence';
 import { PrismaService } from '@/database';
 import type { User, Repository } from '@/generated/prisma/client';
 
@@ -24,6 +25,7 @@ export class RepositoriesService {
   constructor(
     private readonly repositoriesPersistence: RepositoriesPersistence,
     private readonly gitHubRepositoryService: GitHubRepositoryService,
+    private readonly installationsPersistence: InstallationsPersistence,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -78,6 +80,134 @@ export class RepositoriesService {
     this.logger.log(`Getting repository ${id} for user ${user.id}`);
     const repository = await this.findOwnedRepository(id, user.id);
     return this.toResponseDto(repository);
+  }
+
+  /**
+   * Sync all repositories accessible to a GitHub App installation.
+   *
+   * The caller must own the installation — ownership is verified against
+   * the authenticated user before any GitHub API call is made.
+   *
+   * Flow:
+   *   1. Load the Installation record from the database (source of truth).
+   *   2. Assert that installation.userId matches the authenticated user.
+   *   3. Fetch every accessible repository from GitHub using an Installation
+   *      Access Token — pagination is handled by GitHubRepositoryService.
+   *   4. Upsert every repository inside a single transaction so the operation
+   *      is atomic: either all repos are updated or none are.
+   *   5. Repositories that are no longer returned by GitHub are NOT deleted —
+   *      they are left in place so historical data is preserved.
+   *
+   * @param githubInstallationId - GitHub's integer installation ID
+   * @param user                 - The authenticated DocPulse user
+   * @returns A summary of the sync operation
+   */
+  async syncInstallationRepositories(
+    githubInstallationId: number,
+    user: User,
+  ): Promise<{
+    installationId: number;
+    synced: number;
+    created: number;
+    updated: number;
+  }> {
+    const logCtx = { githubInstallationId };
+    const startedAt = Date.now();
+
+    this.logger.log('Starting repository sync for installation', logCtx);
+
+    // Step 1 — Resolve the installation record.
+    // We need the DocPulse Installation UUID (installation.id) to use as the
+    // foreign key on each Repository row, and the userId to set as ownerId.
+    const installation = await this.installationsPersistence.findByInstallationId(
+      githubInstallationId,
+    );
+
+    if (!installation) {
+      throw new NotFoundException(
+        `Installation ${githubInstallationId} not found in database. ` +
+          'Ensure the installation webhook has been received before syncing.',
+      );
+    }
+
+    // Step 2 — Enforce ownership.
+    // Verify that the authenticated user owns this installation before making
+    // any GitHub API call. Mirrors the pattern used by findOwnedInstallation().
+    if (installation.userId !== user.id) {
+      this.logger.warn(
+        `User ${user.id} attempted to sync installation ${githubInstallationId} ` +
+          `which belongs to user ${installation.userId}`,
+      );
+      throw new ForbiddenException('Not authorized to sync this installation');
+    }
+
+    // Step 3 — Fetch all repos from GitHub (handles pagination internally).
+    const githubRepos = await this.gitHubRepositoryService.listInstallationRepositories(
+      githubInstallationId,
+    );
+
+    this.logger.log(
+      `Fetched ${githubRepos.length} repositories from GitHub`,
+      { ...logCtx, count: githubRepos.length },
+    );
+
+    // Step 3 — Upsert all repositories atomically.
+    // We collect per-repo isNew flags outside the transaction closure so we
+    // can report created vs. updated counts in the summary.
+    let createdCount = 0;
+    let updatedCount = 0;
+
+    await this.prisma.$transaction(async (tx) => {
+      for (const repo of githubRepos) {
+        // Check existence before upsert so we can track created vs. updated.
+        const existing = await tx.repository.findUnique({
+          where: { githubRepositoryId: repo.githubRepositoryId },
+          select: { id: true },
+        });
+
+        await this.repositoriesPersistence.syncUpsert(
+          {
+            githubRepositoryId: repo.githubRepositoryId,
+            installationId: installation.id,   // DocPulse UUID
+            repositoryOwner: repo.owner,
+            name: repo.name,
+            fullName: repo.fullName,
+            defaultBranch: repo.defaultBranch,
+            private: repo.isPrivate,
+            description: repo.description,
+            language: repo.language,
+            cloneUrl: repo.cloneUrl,
+            htmlUrl: repo.htmlUrl,
+            visibility: repo.visibility,
+            ownerId: installation.userId,
+          },
+          tx,
+        );
+
+        if (existing) {
+          updatedCount++;
+        } else {
+          createdCount++;
+        }
+      }
+    });
+
+    const duration = Date.now() - startedAt;
+
+    this.logger.log('Repository sync completed', {
+      ...logCtx,
+      duration,
+      synced: githubRepos.length,
+      created: createdCount,
+      updated: updatedCount,
+    });
+
+    return {
+      installationId: githubInstallationId,
+      synced: githubRepos.length,
+      created: createdCount,
+      updated: updatedCount,
+    };
   }
 
   async connectRepository(

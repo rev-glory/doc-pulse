@@ -1,4 +1,4 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
 
 import { GitHubApiService } from './github-api.service';
 import type { GitHubRepositoryMetadata } from '../types/github.types';
@@ -79,6 +79,79 @@ export class GitHubRepositoryService {
       }
 
       this.logger.error(`Failed to fetch repository metadata: ${owner}/${repo}`, error);
+      throw error;
+    }
+  }
+  /**
+   * List all repositories accessible to a GitHub App installation.
+   *
+   * Paginates automatically — returns every repository across all pages.
+   * Uses an Installation Access Token so the caller never needs to handle
+   * token acquisition.
+   *
+   * @param installationId - GitHub's integer installation ID
+   * @returns Flat array of repository metadata for every accessible repository
+   */
+  async listInstallationRepositories(
+    installationId: number,
+  ): Promise<GitHubRepositoryMetadata[]> {
+    this.logger.debug(`Listing repositories for installation ${installationId}`);
+
+    try {
+      const octokit = await this.gitHubApiService.getInstallationClient(installationId);
+
+      const PAGE_SIZE = 100; // GitHub's maximum per-page for this endpoint
+      const repositories: GitHubRepositoryMetadata[] = [];
+      let page = 1;
+
+      // Paginate until GitHub returns fewer repos than the page size,
+      // which signals the final page.
+      while (true) {
+        const { data } = await octokit.apps.listReposAccessibleToInstallation({
+          per_page: PAGE_SIZE,
+          page,
+        });
+
+        for (const repo of data.repositories) {
+          repositories.push({
+            githubRepositoryId: repo.id,
+            owner: repo.owner.login,
+            name: repo.name,
+            fullName: repo.full_name,
+            defaultBranch: repo.default_branch || 'main',
+            isPrivate: repo.private,
+            description: repo.description ?? null,
+            language: repo.language ?? null,
+            cloneUrl: repo.clone_url,
+            htmlUrl: repo.html_url,
+            visibility: repo.visibility ?? (repo.private ? 'private' : 'public'),
+          });
+        }
+
+        if (data.repositories.length < PAGE_SIZE) {
+          break;
+        }
+
+        page++;
+      }
+
+      this.logger.debug(
+        `Found ${repositories.length} repositories for installation ${installationId}`,
+      );
+
+      return repositories;
+    } catch (error) {
+      const err = error as { status?: number };
+
+      if (err.status === 401) {
+        this.logger.error(`Installation ${installationId} token is invalid or expired`);
+        throw new InternalServerErrorException('GitHub installation token is invalid');
+      }
+
+      this.logger.error(
+        `Failed to list repositories for installation ${installationId}`,
+        error,
+      );
       throw error;
     }
   }

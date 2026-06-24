@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/database';
-import type { Repository } from '@/generated/prisma/client';
-import type { IRepositoriesRepository } from '../interfaces/repositories.interfaces';
+import type { Repository, Prisma } from '@/generated/prisma/client';
+import type { IRepositoriesRepository, SyncUpsertRepositoryData } from '../interfaces/repositories.interfaces';
 
 @Injectable()
 export class RepositoriesPersistence implements IRepositoriesRepository {
@@ -26,6 +26,63 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
   }): Promise<Repository> {
     return this.prisma.repository.create({
       data,
+    });
+  }
+
+  /**
+   * Upsert a repository record during an installation sync.
+   *
+   * Uses `githubRepositoryId` as the stable unique key.
+   *
+   * CREATE: inserts with all fields, isActive = true, lastSyncedAt = now.
+   * UPDATE: refreshes only GitHub-sourced metadata. User-controlled fields
+   *         (docPaths, webhookId, isWebhookActive) are intentionally preserved.
+   *
+   * Accepts an optional Prisma transaction client so the caller can batch
+   * multiple upserts into a single atomic operation.
+   */
+  async syncUpsert(
+    data: SyncUpsertRepositoryData,
+    tx?: Prisma.TransactionClient,
+  ): Promise<Repository> {
+    const client = tx ?? this.prisma;
+    const now = new Date();
+
+    return client.repository.upsert({
+      where: { githubRepositoryId: data.githubRepositoryId },
+      create: {
+        githubRepositoryId: data.githubRepositoryId,
+        installationId: data.installationId,
+        repositoryOwner: data.repositoryOwner,
+        name: data.name,
+        fullName: data.fullName,
+        defaultBranch: data.defaultBranch,
+        private: data.private,
+        description: data.description,
+        language: data.language,
+        cloneUrl: data.cloneUrl,
+        htmlUrl: data.htmlUrl,
+        visibility: data.visibility,
+        isActive: true,
+        ownerId: data.ownerId,
+        lastSyncedAt: now,
+      },
+      update: {
+        // Refresh all GitHub-sourced metadata that can change over time.
+        repositoryOwner: data.repositoryOwner,
+        name: data.name,
+        fullName: data.fullName,
+        defaultBranch: data.defaultBranch,
+        private: data.private,
+        description: data.description,
+        language: data.language,
+        cloneUrl: data.cloneUrl,
+        htmlUrl: data.htmlUrl,
+        visibility: data.visibility,
+        lastSyncedAt: now,
+        // Intentionally NOT updated: docPaths, webhookId, isWebhookActive, isActive
+        // These are user-controlled or managed by separate workflows.
+      },
     });
   }
 
