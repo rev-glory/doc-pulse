@@ -44,6 +44,33 @@ interface WebhookInstallationRepositoriesPayload {
   };
 }
 
+interface WebhookPullRequestPayload {
+  action: 'opened' | 'synchronize' | 'reopened' | 'closed';
+  installation: {
+    id: number;
+  };
+  repository: {
+    id: number;
+    full_name: string;
+  };
+  pull_request: {
+    number: number;
+    title: string;
+    head: {
+      ref: string;
+      sha: string;
+    };
+    base: {
+      ref: string;
+      sha: string;
+    };
+  };
+  sender: {
+    id: number;
+    login: string;
+  };
+}
+
 // ---------------------------------------------------------------------------
 // GitHubWebhookService
 //
@@ -143,8 +170,7 @@ export class GitHubWebhookService {
         break;
 
       case 'pull_request':
-        // TODO: Handle PR events for documentation PR tracking.
-        this.logger.log('Pull request event received — handler not yet implemented');
+        await this.handlePullRequestEvent(rawPayload as WebhookPullRequestPayload);
         break;
 
       default:
@@ -238,5 +264,29 @@ export class GitHubWebhookService {
       const removedRepoIds = repositories_removed.map(repo => repo.id);
       await this.repositoriesService.markRepositoriesInactive(removedRepoIds);
     }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Pull Request Event Handlers
+  // ---------------------------------------------------------------------------
+
+  private async handlePullRequestEvent(
+    payload: WebhookPullRequestPayload,
+  ): Promise<void> {
+    const { action, repository, pull_request, sender } = payload;
+
+    this.logger.log(`Pull request event: ${action}`, {
+      repository: repository.full_name,
+      pullRequestNumber: pull_request.number,
+      title: pull_request.title,
+      sender: sender.login,
+      headRef: pull_request.head.ref,
+      headSha: pull_request.head.sha,
+      baseRef: pull_request.base.ref,
+      baseSha: pull_request.base.sha,
+    });
+
+    // TODO: Here we can later enqueue BullMQ job for AI PR review,
+    // when that feature is implemented. For now just log it.
   }
 }
