@@ -74,6 +74,7 @@ model Repository {
   installation     Installation  @relation(fields: [installationId], references: [id])
   owner            User          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
   workflowRuns     WorkflowRun[]
+  webhookEvents    WebhookEvent[]
 
   @@index([githubRepositoryId])
   @@index([installationId])
@@ -188,4 +189,33 @@ enum ReviewStatus {
 enum NotificationStatus {
   UNREAD
   READ
+}
+
+/// Webhook event processing status.
+enum WebhookEventStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+}
+
+/// Incoming GitHub webhook event persisted for audit and debugging.
+model WebhookEvent {
+  id               String            @id @default(uuid())
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  githubDeliveryId String            @unique @map("github_delivery_id")
+  eventType        String            @map("event_type")
+  action           String?
+  repositoryId     String?           @map("repository_id")
+  payload          Json
+  receivedAt       DateTime          @default(now()) @map("received_at")
+  processedAt      DateTime?         @map("processed_at")
+  status           WebhookEventStatus @default(RECEIVED)
+  repository       Repository?       @relation(fields: [repositoryId], references: [id], onDelete: SetNull)
+
+  @@index([githubDeliveryId])
+  @@index([eventType])
+  @@index([status])
+  @@index([repositoryId])
+  @@map("webhook_events")
 }

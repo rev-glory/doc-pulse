@@ -7,6 +7,7 @@ import { GitHubInstallationService } from './github-installation.service';
 import { InstallationsPersistence } from '../persistence/installations.persistence';
 import { RepositoriesService } from '@/modules/repositories/services/repositories.service';
 import { PrismaService } from '@/database';
+import { WebhookEventsService } from '@/modules/webhook-events/services/webhook-events.service';
 
 // ---------------------------------------------------------------------------
 // Webhook Event Payload Shapes
@@ -15,6 +16,13 @@ import { PrismaService } from '@/database';
 // payloads. We use 'unknown' for everything else to be safe — never trust
 // arbitrary payloads from the internet.
 // ---------------------------------------------------------------------------
+
+interface WebhookPayloadWithAction {
+  action?: string;
+  repository?: {
+    id: number;
+  };
+}
 
 interface WebhookInstallationPayload {
   action: 'created' | 'deleted' | 'suspend' | 'unsuspend' | 'new_permissions_accepted';
@@ -98,6 +106,7 @@ export class GitHubWebhookService {
     private readonly installationsPersistence: InstallationsPersistence,
     private readonly repositoriesService: RepositoriesService,
     private readonly prisma: PrismaService,
+    private readonly webhookEventsService: WebhookEventsService,
   ) {
     const config = this.configService.get<GitHubConfig>('github')!;
     this.webhookSecret = config.webhookSecret;
@@ -150,31 +159,69 @@ export class GitHubWebhookService {
    * Always resolves — errors are caught and logged.
    * The controller returns 200 regardless so GitHub does not retry.
    */
-  async handleEvent(event: string, rawPayload: unknown): Promise<void> {
-    this.logger.log(`Received GitHub webhook event: ${event}`);
+  async handleEvent(event: string, deliveryId: string, rawPayload: unknown): Promise<void> {
+    this.logger.log('Received GitHub webhook event', {
+      event,
+      deliveryId,
+    });
 
-    switch (event) {
-      case 'installation':
-        await this.handleInstallationEvent(rawPayload as WebhookInstallationPayload);
-        break;
+    const payload = rawPayload as WebhookPayloadWithAction;
+    let repositoryId: string | undefined;
 
-      case 'installation_repositories':
-        await this.handleInstallationRepositoriesEvent(
-          rawPayload as WebhookInstallationRepositoriesPayload,
-        );
-        break;
+    // Try to find the repository ID if available
+    if (payload.repository?.id) {
+      const repo = await this.prisma.repository.findUnique({
+        where: { githubRepositoryId: payload.repository.id },
+        select: { id: true },
+      });
+      repositoryId = repo?.id;
+    }
 
-      case 'push':
-        // TODO: Enqueue BullMQ job for documentation pipeline.
-        this.logger.log('Push event received — pipeline not yet implemented');
-        break;
+    // Persist the event
+    await this.webhookEventsService.createEvent({
+      githubDeliveryId: deliveryId,
+      eventType: event,
+      action: payload.action,
+      repositoryId,
+      payload: rawPayload,
+    });
 
-      case 'pull_request':
-        await this.handlePullRequestEvent(rawPayload as WebhookPullRequestPayload);
-        break;
+    try {
+      switch (event) {
+        case 'installation':
+          await this.handleInstallationEvent(payload as WebhookInstallationPayload);
+          break;
 
-      default:
-        this.logger.debug(`Unhandled webhook event: ${event} — ignoring`);
+        case 'installation_repositories':
+          await this.handleInstallationRepositoriesEvent(
+            payload as WebhookInstallationRepositoriesPayload,
+          );
+          break;
+
+        case 'push':
+          // TODO: Enqueue BullMQ job for documentation pipeline.
+          this.logger.log('Push event received — pipeline not yet implemented');
+          break;
+
+        case 'pull_request':
+          await this.handlePullRequestEvent(payload as WebhookPullRequestPayload);
+          break;
+
+        default:
+          this.logger.debug(`Unhandled webhook event: ${event} — ignoring`);
+      }
+
+      // Mark as processed on success
+      await this.webhookEventsService.markAsProcessed(deliveryId);
+    } catch (error) {
+      // Mark as failed on error
+      this.logger.error('Error processing webhook event', {
+        event,
+        deliveryId,
+        error,
+      });
+      await this.webhookEventsService.markAsFailed(deliveryId);
+      throw error;
     }
   }
 
@@ -187,7 +234,8 @@ export class GitHubWebhookService {
   ): Promise<void> {
     const { action, installation, sender } = payload;
 
-    this.logger.log(`Installation event: ${action}`, {
+    this.logger.log('Installation event', {
+      action,
       installationId: installation.id,
       account: installation.account.login,
       sender: sender.login,
@@ -246,7 +294,8 @@ export class GitHubWebhookService {
   ): Promise<void> {
     const { action, installation, repositories_added, repositories_removed } = payload;
 
-    this.logger.log(`Installation repositories event: ${action}`, {
+    this.logger.log('Installation repositories event', {
+      action,
       installationId: installation.id,
       added: repositories_added?.length ?? 0,
       removed: repositories_removed?.length ?? 0,
@@ -275,7 +324,8 @@ export class GitHubWebhookService {
   ): Promise<void> {
     const { action, repository, pull_request, sender } = payload;
 
-    this.logger.log(`Pull request event: ${action}`, {
+    this.logger.log('Pull request event', {
+      action,
       repository: repository.full_name,
       pullRequestNumber: pull_request.number,
       title: pull_request.title,

@@ -61,3 +61,8 @@ export type PullRequest = Prisma.PullRequestModel
  * Covers events: review.required, run.rejected, pull-request.created, run.failed, run.completed.
  */
 export type Notification = Prisma.NotificationModel
+/**
+ * Model WebhookEvent
+ * Incoming GitHub webhook event persisted for audit and debugging.
+ */
+export type WebhookEvent = Prisma.WebhookEventModel

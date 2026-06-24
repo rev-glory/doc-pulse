@@ -44,6 +44,7 @@ export class GitHubWebhooksController {
   async handleWebhook(
     @Req() req: Request,
     @Headers('x-github-event') event: string,
+    @Headers('x-github-delivery') deliveryId: string,
     @Headers('x-hub-signature-256') signature: string,
   ): Promise<{ received: boolean }> {
     // `rawBody` is available when the app is bootstrapped with rawBody: true.
@@ -68,7 +69,7 @@ export class GitHubWebhooksController {
     // Process asynchronously — do not await so we return 200 immediately.
     // GitHub expects a fast acknowledgement; long processing happens in the
     // background (BullMQ jobs for push/PR events).
-    void this.gitHubWebhookService.handleEvent(event, req.body).catch((error) => {
+    void this.gitHubWebhookService.handleEvent(event, deliveryId, req.body).catch((error) => {
       this.logger.error(`Webhook handler failed for event: ${event}`, error);
     });
 

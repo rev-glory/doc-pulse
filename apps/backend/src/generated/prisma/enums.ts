@@ -41,3 +41,12 @@ export const NotificationStatus = {
 } as const
 
 export type NotificationStatus = (typeof NotificationStatus)[keyof typeof NotificationStatus]
+
+
+export const WebhookEventStatus = {
+  RECEIVED: 'RECEIVED',
+  PROCESSED: 'PROCESSED',
+  FAILED: 'FAILED'
+} as const
+
+export type WebhookEventStatus = (typeof WebhookEventStatus)[keyof typeof WebhookEventStatus]

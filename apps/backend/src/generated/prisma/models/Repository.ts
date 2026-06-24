@@ -347,6 +347,7 @@ export type RepositoryWhereInput = {
   installation?: Prisma.XOR<Prisma.InstallationScalarRelationFilter, Prisma.InstallationWhereInput>
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   workflowRuns?: Prisma.WorkflowRunListRelationFilter
+  webhookEvents?: Prisma.WebhookEventListRelationFilter
 }
 
 export type RepositoryOrderByWithRelationInput = {
@@ -374,6 +375,7 @@ export type RepositoryOrderByWithRelationInput = {
   installation?: Prisma.InstallationOrderByWithRelationInput
   owner?: Prisma.UserOrderByWithRelationInput
   workflowRuns?: Prisma.WorkflowRunOrderByRelationAggregateInput
+  webhookEvents?: Prisma.WebhookEventOrderByRelationAggregateInput
 }
 
 export type RepositoryWhereUniqueInput = Prisma.AtLeast<{
@@ -404,6 +406,7 @@ export type RepositoryWhereUniqueInput = Prisma.AtLeast<{
   installation?: Prisma.XOR<Prisma.InstallationScalarRelationFilter, Prisma.InstallationWhereInput>
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   workflowRuns?: Prisma.WorkflowRunListRelationFilter
+  webhookEvents?: Prisma.WebhookEventListRelationFilter
 }, "id" | "githubRepositoryId">
 
 export type RepositoryOrderByWithAggregationInput = {
@@ -485,6 +488,7 @@ export type RepositoryCreateInput = {
   installation: Prisma.InstallationCreateNestedOneWithoutRepositoriesInput
   owner: Prisma.UserCreateNestedOneWithoutRepositoriesInput
   workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutRepositoryInput
+  webhookEvents?: Prisma.WebhookEventCreateNestedManyWithoutRepositoryInput
 }
 
 export type RepositoryUncheckedCreateInput = {
@@ -510,6 +514,7 @@ export type RepositoryUncheckedCreateInput = {
   isWebhookActive?: boolean
   ownerId: string
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutRepositoryInput
+  webhookEvents?: Prisma.WebhookEventUncheckedCreateNestedManyWithoutRepositoryInput
 }
 
 export type RepositoryUpdateInput = {
@@ -535,6 +540,7 @@ export type RepositoryUpdateInput = {
   installation?: Prisma.InstallationUpdateOneRequiredWithoutRepositoriesNestedInput
   owner?: Prisma.UserUpdateOneRequiredWithoutRepositoriesNestedInput
   workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutRepositoryNestedInput
+  webhookEvents?: Prisma.WebhookEventUpdateManyWithoutRepositoryNestedInput
 }
 
 export type RepositoryUncheckedUpdateInput = {
@@ -560,6 +566,7 @@ export type RepositoryUncheckedUpdateInput = {
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutRepositoryNestedInput
+  webhookEvents?: Prisma.WebhookEventUncheckedUpdateManyWithoutRepositoryNestedInput
 }
 
 export type RepositoryCreateManyInput = {
@@ -735,6 +742,11 @@ export type RepositoryScalarRelationFilter = {
   isNot?: Prisma.RepositoryWhereInput
 }
 
+export type RepositoryNullableScalarRelationFilter = {
+  is?: Prisma.RepositoryWhereInput | null
+  isNot?: Prisma.RepositoryWhereInput | null
+}
+
 export type RepositoryCreateNestedManyWithoutOwnerInput = {
   create?: Prisma.XOR<Prisma.RepositoryCreateWithoutOwnerInput, Prisma.RepositoryUncheckedCreateWithoutOwnerInput> | Prisma.RepositoryCreateWithoutOwnerInput[] | Prisma.RepositoryUncheckedCreateWithoutOwnerInput[]
   connectOrCreate?: Prisma.RepositoryCreateOrConnectWithoutOwnerInput | Prisma.RepositoryCreateOrConnectWithoutOwnerInput[]
@@ -854,6 +866,22 @@ export type RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.RepositoryUpdateToOneWithWhereWithoutWorkflowRunsInput, Prisma.RepositoryUpdateWithoutWorkflowRunsInput>, Prisma.RepositoryUncheckedUpdateWithoutWorkflowRunsInput>
 }
 
+export type RepositoryCreateNestedOneWithoutWebhookEventsInput = {
+  create?: Prisma.XOR<Prisma.RepositoryCreateWithoutWebhookEventsInput, Prisma.RepositoryUncheckedCreateWithoutWebhookEventsInput>
+  connectOrCreate?: Prisma.RepositoryCreateOrConnectWithoutWebhookEventsInput
+  connect?: Prisma.RepositoryWhereUniqueInput
+}
+
+export type RepositoryUpdateOneWithoutWebhookEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.RepositoryCreateWithoutWebhookEventsInput, Prisma.RepositoryUncheckedCreateWithoutWebhookEventsInput>
+  connectOrCreate?: Prisma.RepositoryCreateOrConnectWithoutWebhookEventsInput
+  upsert?: Prisma.RepositoryUpsertWithoutWebhookEventsInput
+  disconnect?: Prisma.RepositoryWhereInput | boolean
+  delete?: Prisma.RepositoryWhereInput | boolean
+  connect?: Prisma.RepositoryWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.RepositoryUpdateToOneWithWhereWithoutWebhookEventsInput, Prisma.RepositoryUpdateWithoutWebhookEventsInput>, Prisma.RepositoryUncheckedUpdateWithoutWebhookEventsInput>
+}
+
 export type RepositoryCreateWithoutOwnerInput = {
   id?: string
   createdAt?: Date | string
@@ -876,6 +904,7 @@ export type RepositoryCreateWithoutOwnerInput = {
   isWebhookActive?: boolean
   installation: Prisma.InstallationCreateNestedOneWithoutRepositoriesInput
   workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutRepositoryInput
+  webhookEvents?: Prisma.WebhookEventCreateNestedManyWithoutRepositoryInput
 }
 
 export type RepositoryUncheckedCreateWithoutOwnerInput = {
@@ -900,6 +929,7 @@ export type RepositoryUncheckedCreateWithoutOwnerInput = {
   webhookId?: number | null
   isWebhookActive?: boolean
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutRepositoryInput
+  webhookEvents?: Prisma.WebhookEventUncheckedCreateNestedManyWithoutRepositoryInput
 }
 
 export type RepositoryCreateOrConnectWithoutOwnerInput = {
@@ -977,6 +1007,7 @@ export type RepositoryCreateWithoutInstallationInput = {
   isWebhookActive?: boolean
   owner: Prisma.UserCreateNestedOneWithoutRepositoriesInput
   workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutRepositoryInput
+  webhookEvents?: Prisma.WebhookEventCreateNestedManyWithoutRepositoryInput
 }
 
 export type RepositoryUncheckedCreateWithoutInstallationInput = {
@@ -1001,6 +1032,7 @@ export type RepositoryUncheckedCreateWithoutInstallationInput = {
   isWebhookActive?: boolean
   ownerId: string
   workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutRepositoryInput
+  webhookEvents?: Prisma.WebhookEventUncheckedCreateNestedManyWithoutRepositoryInput
 }
 
 export type RepositoryCreateOrConnectWithoutInstallationInput = {
@@ -1051,6 +1083,7 @@ export type RepositoryCreateWithoutWorkflowRunsInput = {
   isWebhookActive?: boolean
   installation: Prisma.InstallationCreateNestedOneWithoutRepositoriesInput
   owner: Prisma.UserCreateNestedOneWithoutRepositoriesInput
+  webhookEvents?: Prisma.WebhookEventCreateNestedManyWithoutRepositoryInput
 }
 
 export type RepositoryUncheckedCreateWithoutWorkflowRunsInput = {
@@ -1075,6 +1108,7 @@ export type RepositoryUncheckedCreateWithoutWorkflowRunsInput = {
   webhookId?: number | null
   isWebhookActive?: boolean
   ownerId: string
+  webhookEvents?: Prisma.WebhookEventUncheckedCreateNestedManyWithoutRepositoryInput
 }
 
 export type RepositoryCreateOrConnectWithoutWorkflowRunsInput = {
@@ -1115,6 +1149,7 @@ export type RepositoryUpdateWithoutWorkflowRunsInput = {
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   installation?: Prisma.InstallationUpdateOneRequiredWithoutRepositoriesNestedInput
   owner?: Prisma.UserUpdateOneRequiredWithoutRepositoriesNestedInput
+  webhookEvents?: Prisma.WebhookEventUpdateManyWithoutRepositoryNestedInput
 }
 
 export type RepositoryUncheckedUpdateWithoutWorkflowRunsInput = {
@@ -1139,6 +1174,123 @@ export type RepositoryUncheckedUpdateWithoutWorkflowRunsInput = {
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  webhookEvents?: Prisma.WebhookEventUncheckedUpdateManyWithoutRepositoryNestedInput
+}
+
+export type RepositoryCreateWithoutWebhookEventsInput = {
+  id?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  githubRepositoryId: number
+  repositoryOwner: string
+  name: string
+  fullName: string
+  defaultBranch?: string
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
+  docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
+  webhookId?: number | null
+  isWebhookActive?: boolean
+  installation: Prisma.InstallationCreateNestedOneWithoutRepositoriesInput
+  owner: Prisma.UserCreateNestedOneWithoutRepositoriesInput
+  workflowRuns?: Prisma.WorkflowRunCreateNestedManyWithoutRepositoryInput
+}
+
+export type RepositoryUncheckedCreateWithoutWebhookEventsInput = {
+  id?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  githubRepositoryId: number
+  installationId: string
+  repositoryOwner: string
+  name: string
+  fullName: string
+  defaultBranch?: string
+  private?: boolean
+  description?: string | null
+  language?: string | null
+  cloneUrl: string
+  htmlUrl: string
+  visibility: string
+  isActive?: boolean
+  lastSyncedAt?: Date | string | null
+  docPaths?: Prisma.RepositoryCreatedocPathsInput | string[]
+  webhookId?: number | null
+  isWebhookActive?: boolean
+  ownerId: string
+  workflowRuns?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutRepositoryInput
+}
+
+export type RepositoryCreateOrConnectWithoutWebhookEventsInput = {
+  where: Prisma.RepositoryWhereUniqueInput
+  create: Prisma.XOR<Prisma.RepositoryCreateWithoutWebhookEventsInput, Prisma.RepositoryUncheckedCreateWithoutWebhookEventsInput>
+}
+
+export type RepositoryUpsertWithoutWebhookEventsInput = {
+  update: Prisma.XOR<Prisma.RepositoryUpdateWithoutWebhookEventsInput, Prisma.RepositoryUncheckedUpdateWithoutWebhookEventsInput>
+  create: Prisma.XOR<Prisma.RepositoryCreateWithoutWebhookEventsInput, Prisma.RepositoryUncheckedCreateWithoutWebhookEventsInput>
+  where?: Prisma.RepositoryWhereInput
+}
+
+export type RepositoryUpdateToOneWithWhereWithoutWebhookEventsInput = {
+  where?: Prisma.RepositoryWhereInput
+  data: Prisma.XOR<Prisma.RepositoryUpdateWithoutWebhookEventsInput, Prisma.RepositoryUncheckedUpdateWithoutWebhookEventsInput>
+}
+
+export type RepositoryUpdateWithoutWebhookEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
+  webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  installation?: Prisma.InstallationUpdateOneRequiredWithoutRepositoriesNestedInput
+  owner?: Prisma.UserUpdateOneRequiredWithoutRepositoriesNestedInput
+  workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutRepositoryNestedInput
+}
+
+export type RepositoryUncheckedUpdateWithoutWebhookEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  githubRepositoryId?: Prisma.IntFieldUpdateOperationsInput | number
+  installationId?: Prisma.StringFieldUpdateOperationsInput | string
+  repositoryOwner?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  fullName?: Prisma.StringFieldUpdateOperationsInput | string
+  defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  private?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  cloneUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  htmlUrl?: Prisma.StringFieldUpdateOperationsInput | string
+  visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  lastSyncedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  docPaths?: Prisma.RepositoryUpdatedocPathsInput | string[]
+  webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  ownerId?: Prisma.StringFieldUpdateOperationsInput | string
+  workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutRepositoryNestedInput
 }
 
 export type RepositoryCreateManyOwnerInput = {
@@ -1186,6 +1338,7 @@ export type RepositoryUpdateWithoutOwnerInput = {
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   installation?: Prisma.InstallationUpdateOneRequiredWithoutRepositoriesNestedInput
   workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutRepositoryNestedInput
+  webhookEvents?: Prisma.WebhookEventUpdateManyWithoutRepositoryNestedInput
 }
 
 export type RepositoryUncheckedUpdateWithoutOwnerInput = {
@@ -1210,6 +1363,7 @@ export type RepositoryUncheckedUpdateWithoutOwnerInput = {
   webhookId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutRepositoryNestedInput
+  webhookEvents?: Prisma.WebhookEventUncheckedUpdateManyWithoutRepositoryNestedInput
 }
 
 export type RepositoryUncheckedUpdateManyWithoutOwnerInput = {
@@ -1280,6 +1434,7 @@ export type RepositoryUpdateWithoutInstallationInput = {
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   owner?: Prisma.UserUpdateOneRequiredWithoutRepositoriesNestedInput
   workflowRuns?: Prisma.WorkflowRunUpdateManyWithoutRepositoryNestedInput
+  webhookEvents?: Prisma.WebhookEventUpdateManyWithoutRepositoryNestedInput
 }
 
 export type RepositoryUncheckedUpdateWithoutInstallationInput = {
@@ -1304,6 +1459,7 @@ export type RepositoryUncheckedUpdateWithoutInstallationInput = {
   isWebhookActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
   ownerId?: Prisma.StringFieldUpdateOperationsInput | string
   workflowRuns?: Prisma.WorkflowRunUncheckedUpdateManyWithoutRepositoryNestedInput
+  webhookEvents?: Prisma.WebhookEventUncheckedUpdateManyWithoutRepositoryNestedInput
 }
 
 export type RepositoryUncheckedUpdateManyWithoutInstallationInput = {
@@ -1336,10 +1492,12 @@ export type RepositoryUncheckedUpdateManyWithoutInstallationInput = {
 
 export type RepositoryCountOutputType = {
   workflowRuns: number
+  webhookEvents: number
 }
 
 export type RepositoryCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workflowRuns?: boolean | RepositoryCountOutputTypeCountWorkflowRunsArgs
+  webhookEvents?: boolean | RepositoryCountOutputTypeCountWebhookEventsArgs
 }
 
 /**
@@ -1357,6 +1515,13 @@ export type RepositoryCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.E
  */
 export type RepositoryCountOutputTypeCountWorkflowRunsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.WorkflowRunWhereInput
+}
+
+/**
+ * RepositoryCountOutputType without action
+ */
+export type RepositoryCountOutputTypeCountWebhookEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WebhookEventWhereInput
 }
 
 
@@ -1385,6 +1550,7 @@ export type RepositorySelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   workflowRuns?: boolean | Prisma.Repository$workflowRunsArgs<ExtArgs>
+  webhookEvents?: boolean | Prisma.Repository$webhookEventsArgs<ExtArgs>
   _count?: boolean | Prisma.RepositoryCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["repository"]>
 
@@ -1469,6 +1635,7 @@ export type RepositoryInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   workflowRuns?: boolean | Prisma.Repository$workflowRunsArgs<ExtArgs>
+  webhookEvents?: boolean | Prisma.Repository$webhookEventsArgs<ExtArgs>
   _count?: boolean | Prisma.RepositoryCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type RepositoryIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1486,6 +1653,7 @@ export type $RepositoryPayload<ExtArgs extends runtime.Types.Extensions.Internal
     installation: Prisma.$InstallationPayload<ExtArgs>
     owner: Prisma.$UserPayload<ExtArgs>
     workflowRuns: Prisma.$WorkflowRunPayload<ExtArgs>[]
+    webhookEvents: Prisma.$WebhookEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1906,6 +2074,7 @@ export interface Prisma__RepositoryClient<T, Null = never, ExtArgs extends runti
   installation<T extends Prisma.InstallationDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.InstallationDefaultArgs<ExtArgs>>): Prisma.Prisma__InstallationClient<runtime.Types.Result.GetResult<Prisma.$InstallationPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   workflowRuns<T extends Prisma.Repository$workflowRunsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Repository$workflowRunsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  webhookEvents<T extends Prisma.Repository$webhookEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Repository$webhookEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WebhookEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2378,6 +2547,30 @@ export type Repository$workflowRunsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.WorkflowRunScalarFieldEnum | Prisma.WorkflowRunScalarFieldEnum[]
+}
+
+/**
+ * Repository.webhookEvents
+ */
+export type Repository$webhookEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WebhookEvent
+   */
+  select?: Prisma.WebhookEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WebhookEvent
+   */
+  omit?: Prisma.WebhookEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WebhookEventInclude<ExtArgs> | null
+  where?: Prisma.WebhookEventWhereInput
+  orderBy?: Prisma.WebhookEventOrderByWithRelationInput | Prisma.WebhookEventOrderByWithRelationInput[]
+  cursor?: Prisma.WebhookEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WebhookEventScalarFieldEnum | Prisma.WebhookEventScalarFieldEnum[]
 }
 
 /**
