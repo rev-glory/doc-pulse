@@ -21,6 +21,7 @@ describe('RepositoryCloneService', () => {
   let service: RepositoryCloneService;
   let mockWorkspaceService: any;
   let mockGitService: any;
+  let mockLockService: any;
 
   beforeEach(() => {
     mockWorkspaceService = {
@@ -28,6 +29,7 @@ describe('RepositoryCloneService', () => {
       getWorkspacePath: mock.fn(() => '/tmp/repo/workspace'),
       getRepositoryPath: mock.fn(() => '/tmp/repo'),
       getArtifactsPath: mock.fn(() => '/tmp/repo/artifacts'),
+      getClonePath: mock.fn(() => '/tmp/repo'),
       repositoryExists: mock.fn(),
       cleanupWorkspace: mock.fn(),
       removeRepository: mock.fn(),
@@ -38,9 +40,17 @@ describe('RepositoryCloneService', () => {
       fetch: mock.fn(),
       pull: mock.fn(),
       checkout: mock.fn(),
+      resetHard: mock.fn(),
+      clean: mock.fn(),
+      currentBranch: mock.fn(),
+      status: mock.fn(),
     };
 
-    service = new RepositoryCloneService(mockWorkspaceService, mockGitService);
+    mockLockService = {
+      acquireLock: mock.fn(async () => () => {}),
+    };
+
+    service = new RepositoryCloneService(mockWorkspaceService, mockGitService, mockLockService);
   });
 
   it('should be defined', () => {

@@ -4,31 +4,36 @@ import { ConfigService } from '@nestjs/config';
 
 import { GitService } from '@/modules/git-operations/services/git.service';
 
-// Mock simple-git
-const mockSimpleGit = {
-  clone: mock.fn(),
-  fetch: mock.fn(),
-  pull: mock.fn(),
-  checkout: mock.fn(),
-  branch: mock.fn(() => ({ current: 'main' })),
-  revparse: mock.fn(() => 'abc123'),
-};
+// Create a testable GitService that lets us override createGitClient
+class TestableGitService extends GitService {
+  private mockGit: Record<string, any>;
 
-mock.module('simple-git', () => ({
-  default: mock.fn(() => mockSimpleGit),
-}));
+  constructor(configService: ConfigService, mockGit: Record<string, any>) {
+    super(configService);
+    this.mockGit = mockGit;
+  }
+
+  protected override createGitClient(): any {
+    return this.mockGit;
+  }
+}
 
 describe('GitService', () => {
   let service: GitService;
+  let mockGit: Record<string, any>;
 
   beforeEach(() => {
-    // Reset mocks
-    mockSimpleGit.clone.mock.resetCalls();
-    mockSimpleGit.fetch.mock.resetCalls();
-    mockSimpleGit.pull.mock.resetCalls();
-    mockSimpleGit.checkout.mock.resetCalls();
-    mockSimpleGit.branch.mock.resetCalls();
-    mockSimpleGit.revparse.mock.resetCalls();
+    mockGit = {
+      clone: mock.fn(),
+      fetch: mock.fn(),
+      pull: mock.fn(),
+      checkout: mock.fn(),
+      branch: mock.fn(() => ({ current: 'main' })),
+      revparse: mock.fn(() => 'abc123'),
+      reset: mock.fn(),
+      clean: mock.fn(),
+      status: mock.fn(() => ({})),
+    };
 
     const configService = {
       getOrThrow: mock.fn(() => ({
@@ -36,7 +41,7 @@ describe('GitService', () => {
       })),
     } as any;
 
-    service = new GitService(configService);
+    service = new TestableGitService(configService, mockGit);
   });
 
   it('should be defined', () => {
@@ -46,28 +51,28 @@ describe('GitService', () => {
   describe('clone', () => {
     it('should call simple-git clone with correct parameters', async () => {
       await service.clone('https://github.com/test/repo.git', '/tmp/dest');
-      assert(mockSimpleGit.clone.mock.calls.length === 1);
+      assert(mockGit.clone.mock.calls.length === 1);
     });
   });
 
   describe('fetch', () => {
     it('should call simple-git fetch', async () => {
       await service.fetch('/tmp/repo');
-      assert(mockSimpleGit.fetch.mock.calls.length === 1);
+      assert(mockGit.fetch.mock.calls.length === 1);
     });
   });
 
   describe('pull', () => {
     it('should call simple-git pull', async () => {
       await service.pull('/tmp/repo');
-      assert(mockSimpleGit.pull.mock.calls.length === 1);
+      assert(mockGit.pull.mock.calls.length === 1);
     });
   });
 
   describe('checkout', () => {
     it('should call simple-git checkout with ref', async () => {
       await service.checkout('/tmp/repo', 'feature-branch');
-      assert(mockSimpleGit.checkout.mock.calls.length === 1);
+      assert(mockGit.checkout.mock.calls.length === 1);
     });
   });
 
@@ -82,6 +87,27 @@ describe('GitService', () => {
     it('should return current commit', async () => {
       const commit = await service.currentCommit('/tmp/repo');
       assert(commit === 'abc123');
+    });
+  });
+
+  describe('resetHard', () => {
+    it('should call simple-git reset', async () => {
+      await service.resetHard('/tmp/repo');
+      assert(mockGit.reset.mock.calls.length === 1);
+    });
+  });
+
+  describe('clean', () => {
+    it('should call simple-git clean', async () => {
+      await service.clean('/tmp/repo');
+      assert(mockGit.clean.mock.calls.length === 1);
+    });
+  });
+
+  describe('status', () => {
+    it('should call simple-git status', async () => {
+      await service.status('/tmp/repo');
+      assert(mockGit.status.mock.calls.length === 1);
     });
   });
 });

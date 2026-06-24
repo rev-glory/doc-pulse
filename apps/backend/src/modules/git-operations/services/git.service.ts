@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as path from 'path';
+import * as fs from 'fs/promises';
 import simpleGit, { SimpleGit, SimpleGitOptions } from 'simple-git';
 
 import type { StorageConfig } from '@/config';
@@ -15,7 +16,7 @@ export class GitService {
     this.gitTimeoutMs = storageConfig.gitTimeoutMs;
   }
 
-  private createGitClient(baseDir: string): SimpleGit {
+  protected createGitClient(baseDir: string): SimpleGit {
     const options: Partial<SimpleGitOptions> = {
       baseDir,
       binary: 'git',
@@ -72,5 +73,34 @@ export class GitService {
   async currentCommit(repositoryPath: string): Promise<string> {
     const git = this.createGitClient(repositoryPath);
     return git.revparse('HEAD');
+  }
+
+  async resetHard(repositoryPath: string, ref?: string): Promise<void> {
+    const startTime = Date.now();
+    this.logger.debug(`Resetting repository at ${repositoryPath} hard to ${ref || 'HEAD'}`);
+    const git = this.createGitClient(repositoryPath);
+    await git.reset(['--hard', ref || 'HEAD']);
+    const duration = Date.now() - startTime;
+    this.logger.log(`Reset repository at ${repositoryPath} hard (${duration}ms)`);
+  }
+
+  async clean(repositoryPath: string): Promise<void> {
+    const startTime = Date.now();
+    this.logger.debug(`Cleaning untracked files in repository at ${repositoryPath}`);
+    const git = this.createGitClient(repositoryPath);
+    await git.clean('f', ['-d']);
+    const duration = Date.now() - startTime;
+    this.logger.log(`Cleaned untracked files in repository at ${repositoryPath} (${duration}ms)`);
+  }
+
+  async status(repositoryPath: string): Promise<ReturnType<SimpleGit['status']>> {
+    const git = this.createGitClient(repositoryPath);
+    return git.status();
+  }
+
+  async delete(repositoryPath: string): Promise<void> {
+    this.logger.debug(`Deleting repository at ${repositoryPath}`);
+    await fs.rm(repositoryPath, { recursive: true, force: true });
+    this.logger.log(`Deleted repository at ${repositoryPath}`);
   }
 }

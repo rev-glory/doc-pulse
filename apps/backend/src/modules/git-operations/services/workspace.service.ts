@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
@@ -7,14 +7,34 @@ import type { StorageConfig } from '@/config';
 import type { RepositoryWorkspace } from '../types';
 
 @Injectable()
-export class WorkspaceService {
+export class WorkspaceService implements OnModuleInit {
   private readonly logger = new Logger(WorkspaceService.name);
   private readonly storageConfig: StorageConfig;
   private readonly resolvedStorageRoot: string;
+  private readonly resolvedClonesDir: string;
 
   constructor(private readonly configService: ConfigService) {
     this.storageConfig = this.configService.getOrThrow<StorageConfig>('storage');
     this.resolvedStorageRoot = path.resolve(process.cwd(), this.storageConfig.root);
+    this.resolvedClonesDir = path.join(this.resolvedStorageRoot, this.storageConfig.clonesDir);
+  }
+
+  async onModuleInit(): Promise<void> {
+    await this.initializeStorage();
+  }
+
+  async initializeStorage(): Promise<void> {
+    const directories = [
+      this.resolvedStorageRoot,
+      this.resolvedClonesDir,
+    ];
+
+    for (const dir of directories) {
+      await fs.mkdir(dir, { recursive: true });
+      this.logger.debug(`Ensured storage directory: ${dir}`);
+    }
+
+    this.logger.log('Storage directories initialized successfully');
   }
 
   getWorkspace(repositoryId: string): RepositoryWorkspace {
@@ -28,10 +48,13 @@ export class WorkspaceService {
 
   getRepositoryPath(repositoryId: string): string {
     return path.join(
-      this.resolvedStorageRoot,
-      this.storageConfig.clonesDir,
+      this.resolvedClonesDir,
       repositoryId,
     );
+  }
+
+  getClonePath(repositoryId: string): string {
+    return this.getRepositoryPath(repositoryId);
   }
 
   getWorkspacePath(repositoryId: string): string {
@@ -71,6 +94,17 @@ export class WorkspaceService {
       this.logger.log(`Removed repository ${repositoryId} from storage`);
     } catch {
       this.logger.debug(`Repository ${repositoryId} not found, nothing to remove`);
+    }
+  }
+
+  async clearWorkspace(): Promise<void> {
+    try {
+      await fs.access(this.resolvedClonesDir);
+      await fs.rm(this.resolvedClonesDir, { recursive: true, force: true });
+      await fs.mkdir(this.resolvedClonesDir, { recursive: true });
+      this.logger.log('Cleared all workspaces');
+    } catch {
+      this.logger.debug('Clones directory does not exist, nothing to clear');
     }
   }
 
