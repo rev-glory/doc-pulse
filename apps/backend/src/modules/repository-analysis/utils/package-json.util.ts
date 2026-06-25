@@ -1,11 +1,11 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { Dependencies, Scripts } from '../interfaces/repository-analysis.interface';
+import { Dependency, DependencyType } from '../../../domain/repository';
 
 export async function parsePackageJson(rootPath: string): Promise<{
   name: string;
-  dependencies: Dependencies;
-  scripts: Scripts;
+  dependencies: Dependency[];
+  scripts: Record<string, string>;
 } | null> {
   try {
     const packageJsonPath = path.join(rootPath, 'package.json');
@@ -14,11 +14,23 @@ export async function parsePackageJson(rootPath: string): Promise<{
 
     return {
       name: parsed.name || path.basename(rootPath),
-      dependencies: {
-        production: parsed.dependencies || {},
-        development: parsed.devDependencies || {},
-        peer: parsed.peerDependencies || {},
-      },
+      dependencies: [
+        ...Object.entries(parsed.dependencies || {}).map(([name, version]) => ({
+          name,
+          version: String(version),
+          type: DependencyType.dependency,
+        })),
+        ...Object.entries(parsed.devDependencies || {}).map(([name, version]) => ({
+          name,
+          version: String(version),
+          type: DependencyType.devDependency,
+        })),
+        ...Object.entries(parsed.peerDependencies || {}).map(([name, version]) => ({
+          name,
+          version: String(version),
+          type: DependencyType.peerDependency,
+        })),
+      ],
       scripts: parsed.scripts || {},
     };
   } catch (error) {

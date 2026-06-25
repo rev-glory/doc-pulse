@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
-import { RepositoryMetadata, RepositoryMetrics } from '../interfaces/repository-analysis.interface';
+import { RepositorySummary, RepositoryMetrics } from '../../../domain/repository';
 import { parsePackageJson } from '../utils/package-json.util';
 import {
   detectLanguages,
@@ -27,7 +27,7 @@ import { REPOSITORY_ANALYSIS_CONSTANTS } from '../constants/repository-analysis.
 export class RepositoryAnalysisService {
   private readonly logger = new Logger(RepositoryAnalysisService.name);
 
-  public async analyzeRepository(rootPath: string): Promise<RepositoryMetadata> {
+  public async analyzeRepository(rootPath: string): Promise<RepositorySummary> {
     this.logger.debug(`Starting analysis for repository at: ${rootPath}`);
 
     // Verify root path exists
@@ -41,7 +41,7 @@ export class RepositoryAnalysisService {
     }
 
     const packageJsonData = await parsePackageJson(rootPath);
-    const dependencies = packageJsonData?.dependencies || { production: {}, development: {}, peer: {} };
+    const dependencies = packageJsonData?.dependencies || [];
     const scripts = packageJsonData?.scripts || {};
     const name = packageJsonData?.name || path.basename(rootPath);
 
@@ -91,9 +91,9 @@ export class RepositoryAnalysisService {
       testFrameworks,
       dependencies,
       scripts,
-      monorepoTools: monorepoData.tools,
-      dockerFiles,
-      ciCdFiles,
+      workspaceType: monorepoData.isMonorepo ? monorepoData.tools[0] || 'unknown' : null,
+      dockerSupport: dockerFiles,
+      ciCdSupport: ciCdFiles,
       documentation,
       environmentFiles,
       apiSpecifications,

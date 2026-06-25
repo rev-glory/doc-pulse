@@ -1,6 +1,6 @@
 import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
-import { Dependencies } from '../interfaces/repository-analysis.interface';
+import { Dependency } from '../../../domain/repository';
 import { REPOSITORY_ANALYSIS_CONSTANTS } from '../constants/repository-analysis.constants';
 
 export async function detectLanguages(rootPath: string): Promise<string[]> {
@@ -27,13 +27,12 @@ export async function detectLanguages(rootPath: string): Promise<string[]> {
   return Array.from(detectedLanguages);
 }
 
-export function detectFrameworks(dependencies: Dependencies): string[] {
+export function detectFrameworks(dependencies: Dependency[]): string[] {
   const frameworks: string[] = [];
-  const allDeps = { ...dependencies.production, ...dependencies.development, ...dependencies.peer };
 
   for (const fw of REPOSITORY_ANALYSIS_CONSTANTS.FRAMEWORKS) {
     if (fw.packages) {
-      const hasPackage = fw.packages.some((pkg) => allDeps[pkg]);
+      const hasPackage = fw.packages.some((pkg) => dependencies.some(d => d.name === pkg));
       if (hasPackage) {
         frameworks.push(fw.name);
       }
@@ -43,13 +42,12 @@ export function detectFrameworks(dependencies: Dependencies): string[] {
   return frameworks;
 }
 
-export function detectBuildTools(dependencies: Dependencies): string[] {
+export function detectBuildTools(dependencies: Dependency[]): string[] {
   const tools: string[] = [];
-  const allDeps = { ...dependencies.production, ...dependencies.development, ...dependencies.peer };
 
   for (const tool of REPOSITORY_ANALYSIS_CONSTANTS.BUILD_TOOLS) {
     if (tool.packages) {
-      const hasPackage = tool.packages.some((pkg) => allDeps[pkg]);
+      const hasPackage = tool.packages.some((pkg) => dependencies.some(d => d.name === pkg));
       if (hasPackage) {
         tools.push(tool.name);
       }
@@ -59,13 +57,12 @@ export function detectBuildTools(dependencies: Dependencies): string[] {
   return tools;
 }
 
-export function detectTestFrameworks(dependencies: Dependencies): string[] {
+export function detectTestFrameworks(dependencies: Dependency[]): string[] {
   const tests: string[] = [];
-  const allDeps = { ...dependencies.production, ...dependencies.development, ...dependencies.peer };
 
   for (const test of REPOSITORY_ANALYSIS_CONSTANTS.TEST_FRAMEWORKS) {
     if (test.packages) {
-      const hasPackage = test.packages.some((pkg) => allDeps[pkg]);
+      const hasPackage = test.packages.some((pkg) => dependencies.some(d => d.name === pkg));
       if (hasPackage) {
         tests.push(test.name);
       }
