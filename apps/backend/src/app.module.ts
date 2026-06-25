@@ -26,7 +26,7 @@ import { RepositoriesModule } from './modules/repositories/repositories.module';
 import { GitOperationsModule } from './modules/git-operations';
 import { RepositoryAnalysisModule } from './modules/repository-analysis/repository-analysis.module';
 import { WorkflowModule } from './modules/workflow';
-// TODO(queue-infrastructure): Re-add QueueModule import once the Queue module is implemented.
+import { QueueModule } from './modules/queue/queue.module';
 
 @Module({
   imports: [
@@ -63,7 +63,7 @@ import { WorkflowModule } from './modules/workflow';
 
     AiModule,
     PrismaModule,
-    // TODO(queue-infrastructure): Re-add QueueModule here once implemented.
+    QueueModule,
     HealthModule,
     AuthModule,
     UsersModule,

@@ -21,6 +21,7 @@ export const QUEUE_NAMES = {
   DOCUMENTATION_SYNC: 'documentation-sync',
   PR_CREATION: 'pr-creation',
   NOTIFICATIONS: 'notifications',
+  WORKFLOW_EXECUTION: 'workflow-execution',
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
