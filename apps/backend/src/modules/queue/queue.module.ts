@@ -2,11 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { BullModule } from '@nestjs/bullmq';
 
-import { WORKFLOW_EXECUTION_QUEUE } from './constants/queue.constants';
+import { WORKFLOW_EXECUTION_QUEUE, WORKFLOW_DLQ_QUEUE } from './constants/queue.constants';
 import { WorkflowQueueService } from './services/workflow-queue.service';
 import { WorkflowProcessor } from './processors/workflow.processor';
+import { QueueMetricsService } from './services/queue-metrics.service';
+import { QueueProgressPublisherService } from './services/queue-progress-publisher.service';
+import { DeadLetterService } from './dead-letter/dead-letter.service';
+import { DeadLetterProcessor } from './dead-letter/dead-letter.processor';
 import { WorkflowModule } from '../workflow/workflow.module';
 import type { RedisConfig } from '../../config/redis.config';
+import type { QueueConfig } from '../../config/queue.config';
 
 @Module({
   imports: [
@@ -42,11 +47,41 @@ import type { RedisConfig } from '../../config/redis.config';
         }
       },
     }),
-    BullModule.registerQueue({
+    BullModule.registerQueueAsync({
       name: WORKFLOW_EXECUTION_QUEUE,
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const queueCfg = configService.get<QueueConfig>('queue');
+        return {
+          defaultJobOptions: queueCfg
+            ? {
+                attempts: queueCfg.maxRetries,
+                backoff: queueCfg.backoff,
+                removeOnComplete: queueCfg.removeOnComplete,
+                removeOnFail: queueCfg.removeOnFail,
+              }
+            : undefined,
+        };
+      },
+    }),
+    BullModule.registerQueue({
+      name: WORKFLOW_DLQ_QUEUE,
     }),
   ],
-  providers: [WorkflowQueueService, WorkflowProcessor],
-  exports: [WorkflowQueueService, BullModule],
+  providers: [
+    WorkflowQueueService,
+    WorkflowProcessor,
+    QueueMetricsService,
+    QueueProgressPublisherService,
+    DeadLetterService,
+    DeadLetterProcessor,
+  ],
+  exports: [
+    WorkflowQueueService,
+    QueueMetricsService,
+    QueueProgressPublisherService,
+    DeadLetterService,
+    BullModule,
+  ],
 })
 export class QueueModule {}

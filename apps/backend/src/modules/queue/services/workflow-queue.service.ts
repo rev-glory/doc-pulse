@@ -1,9 +1,11 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, Optional } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectQueue } from '@nestjs/bullmq';
 import type { Queue } from 'bullmq';
 
 import { RUN_WORKFLOW_JOB, WORKFLOW_EXECUTION_QUEUE } from '../constants/queue.constants';
 import type { WorkflowJobPayload } from '../interfaces/workflow-job.interface';
+import type { QueueConfig } from '../../../config/queue.config';
 
 export interface EnqueuedJobMetadata {
   id: string;
@@ -19,6 +21,7 @@ export class WorkflowQueueService {
   constructor(
     @InjectQueue(WORKFLOW_EXECUTION_QUEUE)
     private readonly workflowQueue: Queue<WorkflowJobPayload>,
+    @Optional() private readonly configService?: ConfigService,
   ) {}
 
   /**
@@ -27,7 +30,17 @@ export class WorkflowQueueService {
   public async enqueueWorkflow(payload: WorkflowJobPayload): Promise<EnqueuedJobMetadata> {
     this.validatePayload(payload);
 
-    const job = await this.workflowQueue.add(RUN_WORKFLOW_JOB, payload);
+    const queueCfg = this.configService?.get<QueueConfig>('queue');
+    const jobOptions = queueCfg
+      ? {
+          attempts: queueCfg.maxRetries,
+          backoff: queueCfg.backoff,
+          removeOnComplete: queueCfg.removeOnComplete,
+          removeOnFail: queueCfg.removeOnFail,
+        }
+      : undefined;
+
+    const job = await this.workflowQueue.add(RUN_WORKFLOW_JOB, payload, jobOptions);
 
     const jobId = job.id ?? 'unknown';
 

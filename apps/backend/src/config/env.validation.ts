@@ -91,6 +91,15 @@ const envSchema = z.object({
   QUEUE_CONCURRENCY: z.coerce.number().int().min(1).max(50).default(5),
   QUEUE_MAX_RETRIES: z.coerce.number().int().min(0).max(10).default(3),
   QUEUE_RETRY_DELAY_MS: z.coerce.number().int().min(0).default(5000),
+  QUEUE_BACKOFF_TYPE: z.enum(['exponential', 'fixed']).default('exponential'),
+  QUEUE_BACKOFF_MULTIPLIER: z.coerce.number().min(1).default(2),
+  QUEUE_RETRY_JITTER: z.coerce.number().min(0).max(1).default(0.2),
+  QUEUE_STALLED_INTERVAL_MS: z.coerce.number().int().min(1000).default(30000),
+  QUEUE_MAX_STALLED_COUNT: z.coerce.number().int().min(1).default(1),
+  QUEUE_REMOVE_ON_COMPLETE_COUNT: z.coerce.number().int().min(0).default(100),
+  QUEUE_REMOVE_ON_FAIL_COUNT: z.coerce.number().int().min(0).default(500),
+  QUEUE_RATE_LIMIT_MAX: z.coerce.number().int().min(1).optional(),
+  QUEUE_RATE_LIMIT_DURATION_MS: z.coerce.number().int().min(100).default(1000),
 
   // ── Workflow Orchestration (LangGraph) ────────────────────────────────────
   WORKFLOW_MIN_DOC_SCORE: z.coerce.number().int().min(0).max(100).default(80),

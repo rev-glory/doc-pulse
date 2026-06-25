@@ -14,6 +14,10 @@ async function bootstrap() {
   // Required by GitHubWebhooksController to verify HMAC-SHA256 signatures.
   const app = await NestFactory.create(AppModule, { rawBody: true });
 
+  // Enable NestJS lifecycle hooks (OnApplicationShutdown, OnModuleDestroy)
+  // Ensures BullMQ workers safely stop fetching jobs and wait for active jobs to finish.
+  app.enableShutdownHooks();
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
