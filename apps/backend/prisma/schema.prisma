@@ -100,6 +100,16 @@ model WorkflowRun {
   errorMessage      String?        @map("error_message")
   repositoryId      String         @map("repository_id")
   triggeredById     String?        @map("triggered_by_id")
+
+  // Checkpoint persistence & recovery fields
+  version           Int            @default(1)
+  currentNode       String?        @map("current_node")
+  currentStage      WorkflowStage? @map("current_stage")
+  checkpointSnapshot Json?         @map("checkpoint_snapshot")
+  nodeRetries       Json           @default("{}") @map("node_retries")
+  lastError         Json?          @map("last_error")
+  executionMetadata Json           @default("{}") @map("execution_metadata")
+
   notifications     Notification[]
   pullRequest       PullRequest?
   review            Review?
@@ -163,18 +173,25 @@ model Notification {
   @@map("notifications")
 }
 
-/// Pipeline execution statuses — drives dashboard display and routing logic.
+/// Pipeline overall lifecycle status.
 enum RunStatus {
   QUEUED
+  RUNNING
+  CHECKPOINTED
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+/// Pipeline granular execution stage.
+enum WorkflowStage {
   CLONING
   ANALYZING
+  LOCATING_DOCUMENTATION
   WRITING
   REVIEWING
-  AWAITING_REVIEW
-  CREATING_PR
-  COMPLETED
-  REJECTED
-  FAILED
+  CREATING_PULL_REQUEST
+  FINISHED
 }
 
 /// Human review decision states.

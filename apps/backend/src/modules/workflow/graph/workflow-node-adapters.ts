@@ -4,7 +4,8 @@ import { DocumentationLocatorNode } from '../nodes/documentation-locator.node';
 import { TechnicalWriterNode } from '../nodes/technical-writer.node';
 import { DocumentationCriticNode } from '../nodes/documentation-critic.node';
 import { WorkflowGraphState, WorkflowGraphUpdate, WorkflowError } from './graph.types';
-import { WorkflowStatus } from '../../../domain/workflow';
+import { WorkflowNodeExecutionWrapper, ExecutionContextRef } from './workflow-node-execution.wrapper';
+import { WorkflowNodeName, WorkflowStage, WorkflowStatus } from '../../../domain/workflow';
 
 export class WorkflowNodeExecutionException extends Error {
   constructor(
@@ -17,158 +18,123 @@ export class WorkflowNodeExecutionException extends Error {
   }
 }
 
+export interface ActiveRunOrchestrationContext extends ExecutionContextRef {
+  firstNodeToExecute: WorkflowNodeName;
+}
+
 @Injectable()
 export class WorkflowNodeAdapters {
   private readonly logger = new Logger(WorkflowNodeAdapters.name);
+  private readonly activeContexts = new Map<string, ActiveRunOrchestrationContext>();
+
+  private readonly sequentialOrder: WorkflowNodeName[] = [
+    WorkflowNodeName.RepositoryAnalyzer,
+    WorkflowNodeName.DocumentationLocator,
+    WorkflowNodeName.TechnicalWriter,
+    WorkflowNodeName.DocumentationCritic,
+    WorkflowNodeName.PullRequestGenerator,
+  ];
 
   constructor(
     private readonly repositoryAnalyzer: RepositoryAnalyzerNode,
     private readonly documentationLocator: DocumentationLocatorNode,
     private readonly technicalWriter: TechnicalWriterNode,
     private readonly documentationCritic: DocumentationCriticNode,
+    private readonly wrapper: WorkflowNodeExecutionWrapper,
   ) {}
 
-  private emitTransitionLog(
-    runId: string | undefined,
-    node: string,
-    status: WorkflowStatus,
-    durationMs: number,
-  ): void {
-    this.logger.log({
-      runId: runId ?? 'unknown',
-      node,
-      status,
-      durationMs,
-    });
+  public registerExecutionContext(runId: string, context: ActiveRunOrchestrationContext): void {
+    this.activeContexts.set(runId, context);
+  }
+
+  public clearExecutionContext(runId: string): void {
+    this.activeContexts.delete(runId);
+  }
+
+  /**
+   * Determines if a node should be skipped during recovery because it precedes firstNodeToExecute.
+   */
+  private shouldSkip(runId: string | undefined, nodeName: WorkflowNodeName): boolean {
+    if (!runId) return false;
+    const context = this.activeContexts.get(runId);
+    if (!context) return false;
+
+    const targetIndex = this.sequentialOrder.indexOf(context.firstNodeToExecute);
+    const currentIndex = this.sequentialOrder.indexOf(nodeName);
+
+    return currentIndex < targetIndex;
+  }
+
+  private getOrchestrationContext(runId: string): ActiveRunOrchestrationContext {
+    const ctx = this.activeContexts.get(runId);
+    if (!ctx) {
+      throw new Error(`Orchestration context missing for run [${runId}]`);
+    }
+    return ctx;
   }
 
   public async repositoryAnalyzerStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
-    const start = Date.now();
-    try {
-      const updated = await this.repositoryAnalyzer.invoke(
-        state as unknown as Parameters<RepositoryAnalyzerNode['invoke']>[0],
-      );
-      const durationMs = Date.now() - start;
-      this.emitTransitionLog(state.runId, 'RepositoryAnalyzer', WorkflowStatus.Running, durationMs);
-
-      return {
-        ...updated,
-        currentNode: 'RepositoryAnalyzer',
-        executionStatus: WorkflowStatus.Running,
-      };
-    } catch (error: unknown) {
-      const durationMs = Date.now() - start;
-      this.emitTransitionLog(state.runId, 'RepositoryAnalyzer', WorkflowStatus.Failed, durationMs);
-      const cause = error instanceof Error ? error : new Error(String(error));
-      const wfError: WorkflowError = {
-        node: 'RepositoryAnalyzer',
-        message: cause.message,
-        stack: cause.stack,
-        timestamp: new Date().toISOString(),
-      };
-      throw new WorkflowNodeExecutionException('RepositoryAnalyzer', cause, wfError);
+    const nodeName = WorkflowNodeName.RepositoryAnalyzer;
+    if (this.shouldSkip(state.runId, nodeName)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.ANALYZING, state, ctx, async (st) =>
+      this.repositoryAnalyzer.invoke(st as any),
+    );
   }
 
   public async documentationLocatorStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
-    const start = Date.now();
-    try {
-      const updated = await this.documentationLocator.invoke(
-        state as unknown as Parameters<DocumentationLocatorNode['invoke']>[0],
-      );
-      const durationMs = Date.now() - start;
-      this.emitTransitionLog(state.runId, 'DocumentationLocator', WorkflowStatus.Running, durationMs);
-
-      return {
-        ...updated,
-        currentNode: 'DocumentationLocator',
-        executionStatus: WorkflowStatus.Running,
-      };
-    } catch (error: unknown) {
-      const durationMs = Date.now() - start;
-      this.emitTransitionLog(state.runId, 'DocumentationLocator', WorkflowStatus.Failed, durationMs);
-      const cause = error instanceof Error ? error : new Error(String(error));
-      const wfError: WorkflowError = {
-        node: 'DocumentationLocator',
-        message: cause.message,
-        stack: cause.stack,
-        timestamp: new Date().toISOString(),
-      };
-      throw new WorkflowNodeExecutionException('DocumentationLocator', cause, wfError);
+    const nodeName = WorkflowNodeName.DocumentationLocator;
+    if (this.shouldSkip(state.runId, nodeName)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.LOCATING_DOCUMENTATION, state, ctx, async (st) =>
+      this.documentationLocator.invoke(st as any),
+    );
   }
 
   public async technicalWriterStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
-    const start = Date.now();
-    try {
-      const updated = await this.technicalWriter.invoke(
-        state as unknown as Parameters<TechnicalWriterNode['invoke']>[0],
-      );
-      const durationMs = Date.now() - start;
-      this.emitTransitionLog(state.runId, 'TechnicalWriter', WorkflowStatus.Running, durationMs);
-
-      return {
-        ...updated,
-        currentNode: 'TechnicalWriter',
-        executionStatus: WorkflowStatus.Running,
-      };
-    } catch (error: unknown) {
-      const durationMs = Date.now() - start;
-      this.emitTransitionLog(state.runId, 'TechnicalWriter', WorkflowStatus.Failed, durationMs);
-      const cause = error instanceof Error ? error : new Error(String(error));
-      const wfError: WorkflowError = {
-        node: 'TechnicalWriter',
-        message: cause.message,
-        stack: cause.stack,
-        timestamp: new Date().toISOString(),
-      };
-      throw new WorkflowNodeExecutionException('TechnicalWriter', cause, wfError);
+    const nodeName = WorkflowNodeName.TechnicalWriter;
+    if (this.shouldSkip(state.runId, nodeName)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.WRITING, state, ctx, async (st) =>
+      this.technicalWriter.invoke(st as any),
+    );
   }
 
   public async documentationCriticStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
-    const start = Date.now();
-    try {
-      const updated = await this.documentationCritic.invoke(
-        state as unknown as Parameters<DocumentationCriticNode['invoke']>[0],
-      );
-      const durationMs = Date.now() - start;
-      this.emitTransitionLog(state.runId, 'DocumentationCritic', WorkflowStatus.Running, durationMs);
-
-      return {
-        ...updated,
-        currentNode: 'DocumentationCritic',
-        executionStatus: WorkflowStatus.Running,
-      };
-    } catch (error: unknown) {
-      const durationMs = Date.now() - start;
-      this.emitTransitionLog(state.runId, 'DocumentationCritic', WorkflowStatus.Failed, durationMs);
-      const cause = error instanceof Error ? error : new Error(String(error));
-      const wfError: WorkflowError = {
-        node: 'DocumentationCritic',
-        message: cause.message,
-        stack: cause.stack,
-        timestamp: new Date().toISOString(),
-      };
-      throw new WorkflowNodeExecutionException('DocumentationCritic', cause, wfError);
+    const nodeName = WorkflowNodeName.DocumentationCritic;
+    if (this.shouldSkip(state.runId, nodeName)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.REVIEWING, state, ctx, async (st) =>
+      this.documentationCritic.invoke(st as any),
+    );
   }
 
   public async pullRequestGeneratorStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
-    const start = Date.now();
-    try {
-      throw new NotImplementedException('PullRequestGeneratorNode is not implemented yet');
-    } catch (error: unknown) {
-      const durationMs = Date.now() - start;
-      this.emitTransitionLog(state.runId, 'PullRequestGenerator', WorkflowStatus.Failed, durationMs);
-      const cause = error instanceof Error ? error : new Error(String(error));
-      const wfError: WorkflowError = {
-        node: 'PullRequestGenerator',
-        message: cause.message,
-        stack: cause.stack,
-        timestamp: new Date().toISOString(),
-      };
-      throw new WorkflowNodeExecutionException('PullRequestGenerator', cause, wfError);
+    const nodeName = WorkflowNodeName.PullRequestGenerator;
+    if (this.shouldSkip(state.runId, nodeName)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.CREATING_PULL_REQUEST, state, ctx, async () => {
+      throw new NotImplementedException('PullRequestGeneratorNode is not implemented yet');
+    });
   }
 }

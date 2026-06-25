@@ -1,6 +1,7 @@
 import { StateGraph, START, END } from '@langchain/langgraph';
 import { WorkflowGraphAnnotation, WorkflowGraphState } from './graph.types';
 import { WorkflowNodeAdapters } from './workflow-node-adapters';
+import { WorkflowNodeName } from '../../../domain/workflow';
 
 export interface DocumentationGraphConfig {
   minDocScore: number;
@@ -11,29 +12,30 @@ function compileDocumentationGraph(
   minDocScore: number,
 ) {
   const workflow = new StateGraph(WorkflowGraphAnnotation)
-    .addNode('RepositoryAnalyzer', (state: WorkflowGraphState) => adapters.repositoryAnalyzerStep(state))
-    .addNode('DocumentationLocator', (state: WorkflowGraphState) => adapters.documentationLocatorStep(state))
-    .addNode('TechnicalWriter', (state: WorkflowGraphState) => adapters.technicalWriterStep(state))
-    .addNode('DocumentationCritic', (state: WorkflowGraphState) => adapters.documentationCriticStep(state))
-    .addNode('PullRequestGenerator', (state: WorkflowGraphState) => adapters.pullRequestGeneratorStep(state))
+    .addNode(WorkflowNodeName.RepositoryAnalyzer, (state: WorkflowGraphState) => adapters.repositoryAnalyzerStep(state))
+    .addNode(WorkflowNodeName.DocumentationLocator, (state: WorkflowGraphState) => adapters.documentationLocatorStep(state))
+    .addNode(WorkflowNodeName.TechnicalWriter, (state: WorkflowGraphState) => adapters.technicalWriterStep(state))
+    .addNode(WorkflowNodeName.DocumentationCritic, (state: WorkflowGraphState) => adapters.documentationCriticStep(state))
+    .addNode(WorkflowNodeName.PullRequestGenerator, (state: WorkflowGraphState) => adapters.pullRequestGeneratorStep(state))
 
-    .addEdge(START, 'RepositoryAnalyzer')
-    .addEdge('RepositoryAnalyzer', 'DocumentationLocator')
-    .addEdge('DocumentationLocator', 'TechnicalWriter')
-    .addEdge('TechnicalWriter', 'DocumentationCritic')
+    // Pure unchanged declarative linear topology
+    .addEdge(START, WorkflowNodeName.RepositoryAnalyzer)
+    .addEdge(WorkflowNodeName.RepositoryAnalyzer, WorkflowNodeName.DocumentationLocator)
+    .addEdge(WorkflowNodeName.DocumentationLocator, WorkflowNodeName.TechnicalWriter)
+    .addEdge(WorkflowNodeName.TechnicalWriter, WorkflowNodeName.DocumentationCritic)
 
     .addConditionalEdges(
-      'DocumentationCritic',
+      WorkflowNodeName.DocumentationCritic,
       (state: WorkflowGraphState) => {
         const score = state.criticReview?.score ?? 0;
         return score >= minDocScore ? 'approve' : 'reject';
       },
       {
-        approve: 'PullRequestGenerator',
+        approve: WorkflowNodeName.PullRequestGenerator,
         reject: END,
       },
     )
-    .addEdge('PullRequestGenerator', END);
+    .addEdge(WorkflowNodeName.PullRequestGenerator, END);
 
   return workflow.compile();
 }
@@ -41,7 +43,7 @@ function compileDocumentationGraph(
 export type CompiledDocumentationGraph = ReturnType<typeof compileDocumentationGraph>;
 
 /**
- * Compiles the LangGraph orchestration state machine without unsafe casts.
+ * Compiles the LangGraph orchestration state machine.
  */
 export function buildDocumentationWorkflowGraph(
   adapters: WorkflowNodeAdapters,

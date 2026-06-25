@@ -1,0 +1,165 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { WorkflowCheckpointRepository } from '../persistence/workflow-checkpoint.repository';
+import { WorkflowGraphState, WorkflowGraphUpdate, WorkflowError } from './graph.types';
+import { WorkflowNodeExecutionException } from './workflow-node-adapters';
+import {
+  WorkflowNodeName,
+  WorkflowStage,
+  WorkflowCheckpointSnapshot,
+  WorkflowStatus,
+} from '../../../domain/workflow';
+
+export interface ExecutionContextRef {
+  expectedVersion: number;
+  completedNodes: WorkflowNodeName[];
+  nodeRetries: Record<string, number>;
+}
+
+@Injectable()
+export class WorkflowNodeExecutionWrapper {
+  private readonly logger = new Logger(WorkflowNodeExecutionWrapper.name);
+
+  constructor(private readonly checkpointRepository: WorkflowCheckpointRepository) {}
+
+  /**
+   * Executes a business node through single-responsibility persistence middleware.
+   * Atomically saves checkpoint on success or records node failure/retry on exception.
+   */
+  public async executeNode(
+    nodeName: WorkflowNodeName,
+    stage: WorkflowStage,
+    state: WorkflowGraphState,
+    execContext: ExecutionContextRef,
+    businessExecutor: (state: WorkflowGraphState) => Promise<WorkflowGraphUpdate>,
+  ): Promise<WorkflowGraphUpdate> {
+    const startTime = Date.now();
+    const runId = state.runId;
+
+    this.logger.debug(`[${runId}] Executing wrapper for node [${nodeName}] (stage: ${stage})`);
+
+    try {
+      // 1. Execute pure business logic
+      const updated = await businessExecutor(state);
+      const durationMs = Date.now() - startTime;
+
+      // 2. Accumulate completed nodes
+      const nextCompletedNodes = Array.from(new Set([...execContext.completedNodes, nodeName]));
+      execContext.completedNodes = nextCompletedNodes;
+
+      // 3. Build compact checkpoint snapshot excluding heavy markdown body
+      const mergedState = { ...state, ...updated };
+      const snapshot: WorkflowCheckpointSnapshot = this.constructLightweightSnapshot(
+        mergedState,
+        nodeName,
+        nextCompletedNodes,
+      );
+
+      // 4. Atomically persist checkpoint transaction
+      const nextVersion = await this.checkpointRepository.saveNodeCheckpoint({
+        runId,
+        expectedVersion: execContext.expectedVersion,
+        nodeName,
+        stage,
+        snapshot,
+        status: 'CHECKPOINTED',
+        nodeRetries: execContext.nodeRetries,
+        newMetadata: {
+          lastSuccessfulNode: nodeName,
+          lastNodeDurationMs: durationMs,
+        },
+      });
+
+      execContext.expectedVersion = nextVersion;
+
+      this.logger.log(`[${runId}] Node [${nodeName}] completed successfully in ${durationMs}ms.`);
+
+      return {
+        ...updated,
+        currentNode: nodeName,
+        executionStatus: WorkflowStatus.Running,
+      };
+    } catch (error: unknown) {
+      const durationMs = Date.now() - startTime;
+      const cause = error instanceof Error ? error : new Error(String(error));
+
+      const wfError: WorkflowError = {
+        node: nodeName,
+        message: cause.message,
+        stack: cause.stack,
+        timestamp: new Date().toISOString(),
+      };
+
+      // Increment node-level retry count
+      const currentRetries = execContext.nodeRetries[nodeName] ?? 0;
+      const nextRetries = currentRetries + 1;
+      execContext.nodeRetries[nodeName] = nextRetries;
+
+      this.logger.error(`[${runId}] Node [${nodeName}] failed after ${durationMs}ms (attempt ${nextRetries}): ${cause.message}`);
+
+      try {
+        const snapshot = this.constructLightweightSnapshot(state, nodeName, execContext.completedNodes);
+        const nextVersion = await this.checkpointRepository.saveNodeCheckpoint({
+          runId,
+          expectedVersion: execContext.expectedVersion,
+          nodeName,
+          stage,
+          snapshot,
+          status: 'FAILED',
+          nodeRetries: execContext.nodeRetries,
+          error: wfError,
+          newMetadata: {
+            failedNode: nodeName,
+            failedDurationMs: durationMs,
+          },
+        });
+        execContext.expectedVersion = nextVersion;
+      } catch (persistenceError) {
+        this.logger.error(`[${runId}] Failed to persist error checkpoint for node [${nodeName}]:`, persistenceError);
+      }
+
+      throw new WorkflowNodeExecutionException(nodeName, cause, wfError);
+    }
+  }
+
+  /**
+   * Constructs compact snapshot stripping heavy raw generated markdown text.
+   */
+  private constructLightweightSnapshot(
+    state: WorkflowGraphState | Record<string, any>,
+    currentNode: WorkflowNodeName,
+    completedNodes: WorkflowNodeName[],
+  ): WorkflowCheckpointSnapshot {
+    const generatedRefs = (state.generatedDocuments ?? []).map((doc: any) => ({
+      id: doc.id ?? 'unknown',
+      title: doc.title ?? '',
+      path: doc.path ?? '',
+      type: doc.type ?? 'README',
+    }));
+
+    const criticRef = state.criticReview
+      ? {
+          score: state.criticReview.score ?? 0,
+          passed: state.criticReview.passed ?? false,
+          issueCount: (state.criticReview.issues ?? []).length,
+          suggestionCount: (state.criticReview.suggestions ?? []).length,
+        }
+      : undefined;
+
+    return {
+      workflowRunId: state.runId ?? 'unknown',
+      repositoryId: state.repositoryId ?? 'unknown',
+      workspacePath: state.workspacePath ?? '',
+      currentNode,
+      completedNodes,
+      analysisReference: state.repository ? { name: state.repository.name, rootPath: state.repository.rootPath } : undefined,
+      documentationInventoryReference: state.documentation
+        ? { fileCount: (state.documentation.documentationFiles ?? []).length }
+        : undefined,
+      generatedDocumentReferences: generatedRefs,
+      criticReviewReference: criticRef,
+      pullRequestReference: state.pullRequest ? { url: state.pullRequest.url, number: state.pullRequest.number } : undefined,
+      executionMetadata: state.metadata ?? {},
+      lastUpdatedTimestamp: new Date().toISOString(),
+    };
+  }
+}

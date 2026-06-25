@@ -147,7 +147,14 @@ export const WorkflowRunScalarFieldEnum = {
   completedAt: 'completedAt',
   errorMessage: 'errorMessage',
   repositoryId: 'repositoryId',
-  triggeredById: 'triggeredById'
+  triggeredById: 'triggeredById',
+  version: 'version',
+  currentNode: 'currentNode',
+  currentStage: 'currentStage',
+  checkpointSnapshot: 'checkpointSnapshot',
+  nodeRetries: 'nodeRetries',
+  lastError: 'lastError',
+  executionMetadata: 'executionMetadata'
 } as const
 
 export type WorkflowRunScalarFieldEnum = (typeof WorkflowRunScalarFieldEnum)[keyof typeof WorkflowRunScalarFieldEnum]
@@ -231,6 +238,14 @@ export const JsonNullValueInput = {
 } as const
 
 export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {

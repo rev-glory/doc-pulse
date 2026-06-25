@@ -11,18 +11,27 @@
 
 export const RunStatus = {
   QUEUED: 'QUEUED',
-  CLONING: 'CLONING',
-  ANALYZING: 'ANALYZING',
-  WRITING: 'WRITING',
-  REVIEWING: 'REVIEWING',
-  AWAITING_REVIEW: 'AWAITING_REVIEW',
-  CREATING_PR: 'CREATING_PR',
+  RUNNING: 'RUNNING',
+  CHECKPOINTED: 'CHECKPOINTED',
   COMPLETED: 'COMPLETED',
-  REJECTED: 'REJECTED',
-  FAILED: 'FAILED'
+  FAILED: 'FAILED',
+  CANCELLED: 'CANCELLED'
 } as const
 
 export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus]
+
+
+export const WorkflowStage = {
+  CLONING: 'CLONING',
+  ANALYZING: 'ANALYZING',
+  LOCATING_DOCUMENTATION: 'LOCATING_DOCUMENTATION',
+  WRITING: 'WRITING',
+  REVIEWING: 'REVIEWING',
+  CREATING_PULL_REQUEST: 'CREATING_PULL_REQUEST',
+  FINISHED: 'FINISHED'
+} as const
+
+export type WorkflowStage = (typeof WorkflowStage)[keyof typeof WorkflowStage]
 
 
 export const ReviewStatus = {

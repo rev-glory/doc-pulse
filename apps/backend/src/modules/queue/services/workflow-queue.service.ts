@@ -35,6 +35,7 @@ export class WorkflowQueueService {
       jobId,
       runId: payload.runId,
       repositoryId: payload.repositoryId,
+      executionMode: payload.executionMode ?? 'start',
       queue: WORKFLOW_EXECUTION_QUEUE,
     });
 
@@ -64,6 +65,10 @@ export class WorkflowQueueService {
 
     if (!payload.runId || typeof payload.runId !== 'string' || payload.runId.trim() === '') {
       throw new BadRequestException('runId is required and must be a non-empty string');
+    }
+
+    if (payload.executionMode && !['start', 'resume', 'restart'].includes(payload.executionMode)) {
+      throw new BadRequestException("executionMode must be one of: 'start', 'resume', 'restart'");
     }
   }
 }

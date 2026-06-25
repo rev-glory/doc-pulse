@@ -21,8 +21,18 @@ export type WorkflowRunModel = runtime.Types.Result.DefaultSelection<Prisma.$Wor
 
 export type AggregateWorkflowRun = {
   _count: WorkflowRunCountAggregateOutputType | null
+  _avg: WorkflowRunAvgAggregateOutputType | null
+  _sum: WorkflowRunSumAggregateOutputType | null
   _min: WorkflowRunMinAggregateOutputType | null
   _max: WorkflowRunMaxAggregateOutputType | null
+}
+
+export type WorkflowRunAvgAggregateOutputType = {
+  version: number | null
+}
+
+export type WorkflowRunSumAggregateOutputType = {
+  version: number | null
 }
 
 export type WorkflowRunMinAggregateOutputType = {
@@ -40,6 +50,9 @@ export type WorkflowRunMinAggregateOutputType = {
   errorMessage: string | null
   repositoryId: string | null
   triggeredById: string | null
+  version: number | null
+  currentNode: string | null
+  currentStage: $Enums.WorkflowStage | null
 }
 
 export type WorkflowRunMaxAggregateOutputType = {
@@ -57,6 +70,9 @@ export type WorkflowRunMaxAggregateOutputType = {
   errorMessage: string | null
   repositoryId: string | null
   triggeredById: string | null
+  version: number | null
+  currentNode: string | null
+  currentStage: $Enums.WorkflowStage | null
 }
 
 export type WorkflowRunCountAggregateOutputType = {
@@ -74,9 +90,24 @@ export type WorkflowRunCountAggregateOutputType = {
   errorMessage: number
   repositoryId: number
   triggeredById: number
+  version: number
+  currentNode: number
+  currentStage: number
+  checkpointSnapshot: number
+  nodeRetries: number
+  lastError: number
+  executionMetadata: number
   _all: number
 }
 
+
+export type WorkflowRunAvgAggregateInputType = {
+  version?: true
+}
+
+export type WorkflowRunSumAggregateInputType = {
+  version?: true
+}
 
 export type WorkflowRunMinAggregateInputType = {
   id?: true
@@ -93,6 +124,9 @@ export type WorkflowRunMinAggregateInputType = {
   errorMessage?: true
   repositoryId?: true
   triggeredById?: true
+  version?: true
+  currentNode?: true
+  currentStage?: true
 }
 
 export type WorkflowRunMaxAggregateInputType = {
@@ -110,6 +144,9 @@ export type WorkflowRunMaxAggregateInputType = {
   errorMessage?: true
   repositoryId?: true
   triggeredById?: true
+  version?: true
+  currentNode?: true
+  currentStage?: true
 }
 
 export type WorkflowRunCountAggregateInputType = {
@@ -127,6 +164,13 @@ export type WorkflowRunCountAggregateInputType = {
   errorMessage?: true
   repositoryId?: true
   triggeredById?: true
+  version?: true
+  currentNode?: true
+  currentStage?: true
+  checkpointSnapshot?: true
+  nodeRetries?: true
+  lastError?: true
+  executionMetadata?: true
   _all?: true
 }
 
@@ -168,6 +212,18 @@ export type WorkflowRunAggregateArgs<ExtArgs extends runtime.Types.Extensions.In
   /**
    * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
    * 
+   * Select which fields to average
+  **/
+  _avg?: WorkflowRunAvgAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
+   * Select which fields to sum
+  **/
+  _sum?: WorkflowRunSumAggregateInputType
+  /**
+   * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+   * 
    * Select which fields to find the minimum value
   **/
   _min?: WorkflowRunMinAggregateInputType
@@ -198,6 +254,8 @@ export type WorkflowRunGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
   take?: number
   skip?: number
   _count?: WorkflowRunCountAggregateInputType | true
+  _avg?: WorkflowRunAvgAggregateInputType
+  _sum?: WorkflowRunSumAggregateInputType
   _min?: WorkflowRunMinAggregateInputType
   _max?: WorkflowRunMaxAggregateInputType
 }
@@ -217,7 +275,16 @@ export type WorkflowRunGroupByOutputType = {
   errorMessage: string | null
   repositoryId: string
   triggeredById: string | null
+  version: number
+  currentNode: string | null
+  currentStage: $Enums.WorkflowStage | null
+  checkpointSnapshot: runtime.JsonValue | null
+  nodeRetries: runtime.JsonValue
+  lastError: runtime.JsonValue | null
+  executionMetadata: runtime.JsonValue
   _count: WorkflowRunCountAggregateOutputType | null
+  _avg: WorkflowRunAvgAggregateOutputType | null
+  _sum: WorkflowRunSumAggregateOutputType | null
   _min: WorkflowRunMinAggregateOutputType | null
   _max: WorkflowRunMaxAggregateOutputType | null
 }
@@ -255,6 +322,13 @@ export type WorkflowRunWhereInput = {
   errorMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   repositoryId?: Prisma.StringFilter<"WorkflowRun"> | string
   triggeredById?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  version?: Prisma.IntFilter<"WorkflowRun"> | number
+  currentNode?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  currentStage?: Prisma.EnumWorkflowStageNullableFilter<"WorkflowRun"> | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.JsonNullableFilter<"WorkflowRun">
+  nodeRetries?: Prisma.JsonFilter<"WorkflowRun">
+  lastError?: Prisma.JsonNullableFilter<"WorkflowRun">
+  executionMetadata?: Prisma.JsonFilter<"WorkflowRun">
   notifications?: Prisma.NotificationListRelationFilter
   pullRequest?: Prisma.XOR<Prisma.PullRequestNullableScalarRelationFilter, Prisma.PullRequestWhereInput> | null
   review?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
@@ -277,6 +351,13 @@ export type WorkflowRunOrderByWithRelationInput = {
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   repositoryId?: Prisma.SortOrder
   triggeredById?: Prisma.SortOrderInput | Prisma.SortOrder
+  version?: Prisma.SortOrder
+  currentNode?: Prisma.SortOrderInput | Prisma.SortOrder
+  currentStage?: Prisma.SortOrderInput | Prisma.SortOrder
+  checkpointSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
+  nodeRetries?: Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
+  executionMetadata?: Prisma.SortOrder
   notifications?: Prisma.NotificationOrderByRelationAggregateInput
   pullRequest?: Prisma.PullRequestOrderByWithRelationInput
   review?: Prisma.ReviewOrderByWithRelationInput
@@ -302,6 +383,13 @@ export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
   errorMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   repositoryId?: Prisma.StringFilter<"WorkflowRun"> | string
   triggeredById?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  version?: Prisma.IntFilter<"WorkflowRun"> | number
+  currentNode?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  currentStage?: Prisma.EnumWorkflowStageNullableFilter<"WorkflowRun"> | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.JsonNullableFilter<"WorkflowRun">
+  nodeRetries?: Prisma.JsonFilter<"WorkflowRun">
+  lastError?: Prisma.JsonNullableFilter<"WorkflowRun">
+  executionMetadata?: Prisma.JsonFilter<"WorkflowRun">
   notifications?: Prisma.NotificationListRelationFilter
   pullRequest?: Prisma.XOR<Prisma.PullRequestNullableScalarRelationFilter, Prisma.PullRequestWhereInput> | null
   review?: Prisma.XOR<Prisma.ReviewNullableScalarRelationFilter, Prisma.ReviewWhereInput> | null
@@ -324,9 +412,18 @@ export type WorkflowRunOrderByWithAggregationInput = {
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   repositoryId?: Prisma.SortOrder
   triggeredById?: Prisma.SortOrderInput | Prisma.SortOrder
+  version?: Prisma.SortOrder
+  currentNode?: Prisma.SortOrderInput | Prisma.SortOrder
+  currentStage?: Prisma.SortOrderInput | Prisma.SortOrder
+  checkpointSnapshot?: Prisma.SortOrderInput | Prisma.SortOrder
+  nodeRetries?: Prisma.SortOrder
+  lastError?: Prisma.SortOrderInput | Prisma.SortOrder
+  executionMetadata?: Prisma.SortOrder
   _count?: Prisma.WorkflowRunCountOrderByAggregateInput
+  _avg?: Prisma.WorkflowRunAvgOrderByAggregateInput
   _max?: Prisma.WorkflowRunMaxOrderByAggregateInput
   _min?: Prisma.WorkflowRunMinOrderByAggregateInput
+  _sum?: Prisma.WorkflowRunSumOrderByAggregateInput
 }
 
 export type WorkflowRunScalarWhereWithAggregatesInput = {
@@ -347,6 +444,13 @@ export type WorkflowRunScalarWhereWithAggregatesInput = {
   errorMessage?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
   repositoryId?: Prisma.StringWithAggregatesFilter<"WorkflowRun"> | string
   triggeredById?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
+  version?: Prisma.IntWithAggregatesFilter<"WorkflowRun"> | number
+  currentNode?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
+  currentStage?: Prisma.EnumWorkflowStageNullableWithAggregatesFilter<"WorkflowRun"> | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.JsonNullableWithAggregatesFilter<"WorkflowRun">
+  nodeRetries?: Prisma.JsonWithAggregatesFilter<"WorkflowRun">
+  lastError?: Prisma.JsonNullableWithAggregatesFilter<"WorkflowRun">
+  executionMetadata?: Prisma.JsonWithAggregatesFilter<"WorkflowRun">
 }
 
 export type WorkflowRunCreateInput = {
@@ -362,6 +466,13 @@ export type WorkflowRunCreateInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
   pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
   review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
@@ -384,6 +495,13 @@ export type WorkflowRunUncheckedCreateInput = {
   errorMessage?: string | null
   repositoryId: string
   triggeredById?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
   pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
   review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
@@ -402,6 +520,13 @@ export type WorkflowRunUpdateInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
   pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
@@ -424,6 +549,13 @@ export type WorkflowRunUncheckedUpdateInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
   pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
@@ -444,6 +576,13 @@ export type WorkflowRunCreateManyInput = {
   errorMessage?: string | null
   repositoryId: string
   triggeredById?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 export type WorkflowRunUpdateManyMutationInput = {
@@ -459,6 +598,13 @@ export type WorkflowRunUpdateManyMutationInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 export type WorkflowRunUncheckedUpdateManyInput = {
@@ -476,6 +622,13 @@ export type WorkflowRunUncheckedUpdateManyInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 export type WorkflowRunListRelationFilter = {
@@ -503,6 +656,17 @@ export type WorkflowRunCountOrderByAggregateInput = {
   errorMessage?: Prisma.SortOrder
   repositoryId?: Prisma.SortOrder
   triggeredById?: Prisma.SortOrder
+  version?: Prisma.SortOrder
+  currentNode?: Prisma.SortOrder
+  currentStage?: Prisma.SortOrder
+  checkpointSnapshot?: Prisma.SortOrder
+  nodeRetries?: Prisma.SortOrder
+  lastError?: Prisma.SortOrder
+  executionMetadata?: Prisma.SortOrder
+}
+
+export type WorkflowRunAvgOrderByAggregateInput = {
+  version?: Prisma.SortOrder
 }
 
 export type WorkflowRunMaxOrderByAggregateInput = {
@@ -520,6 +684,9 @@ export type WorkflowRunMaxOrderByAggregateInput = {
   errorMessage?: Prisma.SortOrder
   repositoryId?: Prisma.SortOrder
   triggeredById?: Prisma.SortOrder
+  version?: Prisma.SortOrder
+  currentNode?: Prisma.SortOrder
+  currentStage?: Prisma.SortOrder
 }
 
 export type WorkflowRunMinOrderByAggregateInput = {
@@ -537,6 +704,13 @@ export type WorkflowRunMinOrderByAggregateInput = {
   errorMessage?: Prisma.SortOrder
   repositoryId?: Prisma.SortOrder
   triggeredById?: Prisma.SortOrder
+  version?: Prisma.SortOrder
+  currentNode?: Prisma.SortOrder
+  currentStage?: Prisma.SortOrder
+}
+
+export type WorkflowRunSumOrderByAggregateInput = {
+  version?: Prisma.SortOrder
 }
 
 export type WorkflowRunScalarRelationFilter = {
@@ -637,6 +811,10 @@ export type EnumRunStatusFieldUpdateOperationsInput = {
   set?: $Enums.RunStatus
 }
 
+export type NullableEnumWorkflowStageFieldUpdateOperationsInput = {
+  set?: $Enums.WorkflowStage | null
+}
+
 export type WorkflowRunCreateNestedOneWithoutReviewInput = {
   create?: Prisma.XOR<Prisma.WorkflowRunCreateWithoutReviewInput, Prisma.WorkflowRunUncheckedCreateWithoutReviewInput>
   connectOrCreate?: Prisma.WorkflowRunCreateOrConnectWithoutReviewInput
@@ -694,6 +872,13 @@ export type WorkflowRunCreateWithoutTriggeredByInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
   pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
   review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
@@ -714,6 +899,13 @@ export type WorkflowRunUncheckedCreateWithoutTriggeredByInput = {
   completedAt?: Date | string | null
   errorMessage?: string | null
   repositoryId: string
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
   pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
   review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
@@ -763,6 +955,13 @@ export type WorkflowRunScalarWhereInput = {
   errorMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   repositoryId?: Prisma.StringFilter<"WorkflowRun"> | string
   triggeredById?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  version?: Prisma.IntFilter<"WorkflowRun"> | number
+  currentNode?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  currentStage?: Prisma.EnumWorkflowStageNullableFilter<"WorkflowRun"> | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.JsonNullableFilter<"WorkflowRun">
+  nodeRetries?: Prisma.JsonFilter<"WorkflowRun">
+  lastError?: Prisma.JsonNullableFilter<"WorkflowRun">
+  executionMetadata?: Prisma.JsonFilter<"WorkflowRun">
 }
 
 export type WorkflowRunCreateWithoutRepositoryInput = {
@@ -778,6 +977,13 @@ export type WorkflowRunCreateWithoutRepositoryInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
   pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
   review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
@@ -798,6 +1004,13 @@ export type WorkflowRunUncheckedCreateWithoutRepositoryInput = {
   completedAt?: Date | string | null
   errorMessage?: string | null
   triggeredById?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
   pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
   review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
@@ -842,6 +1055,13 @@ export type WorkflowRunCreateWithoutReviewInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
   pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
   repository: Prisma.RepositoryCreateNestedOneWithoutWorkflowRunsInput
@@ -863,6 +1083,13 @@ export type WorkflowRunUncheckedCreateWithoutReviewInput = {
   errorMessage?: string | null
   repositoryId: string
   triggeredById?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
   pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
 }
@@ -896,6 +1123,13 @@ export type WorkflowRunUpdateWithoutReviewInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
   pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
   repository?: Prisma.RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput
@@ -917,6 +1151,13 @@ export type WorkflowRunUncheckedUpdateWithoutReviewInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
   pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
 }
@@ -934,6 +1175,13 @@ export type WorkflowRunCreateWithoutPullRequestInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationCreateNestedManyWithoutWorkflowRunInput
   review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
   repository: Prisma.RepositoryCreateNestedOneWithoutWorkflowRunsInput
@@ -955,6 +1203,13 @@ export type WorkflowRunUncheckedCreateWithoutPullRequestInput = {
   errorMessage?: string | null
   repositoryId: string
   triggeredById?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedCreateNestedManyWithoutWorkflowRunInput
   review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
 }
@@ -988,6 +1243,13 @@ export type WorkflowRunUpdateWithoutPullRequestInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
   repository?: Prisma.RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput
@@ -1009,6 +1271,13 @@ export type WorkflowRunUncheckedUpdateWithoutPullRequestInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
 }
@@ -1026,6 +1295,13 @@ export type WorkflowRunCreateWithoutNotificationsInput = {
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   pullRequest?: Prisma.PullRequestCreateNestedOneWithoutWorkflowRunInput
   review?: Prisma.ReviewCreateNestedOneWithoutWorkflowRunInput
   repository: Prisma.RepositoryCreateNestedOneWithoutWorkflowRunsInput
@@ -1047,6 +1323,13 @@ export type WorkflowRunUncheckedCreateWithoutNotificationsInput = {
   errorMessage?: string | null
   repositoryId: string
   triggeredById?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   pullRequest?: Prisma.PullRequestUncheckedCreateNestedOneWithoutWorkflowRunInput
   review?: Prisma.ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput
 }
@@ -1080,6 +1363,13 @@ export type WorkflowRunUpdateWithoutNotificationsInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
   repository?: Prisma.RepositoryUpdateOneRequiredWithoutWorkflowRunsNestedInput
@@ -1101,6 +1391,13 @@ export type WorkflowRunUncheckedUpdateWithoutNotificationsInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
 }
@@ -1119,6 +1416,13 @@ export type WorkflowRunCreateManyTriggeredByInput = {
   completedAt?: Date | string | null
   errorMessage?: string | null
   repositoryId: string
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 export type WorkflowRunUpdateWithoutTriggeredByInput = {
@@ -1134,6 +1438,13 @@ export type WorkflowRunUpdateWithoutTriggeredByInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
   pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
@@ -1154,6 +1465,13 @@ export type WorkflowRunUncheckedUpdateWithoutTriggeredByInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
   pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
@@ -1173,6 +1491,13 @@ export type WorkflowRunUncheckedUpdateManyWithoutTriggeredByInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   repositoryId?: Prisma.StringFieldUpdateOperationsInput | string
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 export type WorkflowRunCreateManyRepositoryInput = {
@@ -1189,6 +1514,13 @@ export type WorkflowRunCreateManyRepositoryInput = {
   completedAt?: Date | string | null
   errorMessage?: string | null
   triggeredById?: string | null
+  version?: number
+  currentNode?: string | null
+  currentStage?: $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 export type WorkflowRunUpdateWithoutRepositoryInput = {
@@ -1204,6 +1536,13 @@ export type WorkflowRunUpdateWithoutRepositoryInput = {
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUpdateManyWithoutWorkflowRunNestedInput
   pullRequest?: Prisma.PullRequestUpdateOneWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUpdateOneWithoutWorkflowRunNestedInput
@@ -1224,6 +1563,13 @@ export type WorkflowRunUncheckedUpdateWithoutRepositoryInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   notifications?: Prisma.NotificationUncheckedUpdateManyWithoutWorkflowRunNestedInput
   pullRequest?: Prisma.PullRequestUncheckedUpdateOneWithoutWorkflowRunNestedInput
   review?: Prisma.ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput
@@ -1243,6 +1589,13 @@ export type WorkflowRunUncheckedUpdateManyWithoutRepositoryInput = {
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   triggeredById?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  version?: Prisma.IntFieldUpdateOperationsInput | number
+  currentNode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  currentStage?: Prisma.NullableEnumWorkflowStageFieldUpdateOperationsInput | $Enums.WorkflowStage | null
+  checkpointSnapshot?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  nodeRetries?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  lastError?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  executionMetadata?: Prisma.JsonNullValueInput | runtime.InputJsonValue
 }
 
 
@@ -1291,6 +1644,13 @@ export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   errorMessage?: boolean
   repositoryId?: boolean
   triggeredById?: boolean
+  version?: boolean
+  currentNode?: boolean
+  currentStage?: boolean
+  checkpointSnapshot?: boolean
+  nodeRetries?: boolean
+  lastError?: boolean
+  executionMetadata?: boolean
   notifications?: boolean | Prisma.WorkflowRun$notificationsArgs<ExtArgs>
   pullRequest?: boolean | Prisma.WorkflowRun$pullRequestArgs<ExtArgs>
   review?: boolean | Prisma.WorkflowRun$reviewArgs<ExtArgs>
@@ -1314,6 +1674,13 @@ export type WorkflowRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   errorMessage?: boolean
   repositoryId?: boolean
   triggeredById?: boolean
+  version?: boolean
+  currentNode?: boolean
+  currentStage?: boolean
+  checkpointSnapshot?: boolean
+  nodeRetries?: boolean
+  lastError?: boolean
+  executionMetadata?: boolean
   repository?: boolean | Prisma.RepositoryDefaultArgs<ExtArgs>
   triggeredBy?: boolean | Prisma.WorkflowRun$triggeredByArgs<ExtArgs>
 }, ExtArgs["result"]["workflowRun"]>
@@ -1333,6 +1700,13 @@ export type WorkflowRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   errorMessage?: boolean
   repositoryId?: boolean
   triggeredById?: boolean
+  version?: boolean
+  currentNode?: boolean
+  currentStage?: boolean
+  checkpointSnapshot?: boolean
+  nodeRetries?: boolean
+  lastError?: boolean
+  executionMetadata?: boolean
   repository?: boolean | Prisma.RepositoryDefaultArgs<ExtArgs>
   triggeredBy?: boolean | Prisma.WorkflowRun$triggeredByArgs<ExtArgs>
 }, ExtArgs["result"]["workflowRun"]>
@@ -1352,9 +1726,16 @@ export type WorkflowRunSelectScalar = {
   errorMessage?: boolean
   repositoryId?: boolean
   triggeredById?: boolean
+  version?: boolean
+  currentNode?: boolean
+  currentStage?: boolean
+  checkpointSnapshot?: boolean
+  nodeRetries?: boolean
+  lastError?: boolean
+  executionMetadata?: boolean
 }
 
-export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "correlationId" | "webhookDeliveryId" | "commitSha" | "branch" | "commitMessage" | "startedAt" | "completedAt" | "errorMessage" | "repositoryId" | "triggeredById", ExtArgs["result"]["workflowRun"]>
+export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "correlationId" | "webhookDeliveryId" | "commitSha" | "branch" | "commitMessage" | "startedAt" | "completedAt" | "errorMessage" | "repositoryId" | "triggeredById" | "version" | "currentNode" | "currentStage" | "checkpointSnapshot" | "nodeRetries" | "lastError" | "executionMetadata", ExtArgs["result"]["workflowRun"]>
 export type WorkflowRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   notifications?: boolean | Prisma.WorkflowRun$notificationsArgs<ExtArgs>
   pullRequest?: boolean | Prisma.WorkflowRun$pullRequestArgs<ExtArgs>
@@ -1396,6 +1777,13 @@ export type $WorkflowRunPayload<ExtArgs extends runtime.Types.Extensions.Interna
     errorMessage: string | null
     repositoryId: string
     triggeredById: string | null
+    version: number
+    currentNode: string | null
+    currentStage: $Enums.WorkflowStage | null
+    checkpointSnapshot: runtime.JsonValue | null
+    nodeRetries: runtime.JsonValue
+    lastError: runtime.JsonValue | null
+    executionMetadata: runtime.JsonValue
   }, ExtArgs["result"]["workflowRun"]>
   composites: {}
 }
@@ -1838,6 +2226,13 @@ export interface WorkflowRunFieldRefs {
   readonly errorMessage: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly repositoryId: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly triggeredById: Prisma.FieldRef<"WorkflowRun", 'String'>
+  readonly version: Prisma.FieldRef<"WorkflowRun", 'Int'>
+  readonly currentNode: Prisma.FieldRef<"WorkflowRun", 'String'>
+  readonly currentStage: Prisma.FieldRef<"WorkflowRun", 'WorkflowStage'>
+  readonly checkpointSnapshot: Prisma.FieldRef<"WorkflowRun", 'Json'>
+  readonly nodeRetries: Prisma.FieldRef<"WorkflowRun", 'Json'>
+  readonly lastError: Prisma.FieldRef<"WorkflowRun", 'Json'>
+  readonly executionMetadata: Prisma.FieldRef<"WorkflowRun", 'Json'>
 }
     
 

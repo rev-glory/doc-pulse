@@ -4,40 +4,59 @@ import type { Job } from 'bullmq';
 
 import { WORKFLOW_EXECUTION_QUEUE } from '../constants/queue.constants';
 import type { WorkflowJobPayload } from '../interfaces/workflow-job.interface';
-import { WorkflowService } from '../../workflow/services/workflow.service';
+import { WorkflowExecutorService } from '../../workflow/graph/workflow-executor.service';
 import type { WorkflowState } from '../../../domain/workflow';
 
 @Processor(WORKFLOW_EXECUTION_QUEUE)
 export class WorkflowProcessor extends WorkerHost {
   private readonly logger = new Logger(WorkflowProcessor.name);
 
-  constructor(private readonly workflowService: WorkflowService) {
+  constructor(private readonly executorService: WorkflowExecutorService) {
     super();
   }
 
   /**
-   * Consumes workflow execution jobs and orchestrates synchronous LangGraph execution.
+   * Consumes workflow execution jobs and orchestrates explicit LangGraph execution modes.
    */
   public async process(job: Job<WorkflowJobPayload>): Promise<WorkflowState> {
-    const { repositoryId, repositoryPath, runId } = job.data;
+    const { repositoryId, repositoryPath, runId, executionMode = 'start', metadata } = job.data;
     const jobId = job.id ?? 'unknown';
 
     this.logger.log('Job started', {
       jobId,
       runId,
       repositoryId,
+      executionMode,
       queue: WORKFLOW_EXECUTION_QUEUE,
     });
 
     try {
-      const initialState = this.constructInitialState(repositoryId, repositoryPath, runId);
+      const input = {
+        runId,
+        repositoryId,
+        workspacePath: repositoryPath,
+        metadata: metadata ?? {},
+      };
 
-      const finalState = await this.workflowService.run(initialState);
+      let finalState: WorkflowState;
+      switch (executionMode) {
+        case 'resume':
+          finalState = await this.executorService.resume(input);
+          break;
+        case 'restart':
+          finalState = await this.executorService.restart(input);
+          break;
+        case 'start':
+        default:
+          finalState = await this.executorService.start(input);
+          break;
+      }
 
       this.logger.log('Job completed', {
         jobId,
         runId,
         repositoryId,
+        executionMode,
         queue: WORKFLOW_EXECUTION_QUEUE,
       });
 
@@ -47,6 +66,7 @@ export class WorkflowProcessor extends WorkerHost {
         jobId,
         runId,
         repositoryId,
+        executionMode,
         queue: WORKFLOW_EXECUTION_QUEUE,
         error: error instanceof Error ? error.message : String(error),
         stack: error instanceof Error ? error.stack : undefined,
@@ -54,49 +74,5 @@ export class WorkflowProcessor extends WorkerHost {
 
       throw error;
     }
-  }
-
-  /**
-   * Constructs the baseline WorkflowState contract from queue job payload.
-   * No database lookups are performed; downstream LangGraph nodes enrich this state.
-   */
-  private constructInitialState(repositoryId: string, repositoryPath: string, runId: string): WorkflowState {
-    const pathParts = repositoryPath.split(/[/\\]/).filter(Boolean);
-    const repositoryName = pathParts[pathParts.length - 1] ?? repositoryId;
-
-    return {
-      runId,
-      repositoryId,
-      repository: {
-        name: repositoryName,
-        rootPath: repositoryPath,
-        packageManager: null,
-        isMonorepo: false,
-        workspaceType: null,
-        languages: [],
-        frameworks: [],
-        buildTools: [],
-        testFrameworks: [],
-        dependencies: [],
-        scripts: {},
-        dockerSupport: [],
-        ciCdSupport: [],
-        environmentFiles: [],
-        documentation: [],
-        workspaceFolders: [],
-        apiSpecifications: [],
-        metrics: {
-          packageCount: 0,
-          workspaceCount: 0,
-          documentationCount: 0,
-          configurationFileCount: 0,
-        },
-      },
-      documentation: {
-        documentationFiles: [],
-        missingDocuments: [],
-        outdatedDocuments: [],
-      },
-    };
   }
 }
