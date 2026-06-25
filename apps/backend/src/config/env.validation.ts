@@ -82,6 +82,11 @@ const envSchema = z.object({
   ANTHROPIC_API_KEY: optionalString,
   ANTHROPIC_MODEL: z.string().default('claude-3-5-sonnet-20241022'),
 
+  // ── Gemini ────────────────────────────────────────────────────────────────
+  GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
+  GEMINI_MODEL: z.string().default('gemini-2.0-flash'),
+  GEMINI_TEMPERATURE: z.coerce.number().min(0).max(2).default(0.2),
+
   // ── Queue (BullMQ) ────────────────────────────────────────────────────────
   QUEUE_CONCURRENCY: z.coerce.number().int().min(1).max(50).default(5),
   QUEUE_MAX_RETRIES: z.coerce.number().int().min(0).max(10).default(3),

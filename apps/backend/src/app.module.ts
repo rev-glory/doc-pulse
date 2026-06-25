@@ -7,6 +7,7 @@ import {
   aiConfig,
   appConfig,
   databaseConfig,
+  geminiConfig,
   githubConfig,
   jwtConfig,
   notificationConfig,
@@ -15,6 +16,7 @@ import {
   storageConfig,
   validateEnv,
 } from './config';
+import { AiModule } from './modules/ai/ai.module';
 import { PrismaModule } from './database';
 import { HealthModule } from './modules/health/health.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -22,7 +24,7 @@ import { UsersModule } from './modules/users/users.module';
 import { GitHubModule } from './modules/github/github.module';
 import { RepositoriesModule } from './modules/repositories/repositories.module';
 import { GitOperationsModule } from './modules/git-operations';
-import { QueueModule } from './modules/queue';
+// TODO(queue-infrastructure): Re-add QueueModule import once the Queue module is implemented.
 
 @Module({
   imports: [
@@ -47,6 +49,7 @@ import { QueueModule } from './modules/queue';
         jwtConfig,
         githubConfig,
         aiConfig,
+        geminiConfig,
         queueConfig,
         notificationConfig,
         storageConfig,
@@ -56,8 +59,9 @@ import { QueueModule } from './modules/queue';
       expandVariables: false,
     }),
 
+    AiModule,
     PrismaModule,
-    QueueModule,
+    // TODO(queue-infrastructure): Re-add QueueModule here once implemented.
     HealthModule,
     AuthModule,
     UsersModule,

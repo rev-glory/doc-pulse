@@ -9,6 +9,9 @@
 export { aiConfig } from './ai.config';
 export type { AiConfig } from './ai.config';
 
+export { geminiConfig } from './gemini.config';
+export type { GeminiConfig } from './gemini.config';
+
 export { appConfig } from './app.config';
 export type { AppConfig } from './app.config';
 
