@@ -1,9 +1,18 @@
 import { RepositorySummary } from '../repository';
 import { DocumentationInventory } from '../documentation';
+import { GeneratedDocument, CriticReview, PullRequestDraft, WorkflowExecutionStatus } from '../../modules/workflow/types';
 
 export interface WorkflowState {
+  runId?: string;
+  repositoryId?: string;
   repository: RepositorySummary;
   documentation: DocumentationInventory;
-  generation?: any; // Placeholder for future generation models
-  review?: any; // Placeholder for future review models
+  generatedDocuments?: GeneratedDocument[];
+  criticReview?: CriticReview;
+  pullRequest?: PullRequestDraft;
+  executionStatus: WorkflowExecutionStatus;
+  currentNode?: string;
+  startedAt?: Date;
+  completedAt?: Date;
+  metadata?: Record<string, unknown>;
 }
