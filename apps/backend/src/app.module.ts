@@ -22,6 +22,7 @@ import { UsersModule } from './modules/users/users.module';
 import { GitHubModule } from './modules/github/github.module';
 import { RepositoriesModule } from './modules/repositories/repositories.module';
 import { GitOperationsModule } from './modules/git-operations';
+import { QueueModule } from './modules/queue';
 
 @Module({
   imports: [
@@ -56,6 +57,7 @@ import { GitOperationsModule } from './modules/git-operations';
     }),
 
     PrismaModule,
+    QueueModule,
     HealthModule,
     AuthModule,
     UsersModule,

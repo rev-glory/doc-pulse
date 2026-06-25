@@ -3,11 +3,9 @@ import { ConfigService } from '@nestjs/config';
 import * as crypto from 'node:crypto';
 
 import type { GitHubConfig } from '@/config';
-import { GitHubInstallationService } from './github-installation.service';
-import { InstallationsPersistence } from '../persistence/installations.persistence';
-import { RepositoriesService } from '@/modules/repositories/services/repositories.service';
 import { PrismaService } from '@/database';
 import { WebhookEventsService } from '@/modules/webhook-events/services/webhook-events.service';
+import { JobDispatcher, JobName } from '@/modules/queue';
 
 // ---------------------------------------------------------------------------
 // Webhook Event Payload Shapes
@@ -24,69 +22,14 @@ interface WebhookPayloadWithAction {
   };
 }
 
-interface WebhookInstallationPayload {
-  action: 'created' | 'deleted' | 'suspend' | 'unsuspend' | 'new_permissions_accepted';
-  installation: {
-    id: number;
-    account: {
-      login: string;
-      type: string;
-    };
-  };
-  /** The GitHub user who triggered the event. */
-  sender: {
-    id: number;
-    login: string;
-  };
-}
-
-interface WebhookInstallationRepositoriesPayload {
-  action: 'added' | 'removed';
-  installation: {
-    id: number;
-  };
-  repositories_added?: Array<{ id: number; full_name: string }>;
-  repositories_removed?: Array<{ id: number; full_name: string }>;
-  sender: {
-    id: number;
-  };
-}
-
-interface WebhookPullRequestPayload {
-  action: 'opened' | 'synchronize' | 'reopened' | 'closed';
-  installation: {
-    id: number;
-  };
-  repository: {
-    id: number;
-    full_name: string;
-  };
-  pull_request: {
-    number: number;
-    title: string;
-    head: {
-      ref: string;
-      sha: string;
-    };
-    base: {
-      ref: string;
-      sha: string;
-    };
-  };
-  sender: {
-    id: number;
-    login: string;
-  };
-}
-
 // ---------------------------------------------------------------------------
 // GitHubWebhookService
 //
 // Responsibilities:
 //   1. HMAC-SHA256 signature verification — rejects any request that does not
 //      pass GitHub's signature check before any payload is parsed.
-//   2. Event routing — dispatches verified payloads to the appropriate
-//      domain service handler.
+//   2. Event persistence — save incoming webhook events to database.
+//   3. Job dispatching — send events to JobDispatcher for processing.
 //
 // Only the events we actively handle are wired. Unknown events are logged
 // and ignored — returning 200 so GitHub does not retry them.
@@ -102,11 +45,9 @@ export class GitHubWebhookService {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly gitHubInstallationService: GitHubInstallationService,
-    private readonly installationsPersistence: InstallationsPersistence,
-    private readonly repositoriesService: RepositoriesService,
     private readonly prisma: PrismaService,
     private readonly webhookEventsService: WebhookEventsService,
+    private readonly jobDispatcher: JobDispatcher,
   ) {
     const config = this.configService.get<GitHubConfig>('github')!;
     this.webhookSecret = config.webhookSecret;
@@ -187,24 +128,34 @@ export class GitHubWebhookService {
     });
 
     try {
+      // Dispatch job based on event type
       switch (event) {
         case 'installation':
-          await this.handleInstallationEvent(payload as WebhookInstallationPayload);
+          await this.jobDispatcher.dispatch({
+            name: JobName.WEBHOOK_INSTALLATION,
+            data: rawPayload,
+          });
           break;
 
         case 'installation_repositories':
-          await this.handleInstallationRepositoriesEvent(
-            payload as WebhookInstallationRepositoriesPayload,
-          );
+          await this.jobDispatcher.dispatch({
+            name: JobName.WEBHOOK_INSTALLATION_REPOSITORIES,
+            data: rawPayload,
+          });
           break;
 
         case 'push':
-          // TODO: Enqueue BullMQ job for documentation pipeline.
-          this.logger.log('Push event received — pipeline not yet implemented');
+          await this.jobDispatcher.dispatch({
+            name: JobName.WEBHOOK_PUSH,
+            data: rawPayload,
+          });
           break;
 
         case 'pull_request':
-          await this.handlePullRequestEvent(payload as WebhookPullRequestPayload);
+          await this.jobDispatcher.dispatch({
+            name: JobName.WEBHOOK_PULL_REQUEST,
+            data: rawPayload,
+          });
           break;
 
         default:
@@ -223,120 +174,5 @@ export class GitHubWebhookService {
       await this.webhookEventsService.markAsFailed(deliveryId);
       throw error;
     }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Installation Event Handlers
-  // ---------------------------------------------------------------------------
-
-  private async handleInstallationEvent(
-    payload: WebhookInstallationPayload,
-  ): Promise<void> {
-    const { action, installation, sender } = payload;
-
-    this.logger.log('Installation event', {
-      action,
-      installationId: installation.id,
-      account: installation.account.login,
-      sender: sender.login,
-    });
-
-    switch (action) {
-      case 'created': {
-        // Find the DocPulse user who installed the app by matching their
-        // GitHub user ID (sender.id). If they haven't logged in yet, we
-        // cannot associate the installation and skip persistence.
-        const user = await this.prisma.user.findUnique({
-          where: { githubId: sender.id },
-        });
-
-        if (!user) {
-          this.logger.warn(
-            `Installation created by GitHub user ${sender.id} who has not logged into DocPulse yet. ` +
-              `The installation will be persisted on their first login.`,
-            { installationId: installation.id },
-          );
-          // NOTE: Future enhancement — store unlinked installations and
-          // associate them during the user's first OAuth callback.
-          return;
-        }
-
-        await this.gitHubInstallationService.handleInstallationCreated({
-          installationId: installation.id,
-          accountLogin: installation.account.login,
-          accountType: installation.account.type,
-          userId: user.id,
-        });
-        break;
-      }
-
-      case 'deleted':
-        await this.gitHubInstallationService.handleInstallationDeleted(installation.id);
-        break;
-
-      case 'suspend':
-        this.logger.log(`Installation ${installation.id} suspended`);
-        await this.installationsPersistence.deactivateInstallation(installation.id);
-        break;
-
-      case 'unsuspend':
-        this.logger.log(`Installation ${installation.id} unsuspended`);
-        // Re-activate is a future enhancement; log for now.
-        break;
-
-      default:
-        this.logger.debug(`Unhandled installation action: ${action}`);
-    }
-  }
-
-  private async handleInstallationRepositoriesEvent(
-    payload: WebhookInstallationRepositoriesPayload,
-  ): Promise<void> {
-    const { action, installation, repositories_added, repositories_removed } = payload;
-
-    this.logger.log('Installation repositories event', {
-      action,
-      installationId: installation.id,
-      added: repositories_added?.length ?? 0,
-      removed: repositories_removed?.length ?? 0,
-    });
-
-    // When repositories are added, perform a full sync
-    if (repositories_added && repositories_added.length > 0) {
-      await this.repositoriesService.syncInstallationRepositoriesFromWebhook(
-        installation.id,
-      );
-    }
-
-    // When repositories are removed, mark them inactive
-    if (repositories_removed && repositories_removed.length > 0) {
-      const removedRepoIds = repositories_removed.map(repo => repo.id);
-      await this.repositoriesService.markRepositoriesInactive(removedRepoIds);
-    }
-  }
-
-  // ---------------------------------------------------------------------------
-  // Pull Request Event Handlers
-  // ---------------------------------------------------------------------------
-
-  private async handlePullRequestEvent(
-    payload: WebhookPullRequestPayload,
-  ): Promise<void> {
-    const { action, repository, pull_request, sender } = payload;
-
-    this.logger.log('Pull request event', {
-      action,
-      repository: repository.full_name,
-      pullRequestNumber: pull_request.number,
-      title: pull_request.title,
-      sender: sender.login,
-      headRef: pull_request.head.ref,
-      headSha: pull_request.head.sha,
-      baseRef: pull_request.base.ref,
-      baseSha: pull_request.base.sha,
-    });
-
-    // TODO: Here we can later enqueue BullMQ job for AI PR review,
-    // when that feature is implemented. For now just log it.
   }
 }
