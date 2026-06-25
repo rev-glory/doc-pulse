@@ -26,26 +26,23 @@ import { LlmService } from './services/llm.service';
 //   export class YourFeatureModule {}
 // ---------------------------------------------------------------------------
 
+import { PromptTemplateService } from './services/prompt-template.service';
+
 @Module({
   imports: [
-    // Register the gemini config namespace so ConfigService.get('gemini')
-    // resolves correctly inside this module and its providers.
     ConfigModule.forFeature(geminiConfig),
   ],
   providers: [
-    // Bind the injection token to the concrete Gemini implementation.
-    // To switch providers: replace GeminiProvider with any class that
-    // implements ILlmProvider — zero other changes required.
     {
       provide: LLM_PROVIDER,
       useClass: GeminiProvider,
     },
     LlmService,
+    PromptTemplateService,
   ],
   exports: [
-    // Export only LlmService.
-    // Consumers must never depend on GeminiProvider or the LLM_PROVIDER token directly.
     LlmService,
+    PromptTemplateService,
   ],
 })
 export class AiModule {}

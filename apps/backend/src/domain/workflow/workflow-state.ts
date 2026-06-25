@@ -1,6 +1,32 @@
 import { RepositorySummary } from '../repository';
 import { DocumentationInventory } from '../documentation';
-import { GeneratedDocument, CriticReview, PullRequestDraft, WorkflowExecutionStatus } from '../../modules/workflow/types';
+import { WorkflowStatus } from './enums';
+
+export enum GeneratedDocumentType {
+  README = 'README',
+  INSTALLATION = 'INSTALLATION',
+  ARCHITECTURE = 'ARCHITECTURE',
+}
+
+export interface GeneratedDocument {
+  id: string;
+  title: string;
+  path: string;
+  content: string;
+  type: GeneratedDocumentType;
+}
+
+export interface CriticReview {
+  score: number;
+  passed: boolean;
+  issues: string[];
+  suggestions: string[];
+}
+
+export interface PullRequestSummary {
+  url: string;
+  number: number;
+}
 
 export interface WorkflowState {
   runId?: string;
@@ -9,10 +35,8 @@ export interface WorkflowState {
   documentation: DocumentationInventory;
   generatedDocuments?: GeneratedDocument[];
   criticReview?: CriticReview;
-  pullRequest?: PullRequestDraft;
-  executionStatus: WorkflowExecutionStatus;
-  currentNode?: string;
-  startedAt?: Date;
-  completedAt?: Date;
-  metadata?: Record<string, unknown>;
+  pullRequest?: PullRequestSummary;
+  executionStatus?: WorkflowStatus;
+  generation?: Record<string, unknown>;
+  review?: Record<string, unknown>;
 }
