@@ -25,6 +25,7 @@ import { GitHubModule } from './modules/github/github.module';
 import { RepositoriesModule } from './modules/repositories/repositories.module';
 import { GitOperationsModule } from './modules/git-operations';
 import { RepositoryAnalysisModule } from './modules/repository-analysis/repository-analysis.module';
+import { WorkflowModule } from './modules/workflow';
 // TODO(queue-infrastructure): Re-add QueueModule import once the Queue module is implemented.
 
 @Module({
@@ -70,6 +71,7 @@ import { RepositoryAnalysisModule } from './modules/repository-analysis/reposito
     RepositoriesModule,
     GitOperationsModule,
     RepositoryAnalysisModule,
+    WorkflowModule,
   ],
   controllers: [AppController],
   providers: [AppService],
