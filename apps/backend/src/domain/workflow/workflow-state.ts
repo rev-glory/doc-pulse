@@ -16,9 +16,11 @@ export interface GeneratedDocument {
   type: GeneratedDocumentType;
 }
 
-export interface CriticReviewSummary {
-  approved: boolean;
-  comments: string[];
+export interface CriticReview {
+  score: number;
+  passed: boolean;
+  issues: string[];
+  suggestions: string[];
 }
 
 export interface PullRequestSummary {
@@ -30,7 +32,7 @@ export interface WorkflowState {
   repository: RepositorySummary;
   documentation: DocumentationInventory;
   generatedDocuments?: GeneratedDocument[];
-  criticReview?: CriticReviewSummary;
+  criticReview?: CriticReview;
   pullRequest?: PullRequestSummary;
   executionStatus?: WorkflowStatus;
   generation?: Record<string, unknown>;
