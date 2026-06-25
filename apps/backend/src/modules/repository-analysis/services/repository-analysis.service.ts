@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import * as path from 'node:path';
 import * as fs from 'node:fs/promises';
 import { RepositorySummary, RepositoryMetrics } from '../../../domain/repository';
+import { DocumentationInventory } from '../../../domain/documentation';
 import { parsePackageJson } from '../utils/package-json.util';
 import {
   detectLanguages,
@@ -20,6 +21,7 @@ import {
   detectDocumentation,
   detectEnvironmentFiles,
   detectApiSpecifications,
+  buildDocumentationInventory,
 } from '../utils/documentation-detector.util';
 import { REPOSITORY_ANALYSIS_CONSTANTS } from '../constants/repository-analysis.constants';
 
@@ -100,6 +102,22 @@ export class RepositoryAnalysisService {
       workspaceFolders,
       metrics,
     };
+  }
+
+  public async analyzeDocumentation(rootPath: string): Promise<DocumentationInventory> {
+    this.logger.debug(`Starting documentation analysis for repository at: ${rootPath}`);
+
+    // Verify root path exists
+    try {
+      const stat = await fs.stat(rootPath);
+      if (!stat.isDirectory()) {
+        throw new Error(`Path is not a directory: ${rootPath}`);
+      }
+    } catch (error) {
+      throw new Error(`Invalid repository root path: ${rootPath}`);
+    }
+
+    return buildDocumentationInventory(rootPath);
   }
 
   private async calculatePackageCount(rootPath: string, workspaceFolders: string[]): Promise<number> {
