@@ -1,5 +1,8 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { WorkflowService } from './services/workflow.service';
+import { WorkflowExecutorService } from './graph/workflow-executor.service';
+import { WorkflowNodeAdapters } from './graph/workflow-node-adapters';
 import { RepositoryAnalyzerNode } from './nodes/repository-analyzer.node';
 import { DocumentationLocatorNode } from './nodes/documentation-locator.node';
 import { TechnicalWriterNode } from './nodes/technical-writer.node';
@@ -9,14 +12,16 @@ import { DocumentGenerationModule } from '../document-generation/document-genera
 import { DocumentReviewModule } from '../document-review/document-review.module';
 
 @Module({
-  imports: [RepositoryAnalysisModule, DocumentGenerationModule, DocumentReviewModule],
+  imports: [ConfigModule, RepositoryAnalysisModule, DocumentGenerationModule, DocumentReviewModule],
   providers: [
     WorkflowService,
+    WorkflowExecutorService,
+    WorkflowNodeAdapters,
     RepositoryAnalyzerNode,
     DocumentationLocatorNode,
     TechnicalWriterNode,
     DocumentationCriticNode,
   ],
-  exports: [WorkflowService],
+  exports: [WorkflowService, WorkflowExecutorService],
 })
 export class WorkflowModule {}

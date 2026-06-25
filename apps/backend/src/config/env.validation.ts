@@ -92,6 +92,9 @@ const envSchema = z.object({
   QUEUE_MAX_RETRIES: z.coerce.number().int().min(0).max(10).default(3),
   QUEUE_RETRY_DELAY_MS: z.coerce.number().int().min(0).default(5000),
 
+  // ── Workflow Orchestration (LangGraph) ────────────────────────────────────
+  WORKFLOW_MIN_DOC_SCORE: z.coerce.number().int().min(0).max(100).default(80),
+
   // ── Email / Notifications (optional in dev) ───────────────────────────────
   SMTP_HOST: optionalString,
   SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),

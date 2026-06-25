@@ -15,6 +15,7 @@ import {
   redisConfig,
   storageConfig,
   validateEnv,
+  workflowConfig,
 } from './config';
 import { AiModule } from './modules/ai/ai.module';
 import { PrismaModule } from './database';
@@ -55,6 +56,7 @@ import { QueueModule } from './modules/queue/queue.module';
         queueConfig,
         notificationConfig,
         storageConfig,
+        workflowConfig,
       ],
       envFilePath: ['../../.env'],
       ignoreEnvFile: process.env['NODE_ENV'] === 'production',

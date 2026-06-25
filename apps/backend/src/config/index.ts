@@ -36,5 +36,8 @@ export type { RedisConfig } from './redis.config';
 export { storageConfig } from './storage.config';
 export type { StorageConfig } from './storage.config';
 
+export { workflowConfig } from './workflow.config';
+export type { WorkflowConfig } from './workflow.config';
+
 export { validateEnv } from './env.validation';
 export type { Env } from './env.validation';
