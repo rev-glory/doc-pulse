@@ -14,6 +14,19 @@ export interface RawDocumentOutput {
   summary?: string;
 }
 
+export interface RawCriticIssue {
+  severity: 'CRITICAL' | 'MAJOR' | 'MINOR';
+  category: string;
+  message: string;
+  location?: string;
+}
+
+export interface RawCriticReviewOutput {
+  score: number;
+  issues: RawCriticIssue[];
+  suggestions: string[];
+}
+
 @Injectable()
 export class OutputParserService {
   private readonly logger = new Logger(OutputParserService.name);
@@ -71,6 +84,50 @@ export class OutputParserService {
       type: documentType,
       metrics,
     });
+  }
+
+  /**
+   * Parses structured LLM JSON review evaluation responses.
+   */
+  public parseCriticReview(rawText: string, documentType: GeneratedDocumentType): RawCriticReviewOutput {
+    if (!rawText || typeof rawText !== 'string') {
+      throw new UnprocessableEntityException(`[OutputParser] Empty or invalid critic output received for ${documentType}`);
+    }
+
+    const cleanedJson = this.recoverJson(rawText);
+    let parsed: any;
+
+    try {
+      parsed = JSON.parse(cleanedJson);
+    } catch (error) {
+      this.logger.error(`[OutputParser] Failed to parse critic review JSON for ${documentType}:`, rawText);
+      throw new UnprocessableEntityException(
+        `[OutputParser] Malformed critic JSON structure for ${documentType}: ${error instanceof Error ? error.message : 'Syntax error'}`,
+      );
+    }
+
+    if (!parsed || typeof parsed !== 'object') {
+      throw new UnprocessableEntityException(`[OutputParser] Parsed critic response is not an object for ${documentType}`);
+    }
+
+    if (typeof parsed.score !== 'number' || !Array.isArray(parsed.issues) || !Array.isArray(parsed.suggestions)) {
+      throw new UnprocessableEntityException(
+        `[OutputParser] Missing required fields [score, issues, suggestions] in critic response for ${documentType}`,
+      );
+    }
+
+    const clampedScore = Math.max(0, Math.min(100, Math.round(parsed.score)));
+
+    return {
+      score: clampedScore,
+      issues: parsed.issues.map((iss: any) => ({
+        severity: (['CRITICAL', 'MAJOR', 'MINOR'].includes(iss?.severity) ? iss.severity : 'MINOR') as any,
+        category: typeof iss?.category === 'string' ? iss.category : 'General',
+        message: typeof iss?.message === 'string' ? iss.message : 'Unspecified issue',
+        location: typeof iss?.location === 'string' ? iss.location : undefined,
+      })),
+      suggestions: parsed.suggestions.filter((s: any) => typeof s === 'string').map((s: string) => s.trim()),
+    };
   }
 
   /**

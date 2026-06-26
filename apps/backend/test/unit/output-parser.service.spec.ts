@@ -36,7 +36,7 @@ describe('OutputParserService Unit Tests', () => {
   });
 
   it('should recover JSON wrapped in markdown json fences (wrapped JSON response)', () => {
-    const wrapped = `Here is the generated output:\n\`\`\`json\n{\n  "title": "API Docs",\n  "path": "docs/API.md",\n  "markdown": "# API\nEndpoints",\n  "summary": "API spec"\n}\n\`\`\`\nHope this helps!`;
+    const wrapped = `Here is the generated output:\n\`\`\`json\n{\n  "title": "API Docs",\n  "path": "docs/API.md",\n  "markdown": "# API\\nEndpoints",\n  "summary": "API spec"\n}\n\`\`\`\nHope this helps!`;
 
     const doc = parser.parse(wrapped, GeneratedDocumentType.API);
     assert.equal(doc.title, 'API Docs');
@@ -60,5 +60,30 @@ describe('OutputParserService Unit Tests', () => {
   it('should throw UnprocessableEntityException on markdown-only responses (no JSON structure)', () => {
     const mdOnly = `# Project README\nThis is pure markdown without any JSON metadata structure.`;
     assert.throws(() => parser.parse(mdOnly, docType), UnprocessableEntityException);
+  });
+
+  it('should successfully parse valid critic review evaluation JSON', () => {
+    const raw = JSON.stringify({
+      score: 92,
+      issues: [{ severity: 'MINOR', category: 'Clarity', message: 'Consider adding more examples' }],
+      suggestions: ['Add a troubleshooting section'],
+    });
+
+    const parsed = parser.parseCriticReview(raw, docType);
+    assert.equal(parsed.score, 92);
+    assert.equal(parsed.issues.length, 1);
+    assert.equal(parsed.issues[0]?.severity, 'MINOR');
+    assert.equal(parsed.suggestions[0], 'Add a troubleshooting section');
+  });
+
+  it('should clamp score in critic review output', () => {
+    const raw = JSON.stringify({
+      score: 150,
+      issues: [],
+      suggestions: [],
+    });
+
+    const parsed = parser.parseCriticReview(raw, docType);
+    assert.equal(parsed.score, 100);
   });
 });

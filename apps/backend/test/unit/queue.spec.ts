@@ -76,11 +76,10 @@ describe('Queue Module Infrastructure Verification', () => {
       const mockJob = { id: 'job-999', data: payload } as any;
       const expectedFinalState = { executionStatus: 'SUCCESS' } as any;
 
-      mockWorkflowService.run.mock.mockImplementation(async (state: any) => {
-        assert.equal(state.runId, 'run-456');
-        assert.equal(state.repositoryId, 'repo-123');
-        assert.equal(state.repository.name, 'doc-pulse');
-        assert.equal(state.repository.rootPath, '/repos/doc-pulse');
+      mockWorkflowService.run.mock.mockImplementation(async (input: any) => {
+        assert.equal(input.runId, 'run-456');
+        assert.equal(input.repositoryId, 'repo-123');
+        assert.equal(input.workspacePath, '/repos/doc-pulse');
         return expectedFinalState;
       });
 

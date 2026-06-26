@@ -3,4 +3,7 @@ export enum WorkflowStatus {
   Running = 'Running',
   Completed = 'Completed',
   Failed = 'Failed',
+  NeedsReview = 'NeedsReview',
+  RegenerationRequired = 'RegenerationRequired',
+  ReviewFailed = 'ReviewFailed',
 }

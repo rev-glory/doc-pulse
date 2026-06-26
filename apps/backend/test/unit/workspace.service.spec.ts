@@ -5,7 +5,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 import * as os from 'os';
 
-import { WorkspaceService } from '@/modules/git-operations/services/workspace.service';
+import { WorkspaceService } from '../../src/modules/git-operations/services/workspace.service';
 
 describe('WorkspaceService', () => {
   let service: WorkspaceService;

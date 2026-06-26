@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { WorkflowStatus } from '../../../domain/workflow';
 import { WorkflowAnnotation } from '../graph/state.annotation';
 import { DocumentReviewService } from '../../document-review/services/document-review.service';
 
@@ -19,10 +20,14 @@ export class DocumentationCriticNode {
       state.repository,
       state.documentation,
       state.generatedDocuments,
+      state.runId,
     );
+
+    const executionStatus = criticReview.passed ? state.executionStatus : WorkflowStatus.RegenerationRequired;
 
     return {
       criticReview,
+      executionStatus,
     };
   }
 }

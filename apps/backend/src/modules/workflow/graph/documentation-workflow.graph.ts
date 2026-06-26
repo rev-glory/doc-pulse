@@ -9,7 +9,7 @@ export interface DocumentationGraphConfig {
 
 function compileDocumentationGraph(
   adapters: WorkflowNodeAdapters,
-  minDocScore: number,
+  _minDocScore: number,
 ) {
   const workflow = new StateGraph(WorkflowGraphAnnotation)
     .addNode(WorkflowNodeName.RepositoryAnalyzer, (state: WorkflowGraphState) => adapters.repositoryAnalyzerStep(state))
@@ -27,8 +27,8 @@ function compileDocumentationGraph(
     .addConditionalEdges(
       WorkflowNodeName.DocumentationCritic,
       (state: WorkflowGraphState) => {
-        const score = state.criticReview?.score ?? 0;
-        return score >= minDocScore ? 'approve' : 'reject';
+        const passed = state.criticReview?.passed ?? false;
+        return passed ? 'approve' : 'reject';
       },
       {
         approve: WorkflowNodeName.PullRequestGenerator,

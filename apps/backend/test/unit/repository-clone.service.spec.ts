@@ -1,15 +1,15 @@
 import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { RepositoryCloneService } from '@/modules/git-operations/services/repository-clone.service';
+import { RepositoryCloneService } from '../../src/modules/git-operations/services/repository-clone.service';
 import {
   RepositoryAlreadyClonedException,
   RepositoryNotFoundException,
   CloneFailedException,
   PullFailedException,
   CheckoutFailedException,
-} from '@/modules/git-operations/exceptions';
-import type { GitRepository } from '@/modules/git-operations/types';
+} from '../../src/modules/git-operations/exceptions';
+import type { GitRepository } from '../../src/modules/git-operations/types';
 
 const testRepo: GitRepository = {
   id: 'test-repo-id',

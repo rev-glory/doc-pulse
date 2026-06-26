@@ -2,7 +2,7 @@ import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { ConfigService } from '@nestjs/config';
 
-import { GitService } from '@/modules/git-operations/services/git.service';
+import { GitService } from '../../src/modules/git-operations/services/git.service';
 
 // Create a testable GitService that lets us override createGitClient
 class TestableGitService extends GitService {

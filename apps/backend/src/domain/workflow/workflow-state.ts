@@ -48,11 +48,41 @@ export function createGeneratedDocument(data: Omit<GeneratedDocument, 'content'>
   return doc;
 }
 
-export interface CriticReview {
+export interface ReviewIssue {
+  severity: 'CRITICAL' | 'MAJOR' | 'MINOR';
+  category: string;
+  message: string;
+  location?: string;
+}
+
+export interface ReviewMetrics {
+  promptVersion: number;
+  model: string;
+  reviewDurationMs: number;
+  promptTokens: number;
+  completionTokens: number;
+  totalTokens: number;
+  reviewedAt: string;
+}
+
+export interface DocumentationReview {
+  documentType: GeneratedDocumentType;
   score: number;
-  passed: boolean;
-  issues: string[];
+  approved: boolean;
+  issues: ReviewIssue[];
   suggestions: string[];
+  metrics?: ReviewMetrics;
+}
+
+export interface CriticReview {
+  score: number; // average score across all documents
+  passed: boolean; // true if all documents approved
+  approvedCount: number;
+  failedCount: number;
+  totalDocuments: number;
+  issues: string[]; // formatted string list of issues for legacy wrapper compatibility
+  suggestions: string[]; // combined suggestions
+  reviews?: DocumentationReview[]; // detailed per-document reviews
 }
 
 export interface PullRequestSummary {

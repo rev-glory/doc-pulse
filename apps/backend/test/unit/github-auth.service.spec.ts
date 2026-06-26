@@ -2,7 +2,7 @@ import { describe, it, beforeEach, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import { ConfigService } from '@nestjs/config';
 
-import { GitHubAuthService } from '@/modules/github/services/github-auth.service';
+import { GitHubAuthService } from '../../src/modules/github/services/github-auth.service';
 
 describe('GitHubAuthService', () => {
   let service: GitHubAuthService;
