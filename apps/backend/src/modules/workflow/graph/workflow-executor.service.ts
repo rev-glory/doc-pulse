@@ -1,5 +1,6 @@
-import { Injectable, Logger, OnModuleInit, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, BadRequestException, Optional } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { RealtimeWorkflowStage, WorkflowEventType } from '@docpulse/shared-types';
 import { WorkflowNodeAdapters, WorkflowNodeExecutionException } from './workflow-node-adapters';
 import { buildDocumentationWorkflowGraph, CompiledDocumentationGraph } from './documentation-workflow.graph';
 import { WorkflowExecutionInput, WorkflowGraphState, WorkflowError } from './graph.types';
@@ -10,6 +11,7 @@ import {
   WorkflowNodeName,
   WorkflowCheckpointSnapshot,
 } from '../../../domain/workflow';
+import { WorkflowEventService } from '../../realtime/services/workflow-event.service';
 
 @Injectable()
 export class WorkflowExecutorService implements OnModuleInit {
@@ -30,6 +32,7 @@ export class WorkflowExecutorService implements OnModuleInit {
     private readonly adapters: WorkflowNodeAdapters,
     private readonly configService: ConfigService,
     private readonly checkpointRepository: WorkflowCheckpointRepository,
+    @Optional() private readonly eventService?: WorkflowEventService,
   ) {}
 
   public onModuleInit(): void {

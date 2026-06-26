@@ -28,20 +28,10 @@ import { GitOperationsModule } from './modules/git-operations';
 import { RepositoryAnalysisModule } from './modules/repository-analysis/repository-analysis.module';
 import { WorkflowModule } from './modules/workflow';
 import { QueueModule } from './modules/queue/queue.module';
+import { RealtimeModule } from './modules/realtime/realtime.module';
 
 @Module({
   imports: [
-    // ── Global configuration ───────────────────────────────────────────────
-    // isGlobal: true     → ConfigService is injectable in every module without
-    //                      importing ConfigModule again.
-    // validate           → Zod schema runs at bootstrap; app refuses to start
-    //                      if any required variable is missing or invalid.
-    // load               → Domain-namespaced factories registered as config
-    //                      namespaces (e.g. ConfigService.get('database')).
-    // envFilePath        → Path to the local .env file (development only).
-    // ignoreEnvFile      → Set to true in production so that platform-injected
-    //                      secrets (Railway, Fly.io, Docker) are never silently
-    //                      overridden by a stale .env file on disk.
     ConfigModule.forRoot({
       isGlobal: true,
       validate: validateEnv,
@@ -63,6 +53,7 @@ import { QueueModule } from './modules/queue/queue.module';
       expandVariables: false,
     }),
 
+    RealtimeModule,
     AiModule,
     PrismaModule,
     QueueModule,

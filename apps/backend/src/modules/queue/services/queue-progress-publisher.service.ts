@@ -1,11 +1,15 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import type { Job } from 'bullmq';
+import { QueueEventStatus } from '@docpulse/shared-types';
 
 import type { ProgressPublisher, WorkflowProgressEvent } from '../types/progress.types';
+import { WorkflowEventService } from '../../realtime/services/workflow-event.service';
 
 @Injectable()
 export class QueueProgressPublisherService implements ProgressPublisher {
   private readonly logger = new Logger(QueueProgressPublisherService.name);
+
+  constructor(@Optional() private readonly eventService?: WorkflowEventService) {}
 
   /**
    * Publishes structured progress update to active BullMQ job and logs metadata.
@@ -37,11 +41,20 @@ export class QueueProgressPublisherService implements ProgressPublisher {
       this.logger.warn(`Failed to update BullMQ job progress: ${error instanceof Error ? error.message : String(error)}`);
     }
 
-    // Future SSE / WebSocket / Redis PubSub broadcasting hook
+    // Broadcast via WebSockets Gateway
     await this.publishProgress(fullEvent);
   }
 
   public async publishProgress(event: WorkflowProgressEvent): Promise<void> {
-    // Abstraction point for external broadcasting (WebSockets, SSE, Redis Pub/Sub)
+    if (this.eventService) {
+      this.eventService.publishQueueEvent(
+        event.runId,
+        event.repositoryId,
+        event.runId, // workflowId
+        QueueEventStatus.Active,
+        event.percentage,
+        { message: event.message, stage: event.stage, ...event.metadata },
+      );
+    }
   }
 }

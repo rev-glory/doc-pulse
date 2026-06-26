@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { WorkflowCheckpointRepository } from '../persistence/workflow-checkpoint.repository';
 import { WorkflowGraphState, WorkflowGraphUpdate, WorkflowError } from './graph.types';
 import { WorkflowNodeExecutionException } from './workflow-node-adapters';
@@ -8,6 +8,7 @@ import {
   WorkflowCheckpointSnapshot,
   WorkflowStatus,
 } from '../../../domain/workflow';
+import { WorkflowEventService } from '../../realtime/services/workflow-event.service';
 
 export interface ExecutionContextRef {
   expectedVersion: number;
@@ -19,7 +20,10 @@ export interface ExecutionContextRef {
 export class WorkflowNodeExecutionWrapper {
   private readonly logger = new Logger(WorkflowNodeExecutionWrapper.name);
 
-  constructor(private readonly checkpointRepository: WorkflowCheckpointRepository) {}
+  constructor(
+    private readonly checkpointRepository: WorkflowCheckpointRepository,
+    @Optional() private readonly eventService?: WorkflowEventService,
+  ) {}
 
   /**
    * Executes a business node through single-responsibility persistence middleware.
@@ -34,8 +38,17 @@ export class WorkflowNodeExecutionWrapper {
   ): Promise<WorkflowGraphUpdate> {
     const startTime = Date.now();
     const runId = state.runId;
+    const isoStart = new Date().toISOString();
 
     this.logger.debug(`[${runId}] Executing wrapper for node [${nodeName}] (stage: ${stage})`);
+
+    if (this.eventService) {
+      this.eventService.publishNodeExecutionEvent(runId, state.repositoryId || '', runId, {
+        nodeName,
+        status: 'started',
+        startedAt: isoStart,
+      });
+    }
 
     try {
       // 1. Execute pure business logic
@@ -73,6 +86,16 @@ export class WorkflowNodeExecutionWrapper {
 
       this.logger.log(`[${runId}] Node [${nodeName}] completed successfully in ${durationMs}ms.`);
 
+      if (this.eventService) {
+        this.eventService.publishNodeExecutionEvent(runId, state.repositoryId || '', runId, {
+          nodeName,
+          status: 'completed',
+          startedAt: isoStart,
+          completedAt: new Date().toISOString(),
+          duration: durationMs,
+        });
+      }
+
       return {
         ...updated,
         currentNode: nodeName,
@@ -95,6 +118,16 @@ export class WorkflowNodeExecutionWrapper {
       execContext.nodeRetries[nodeName] = nextRetries;
 
       this.logger.error(`[${runId}] Node [${nodeName}] failed after ${durationMs}ms (attempt ${nextRetries}): ${cause.message}`);
+
+      if (this.eventService) {
+        this.eventService.publishNodeExecutionEvent(runId, state.repositoryId || '', runId, {
+          nodeName,
+          status: 'failed',
+          startedAt: isoStart,
+          completedAt: new Date().toISOString(),
+          duration: durationMs,
+        });
+      }
 
       try {
         const snapshot = this.constructLightweightSnapshot(state, nodeName, execContext.completedNodes);
