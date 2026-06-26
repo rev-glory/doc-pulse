@@ -29,6 +29,9 @@ import { RepositoryAnalysisModule } from './modules/repository-analysis/reposito
 import { WorkflowModule } from './modules/workflow';
 import { QueueModule } from './modules/queue/queue.module';
 import { RealtimeModule } from './modules/realtime/realtime.module';
+import { RunsModule } from './modules/runs/runs.module';
+import { PullRequestsModule } from './modules/pull-requests/pull-requests.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -65,9 +68,13 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
     GitOperationsModule,
     RepositoryAnalysisModule,
     WorkflowModule,
+    RunsModule,
+    PullRequestsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
 export class AppModule {}
+
 

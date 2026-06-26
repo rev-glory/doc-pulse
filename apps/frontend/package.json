@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "test": "node --test"
+    "test": "tsx --test \"test/unit/dashboard.test.tsx\""
   },
   "dependencies": {
     "next": "^16.2.9",
@@ -23,6 +23,7 @@
     "@types/react": "^19.0.2",
     "@types/react-dom": "^19.0.2",
     "tailwindcss": "^4.3.1",
+    "tsx": "^4.19.2",
     "typescript": "catalog:"
   }
 }
