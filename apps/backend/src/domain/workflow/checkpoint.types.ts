@@ -8,6 +8,9 @@ export enum WorkflowNodeName {
   TechnicalWriter = 'TechnicalWriter',
   DocumentationCritic = 'DocumentationCritic',
   PullRequestGenerator = 'PullRequestGenerator',
+  GitCommit = 'GitCommit',
+  PushBranch = 'PushBranch',
+  CreatePullRequest = 'CreatePullRequest',
 }
 
 /**
@@ -20,6 +23,8 @@ export enum WorkflowStage {
   LOCATING_DOCUMENTATION = 'LOCATING_DOCUMENTATION',
   WRITING = 'WRITING',
   REVIEWING = 'REVIEWING',
+  COMMITTING = 'COMMITTING',
+  PUSHING = 'PUSHING',
   CREATING_PULL_REQUEST = 'CREATING_PULL_REQUEST',
   FINISHED = 'FINISHED',
 }

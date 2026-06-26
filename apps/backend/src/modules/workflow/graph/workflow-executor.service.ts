@@ -21,7 +21,9 @@ export class WorkflowExecutorService implements OnModuleInit {
     WorkflowNodeName.DocumentationLocator,
     WorkflowNodeName.TechnicalWriter,
     WorkflowNodeName.DocumentationCritic,
-    WorkflowNodeName.PullRequestGenerator,
+    WorkflowNodeName.GitCommit,
+    WorkflowNodeName.PushBranch,
+    WorkflowNodeName.CreatePullRequest,
   ];
 
   constructor(
@@ -123,6 +125,7 @@ export class WorkflowExecutorService implements OnModuleInit {
    */
   private determineNextNode(lastCompletedNode?: WorkflowNodeName): WorkflowNodeName {
     if (!lastCompletedNode) return WorkflowNodeName.RepositoryAnalyzer;
+    if (lastCompletedNode === WorkflowNodeName.PullRequestGenerator) return WorkflowNodeName.GitCommit;
 
     const idx = this.sequentialOrder.indexOf(lastCompletedNode);
     if (idx === -1 || idx === this.sequentialOrder.length - 1) {

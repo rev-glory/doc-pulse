@@ -7,3 +7,12 @@ export enum WorkflowStatus {
   RegenerationRequired = 'RegenerationRequired',
   ReviewFailed = 'ReviewFailed',
 }
+
+export enum GitOperationStatus {
+  Pending = 'Pending',
+  Committed = 'Committed',
+  Pushed = 'Pushed',
+  PullRequestCreated = 'PullRequestCreated',
+  RolledBack = 'RolledBack',
+  Failed = 'Failed',
+}

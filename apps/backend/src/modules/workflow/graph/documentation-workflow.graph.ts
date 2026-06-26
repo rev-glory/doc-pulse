@@ -16,7 +16,9 @@ function compileDocumentationGraph(
     .addNode(WorkflowNodeName.DocumentationLocator, (state: WorkflowGraphState) => adapters.documentationLocatorStep(state))
     .addNode(WorkflowNodeName.TechnicalWriter, (state: WorkflowGraphState) => adapters.technicalWriterStep(state))
     .addNode(WorkflowNodeName.DocumentationCritic, (state: WorkflowGraphState) => adapters.documentationCriticStep(state))
-    .addNode(WorkflowNodeName.PullRequestGenerator, (state: WorkflowGraphState) => adapters.pullRequestGeneratorStep(state))
+    .addNode(WorkflowNodeName.GitCommit, (state: WorkflowGraphState) => adapters.gitCommitStep(state))
+    .addNode(WorkflowNodeName.PushBranch, (state: WorkflowGraphState) => adapters.pushBranchStep(state))
+    .addNode(WorkflowNodeName.CreatePullRequest, (state: WorkflowGraphState) => adapters.createPullRequestStep(state))
 
     // Pure unchanged declarative linear topology
     .addEdge(START, WorkflowNodeName.RepositoryAnalyzer)
@@ -31,11 +33,13 @@ function compileDocumentationGraph(
         return passed ? 'approve' : 'reject';
       },
       {
-        approve: WorkflowNodeName.PullRequestGenerator,
+        approve: WorkflowNodeName.GitCommit,
         reject: END,
       },
     )
-    .addEdge(WorkflowNodeName.PullRequestGenerator, END);
+    .addEdge(WorkflowNodeName.GitCommit, WorkflowNodeName.PushBranch)
+    .addEdge(WorkflowNodeName.PushBranch, WorkflowNodeName.CreatePullRequest)
+    .addEdge(WorkflowNodeName.CreatePullRequest, END);
 
   return workflow.compile();
 }

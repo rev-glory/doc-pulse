@@ -1,6 +1,6 @@
 import { RepositorySummary } from '../repository';
 import { DocumentationInventory } from '../documentation';
-import { WorkflowStatus } from './enums';
+import { WorkflowStatus, GitOperationStatus } from './enums';
 
 export enum GeneratedDocumentType {
   README = 'README',
@@ -98,6 +98,11 @@ export interface WorkflowState {
   generatedDocuments?: GeneratedDocument[];
   criticReview?: CriticReview;
   pullRequest?: PullRequestSummary;
+  branchName?: string;
+  commitSha?: string;
+  pullRequestNumber?: number;
+  pullRequestUrl?: string;
+  gitOperationStatus?: GitOperationStatus;
   executionStatus?: WorkflowStatus;
   generation?: Record<string, unknown>;
   review?: Record<string, unknown>;

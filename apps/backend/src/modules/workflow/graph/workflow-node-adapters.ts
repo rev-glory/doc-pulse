@@ -1,8 +1,11 @@
-import { Injectable, Logger, NotImplementedException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { RepositoryAnalyzerNode } from '../nodes/repository-analyzer.node';
 import { DocumentationLocatorNode } from '../nodes/documentation-locator.node';
 import { TechnicalWriterNode } from '../nodes/technical-writer.node';
 import { DocumentationCriticNode } from '../nodes/documentation-critic.node';
+import { GitCommitNode } from '../nodes/git-commit.node';
+import { PushBranchNode } from '../nodes/push-branch.node';
+import { CreatePullRequestNode } from '../nodes/create-pull-request.node';
 import { WorkflowGraphState, WorkflowGraphUpdate, WorkflowError } from './graph.types';
 import { WorkflowNodeExecutionWrapper, ExecutionContextRef } from './workflow-node-execution.wrapper';
 import { WorkflowNodeName, WorkflowStage, WorkflowStatus } from '../../../domain/workflow';
@@ -32,7 +35,9 @@ export class WorkflowNodeAdapters {
     WorkflowNodeName.DocumentationLocator,
     WorkflowNodeName.TechnicalWriter,
     WorkflowNodeName.DocumentationCritic,
-    WorkflowNodeName.PullRequestGenerator,
+    WorkflowNodeName.GitCommit,
+    WorkflowNodeName.PushBranch,
+    WorkflowNodeName.CreatePullRequest,
   ];
 
   constructor(
@@ -40,6 +45,9 @@ export class WorkflowNodeAdapters {
     private readonly documentationLocator: DocumentationLocatorNode,
     private readonly technicalWriter: TechnicalWriterNode,
     private readonly documentationCritic: DocumentationCriticNode,
+    private readonly gitCommit: GitCommitNode,
+    private readonly pushBranch: PushBranchNode,
+    private readonly createPullRequest: CreatePullRequestNode,
     private readonly wrapper: WorkflowNodeExecutionWrapper,
   ) {}
 
@@ -125,16 +133,46 @@ export class WorkflowNodeAdapters {
     );
   }
 
-  public async pullRequestGeneratorStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
-    const nodeName = WorkflowNodeName.PullRequestGenerator;
+  public async gitCommitStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
+    const nodeName = WorkflowNodeName.GitCommit;
     if (this.shouldSkip(state.runId, nodeName)) {
       this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
       return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
 
     const ctx = this.getOrchestrationContext(state.runId);
-    return this.wrapper.executeNode(nodeName, WorkflowStage.CREATING_PULL_REQUEST, state, ctx, async () => {
-      throw new NotImplementedException('PullRequestGeneratorNode is not implemented yet');
-    });
+    return this.wrapper.executeNode(nodeName, WorkflowStage.COMMITTING, state, ctx, async (st) =>
+      this.gitCommit.invoke(st as any),
+    );
+  }
+
+  public async pushBranchStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
+    const nodeName = WorkflowNodeName.PushBranch;
+    if (this.shouldSkip(state.runId, nodeName)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
+    }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.PUSHING, state, ctx, async (st) =>
+      this.pushBranch.invoke(st as any),
+    );
+  }
+
+  public async createPullRequestStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
+    const nodeName = WorkflowNodeName.CreatePullRequest;
+    if (this.shouldSkip(state.runId, nodeName)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
+    }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.CREATING_PULL_REQUEST, state, ctx, async (st) =>
+      this.createPullRequest.invoke(st as any),
+    );
+  }
+
+  public async pullRequestGeneratorStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
+    return this.createPullRequestStep(state);
   }
 }

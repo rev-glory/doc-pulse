@@ -6,6 +6,7 @@ import {
   CriticReview,
   PullRequestSummary,
   WorkflowStatus,
+  GitOperationStatus,
 } from '../../../domain/workflow';
 
 export interface WorkflowError {
@@ -37,6 +38,11 @@ export const WorkflowGraphAnnotation = Annotation.Root({
   generatedDocuments: Annotation<GeneratedDocument[] | undefined>(),
   criticReview: Annotation<CriticReview | undefined>(),
   pullRequest: Annotation<PullRequestSummary | undefined>(),
+  branchName: Annotation<string | undefined>(),
+  commitSha: Annotation<string | undefined>(),
+  pullRequestNumber: Annotation<number | undefined>(),
+  pullRequestUrl: Annotation<string | undefined>(),
+  gitOperationStatus: Annotation<GitOperationStatus | undefined>(),
   executionStatus: Annotation<WorkflowStatus | undefined>(),
   generation: Annotation<Record<string, unknown> | undefined>(),
   review: Annotation<Record<string, unknown> | undefined>(),

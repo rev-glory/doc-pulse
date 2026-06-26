@@ -14,6 +14,8 @@ import { GitHubApiService } from './services/github-api.service';
 import { GitHubInstallationService } from './services/github-installation.service';
 import { GitHubRepositoryService } from './services/github-repository.service';
 import { GitHubWebhookService } from './services/github-webhook.service';
+import { PullRequestTemplateService } from './services/pull-request-template.service';
+import { PullRequestService } from './services/pull-request.service';
 import { InstallationsPersistence } from './persistence/installations.persistence';
 
 @Module({
@@ -22,7 +24,6 @@ import { InstallationsPersistence } from './persistence/installations.persistenc
     PrismaModule,
     forwardRef(() => RepositoriesModule),
     WebhookEventsModule,
-    // TODO(queue-infrastructure): Re-add QueueModule here once implemented.
   ],
   controllers: [GitHubController, GitHubWebhooksController],
   providers: [
@@ -31,6 +32,8 @@ import { InstallationsPersistence } from './persistence/installations.persistenc
     GitHubInstallationService,
     GitHubRepositoryService,
     GitHubWebhookService,
+    PullRequestTemplateService,
+    PullRequestService,
     InstallationsPersistence,
   ],
   exports: [
@@ -38,6 +41,7 @@ import { InstallationsPersistence } from './persistence/installations.persistenc
     GitHubApiService,
     GitHubInstallationService,
     GitHubRepositoryService,
+    PullRequestService,
     InstallationsPersistence,
   ],
 })

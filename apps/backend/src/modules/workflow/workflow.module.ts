@@ -6,16 +6,31 @@ import { WorkflowExecutorService } from './graph/workflow-executor.service';
 import { WorkflowNodeAdapters } from './graph/workflow-node-adapters';
 import { WorkflowNodeExecutionWrapper } from './graph/workflow-node-execution.wrapper';
 import { WorkflowCheckpointRepository } from './persistence/workflow-checkpoint.repository';
-import { RepositoryAnalyzerNode } from './nodes/repository-analyzer.node';
-import { DocumentationLocatorNode } from './nodes/documentation-locator.node';
-import { TechnicalWriterNode } from './nodes/technical-writer.node';
-import { DocumentationCriticNode } from './nodes/documentation-critic.node';
+import {
+  RepositoryAnalyzerNode,
+  DocumentationLocatorNode,
+  TechnicalWriterNode,
+  DocumentationCriticNode,
+  GitCommitNode,
+  PushBranchNode,
+  CreatePullRequestNode,
+} from './nodes';
 import { RepositoryAnalysisModule } from '../repository-analysis/repository-analysis.module';
 import { DocumentGenerationModule } from '../document-generation/document-generation.module';
 import { DocumentReviewModule } from '../document-review/document-review.module';
+import { GitOperationsModule } from '../git-operations/git-operations.module';
+import { GitHubModule } from '../github/github.module';
 
 @Module({
-  imports: [ConfigModule, PrismaModule, RepositoryAnalysisModule, DocumentGenerationModule, DocumentReviewModule],
+  imports: [
+    ConfigModule,
+    PrismaModule,
+    RepositoryAnalysisModule,
+    DocumentGenerationModule,
+    DocumentReviewModule,
+    GitOperationsModule,
+    GitHubModule,
+  ],
   providers: [
     WorkflowCheckpointRepository,
     WorkflowNodeExecutionWrapper,
@@ -26,6 +41,9 @@ import { DocumentReviewModule } from '../document-review/document-review.module'
     DocumentationLocatorNode,
     TechnicalWriterNode,
     DocumentationCriticNode,
+    GitCommitNode,
+    PushBranchNode,
+    CreatePullRequestNode,
   ],
   exports: [WorkflowService, WorkflowExecutorService, WorkflowCheckpointRepository],
 })

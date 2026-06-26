@@ -98,6 +98,48 @@ export class GitService {
     return git.status();
   }
 
+  async branchList(repositoryPath: string): Promise<string[]> {
+    const git = this.createGitClient(repositoryPath);
+    const summary = await git.branchLocal();
+    return summary.all;
+  }
+
+  async branchLocal(repositoryPath: string, branchName: string): Promise<void> {
+    const git = this.createGitClient(repositoryPath);
+    await git.branch([branchName]);
+  }
+
+  async checkoutLocalBranch(repositoryPath: string, branchName: string): Promise<void> {
+    const git = this.createGitClient(repositoryPath);
+    await git.checkoutLocalBranch(branchName);
+  }
+
+  async deleteLocalBranch(repositoryPath: string, branchName: string, force = false): Promise<void> {
+    const git = this.createGitClient(repositoryPath);
+    await git.deleteLocalBranch(branchName, force);
+  }
+
+  async add(repositoryPath: string, files: string | string[]): Promise<void> {
+    const git = this.createGitClient(repositoryPath);
+    await git.add(files);
+  }
+
+  async commit(repositoryPath: string, message: string): Promise<string> {
+    const git = this.createGitClient(repositoryPath);
+    const result = await git.commit(message);
+    return result.commit || '';
+  }
+
+  async push(repositoryPath: string, remote: string, branch: string, options: string[] = []): Promise<void> {
+    const git = this.createGitClient(repositoryPath);
+    await git.push(remote, branch, options);
+  }
+
+  async diff(repositoryPath: string, options: string[] = []): Promise<string> {
+    const git = this.createGitClient(repositoryPath);
+    return git.diff(options);
+  }
+
   async delete(repositoryPath: string): Promise<void> {
     this.logger.debug(`Deleting repository at ${repositoryPath}`);
     await fs.rm(repositoryPath, { recursive: true, force: true });
