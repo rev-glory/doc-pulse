@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useAuth } from '@/features/auth/providers/auth-provider';
