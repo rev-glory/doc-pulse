@@ -11,13 +11,13 @@ export async function apiClient<T>(
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint.startsWith('/') ? endpoint : `/${endpoint}`}`;
 
-  // Get token if stored (fallback to dev token or mock)
   const headers = new Headers(options.headers || {});
   headers.set('Content-Type', 'application/json');
 
   const response = await fetch(url, {
     ...options,
     headers,
+    credentials: 'include',
   });
 
   if (!response.ok) {

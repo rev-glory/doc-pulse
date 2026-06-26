@@ -4,6 +4,7 @@ import { plainToInstance } from 'class-transformer';
 import { InstallationsPersistence } from '../persistence/installations.persistence';
 import { InstallationResponseDto } from '../dto/installation-response.dto';
 import type { Installation } from '@/generated/prisma/client';
+import { PrismaService } from '@/database';
 
 // ---------------------------------------------------------------------------
 // GitHubInstallationService
@@ -27,6 +28,7 @@ export class GitHubInstallationService {
 
   constructor(
     private readonly installationsPersistence: InstallationsPersistence,
+    private readonly prisma: PrismaService,
   ) {}
 
   // ---------------------------------------------------------------------------
@@ -38,6 +40,7 @@ export class GitHubInstallationService {
    * Reads from the database only — no GitHub API call is made.
    */
   async getInstallationsForUser(userId: string): Promise<InstallationResponseDto[]> {
+    this.logger.log('Returning installation list');
     this.logger.debug(`Fetching installations for user ${userId}`);
     const installations = await this.installationsPersistence.listByUser(userId);
     return installations.map((inst) => this.toResponseDto(inst));
@@ -65,35 +68,53 @@ export class GitHubInstallationService {
    * The webhook payload identifies the sender (the GitHub user who installed
    * the app). We map sender.githubId → User.githubId to associate the
    * installation with a DocPulse user.
-   *
-   * If the sender has not yet logged into DocPulse, the userId will be null
-   * and the installation is persisted without an owner for now. It will be
-   * linked on the user's first login.
    */
-  async handleInstallationCreated(payload: {
-    installationId: number;
-    accountLogin: string;
-    accountType: string;
-    userId: string;
-  }): Promise<void> {
-    const { installationId, accountLogin, accountType, userId } = payload;
+  async handleInstallationCreated(payload: any): Promise<void> {
+    this.logger.log('Processing installation.created');
 
-    this.logger.log('Persisting new installation from webhook', {
-      installationId,
-      accountLogin,
-      accountType,
-      userId,
+    const installationId = payload.installation?.id;
+    const accountLogin = payload.account?.login || payload.installation?.account?.login;
+    const accountType = payload.account?.type || payload.installation?.account?.type;
+    const senderId = payload.sender?.id;
+
+    if (!installationId || !accountLogin || !accountType || !senderId) {
+      this.logger.error('Invalid payload fields in handleInstallationCreated', {
+        installationId,
+        accountLogin,
+        accountType,
+        senderId,
+      });
+      return;
+    }
+
+    this.logger.log('Finding user by githubId');
+    const user = await this.prisma.user.findUnique({
+      where: { githubId: senderId },
     });
 
-    await this.installationsPersistence.upsertInstallation({
+    if (!user) {
+      this.logger.warn(`User not found for githubId: ${senderId}. Installation cannot be linked.`);
+      return;
+    }
+
+    this.logger.log('User found');
+
+    const existing = await this.installationsPersistence.findByInstallationId(installationId);
+    if (existing) {
+      this.logger.log('Updating installation');
+    } else {
+      this.logger.log('Creating installation');
+    }
+
+    const { installation } = await this.installationsPersistence.upsertInstallation({
       installationId,
       accountLogin,
       accountType,
       isActive: true,
-      userId,
+      userId: user.id,
     });
 
-    this.logger.log(`Installation ${installationId} persisted successfully`);
+    this.logger.log('Installation saved');
   }
 
   /**

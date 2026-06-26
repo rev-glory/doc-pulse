@@ -5,6 +5,7 @@ import * as crypto from 'node:crypto';
 import type { GitHubConfig } from '@/config';
 import { PrismaService } from '@/database';
 import { WebhookEventsService } from '@/modules/webhook-events/services/webhook-events.service';
+import { GitHubInstallationService } from './github-installation.service';
 // TODO(queue-infrastructure): Re-add JobDispatcher, JobName import once the Queue module is implemented.
 
 // ---------------------------------------------------------------------------
@@ -47,6 +48,7 @@ export class GitHubWebhookService {
     private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
     private readonly webhookEventsService: WebhookEventsService,
+    private readonly gitHubInstallationService: GitHubInstallationService,
     // TODO(queue-infrastructure): Re-add JobDispatcher injection once the Queue module is implemented.
     // private readonly jobDispatcher: JobDispatcher,
   ) {
@@ -129,27 +131,18 @@ export class GitHubWebhookService {
     });
 
     try {
-      // TODO(queue-infrastructure): Dispatch jobs to BullMQ once the Queue module is implemented.
-      // The switch block below routes webhook events to the appropriate queue job.
-      // Restore this when QueueModule and JobDispatcher are available.
-      //
-      // switch (event) {
-      //   case 'installation':
-      //     await this.jobDispatcher.dispatch({ name: JobName.WEBHOOK_INSTALLATION, data: rawPayload });
-      //     break;
-      //   case 'installation_repositories':
-      //     await this.jobDispatcher.dispatch({ name: JobName.WEBHOOK_INSTALLATION_REPOSITORIES, data: rawPayload });
-      //     break;
-      //   case 'push':
-      //     await this.jobDispatcher.dispatch({ name: JobName.WEBHOOK_PUSH, data: rawPayload });
-      //     break;
-      //   case 'pull_request':
-      //     await this.jobDispatcher.dispatch({ name: JobName.WEBHOOK_PULL_REQUEST, data: rawPayload });
-      //     break;
-      //   default:
-      //     this.logger.debug(`Unhandled webhook event: ${event} — ignoring`);
-      // }
-      this.logger.debug(`Webhook event received: ${event} — job dispatch pending Queue infrastructure`);
+      switch (event) {
+        case 'installation':
+          const installationPayload = rawPayload as any;
+          if (installationPayload.action === 'created') {
+            await this.gitHubInstallationService.handleInstallationCreated(installationPayload);
+          } else if (installationPayload.action === 'deleted') {
+            await this.gitHubInstallationService.handleInstallationDeleted(installationPayload.installation?.id);
+          }
+          break;
+        default:
+          this.logger.debug(`Webhook event received: ${event} — job dispatch pending Queue infrastructure`);
+      }
 
       // Mark as processed on success
       await this.webhookEventsService.markAsProcessed(deliveryId);

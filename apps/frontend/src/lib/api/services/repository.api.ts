@@ -17,6 +17,13 @@ export interface RepositorySummaryDto {
   latestWorkflow: string;
 }
 
+export interface SyncSummaryDto {
+  installationId: number;
+  synced: number;
+  created: number;
+  updated: number;
+}
+
 export const RepositoryApi = {
   listRepositories: async (): Promise<RepositorySummaryDto[]> => {
     const repos = await apiClient<any[]>('/repositories');
@@ -49,5 +56,14 @@ export const RepositoryApi = {
       generatedDocs: [],
       criticScore: 98,
     };
+  },
+
+  syncInstallationRepositories: async (
+    installationId: number,
+  ): Promise<SyncSummaryDto> => {
+    return apiClient<SyncSummaryDto>(
+      `/repositories/installations/${installationId}/sync`,
+      { method: 'POST' },
+    );
   },
 };
