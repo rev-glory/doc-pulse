@@ -20,7 +20,7 @@ export class DashboardService {
 
     const [totalRepositories, activeWorkflows, completedWorkflows, failedWorkflows, recentRuns, recentPullRequests] =
       await Promise.all([
-        this.prisma.repository.count({ where: { ownerId: user.id, isActive: true } }),
+        this.prisma.repository.count({ where: { ownerId: user.id, isActive: true, installation: { isActive: true } } }),
         this.prisma.workflowRun.count({ where: { repository: { ownerId: user.id }, status: 'RUNNING' } }),
         this.prisma.workflowRun.count({ where: { repository: { ownerId: user.id }, status: 'COMPLETED' } }),
         this.prisma.workflowRun.count({ where: { repository: { ownerId: user.id }, status: 'FAILED' } }),

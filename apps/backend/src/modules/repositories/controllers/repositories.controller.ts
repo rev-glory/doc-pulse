@@ -79,7 +79,7 @@ export class RepositoriesController {
   async syncInstallationRepositories(
     @Param('installationId', ParseIntPipe) installationId: number,
     @CurrentUser() user: User,
-  ): Promise<{ installationId: number; synced: number; created: number; updated: number }> {
+  ): Promise<{ installationId: number; synced: number; created: number; updated: number; removed?: number }> {
     return this.repositoriesService.syncInstallationRepositories(installationId, user);
   }
 

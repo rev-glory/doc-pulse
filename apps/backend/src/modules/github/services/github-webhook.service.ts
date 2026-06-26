@@ -1,12 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as crypto from 'node:crypto';
 
 import type { GitHubConfig } from '@/config';
 import { PrismaService } from '@/database';
 import { WebhookEventsService } from '@/modules/webhook-events/services/webhook-events.service';
+import { RepositoriesService } from '@/modules/repositories/services/repositories.service';
 import { GitHubInstallationService } from './github-installation.service';
-// TODO(queue-infrastructure): Re-add JobDispatcher, JobName import once the Queue module is implemented.
+import { WorkflowQueueService } from '@/modules/queue/services/workflow-queue.service';
+import { WorkspaceService } from '@/modules/git-operations/services/workspace.service';
 
 // ---------------------------------------------------------------------------
 // Webhook Event Payload Shapes
@@ -49,8 +51,11 @@ export class GitHubWebhookService {
     private readonly prisma: PrismaService,
     private readonly webhookEventsService: WebhookEventsService,
     private readonly gitHubInstallationService: GitHubInstallationService,
-    // TODO(queue-infrastructure): Re-add JobDispatcher injection once the Queue module is implemented.
-    // private readonly jobDispatcher: JobDispatcher,
+    @Inject(forwardRef(() => RepositoriesService))
+    private readonly repositoriesService: RepositoriesService,
+    @Inject(forwardRef(() => WorkflowQueueService))
+    private readonly workflowQueueService: WorkflowQueueService,
+    private readonly workspaceService: WorkspaceService,
   ) {
     const config = this.configService.get<GitHubConfig>('github')!;
     this.webhookSecret = config.webhookSecret;
@@ -139,7 +144,7 @@ export class GitHubWebhookService {
     // Try to find the repository ID if available
     if (payload?.repository?.id) {
       const repo = await this.prisma.repository.findUnique({
-        where: { githubRepositoryId: payload.repository.id },
+        where: { githubRepositoryId: Number(payload.repository.id) },
         select: { id: true },
       });
       repositoryId = repo?.id;
@@ -160,12 +165,103 @@ export class GitHubWebhookService {
       switch (normalizedEvent) {
         case 'installation':
           const installationPayload = parsedPayload as any;
+          const instId = installationPayload?.installation?.id;
           if (installationPayload?.action === 'created' || installationPayload?.action === 'edited') {
+            const added = installationPayload?.repositories || installationPayload?.repositories_added || [];
+            const removed = installationPayload?.repositories_removed || [];
+            this.logger.log(`Processing installation.${installationPayload?.action}`, {
+              installationId: instId,
+              repositoryIds: [...added.map((r: any) => r.id), ...removed.map((r: any) => r.id)],
+              repositoryNames: [...added.map((r: any) => r.full_name), ...removed.map((r: any) => r.full_name)],
+              repositoriesAdded: added.map((r: any) => r.full_name),
+              repositoriesRemoved: removed.map((r: any) => r.full_name),
+            });
             await this.gitHubInstallationService.handleInstallationCreated(installationPayload);
+            if (instId) {
+              await this.repositoriesService.syncInstallationRepositoriesFromWebhook(Number(instId));
+            }
           } else if (installationPayload?.action === 'deleted') {
-            await this.gitHubInstallationService.handleInstallationDeleted(installationPayload?.installation?.id);
+            this.logger.log('Processing installation.deleted', {
+              installationId: instId,
+            });
+            await this.gitHubInstallationService.handleInstallationDeleted(Number(instId));
+            if (instId) {
+              await this.repositoriesService.deactivateInstallationRepositoriesByGithubId(Number(instId));
+            }
           }
           break;
+        case 'installation_repositories':
+          const instRepoPayload = parsedPayload as any;
+          const repoInstId = instRepoPayload?.installation?.id;
+          const reposAdded = instRepoPayload?.repositories_added || [];
+          const reposRemoved = instRepoPayload?.repositories_removed || [];
+          this.logger.log(`Processing installation_repositories.${instRepoPayload?.action}`, {
+            installationId: repoInstId,
+            repositoryIds: [...reposAdded.map((r: any) => r.id), ...reposRemoved.map((r: any) => r.id)],
+            repositoryNames: [...reposAdded.map((r: any) => r.full_name), ...reposRemoved.map((r: any) => r.full_name)],
+            repositoriesAdded: reposAdded.map((r: any) => r.full_name),
+            repositoriesRemoved: reposRemoved.map((r: any) => r.full_name),
+          });
+          if (repoInstId) {
+            await this.repositoriesService.syncInstallationRepositoriesFromWebhook(Number(repoInstId));
+          }
+          break;
+        case 'push': {
+          const pushPayload = parsedPayload as any;
+          const pushInstId = pushPayload?.installation?.id;
+          const pushRepoName = pushPayload?.repository?.name || pushPayload?.repository?.full_name || 'unknown';
+          const pushRepoId = pushPayload?.repository?.id;
+
+          this.logger.log('Processing push', {
+            installationId: pushInstId,
+            repositoryId: pushRepoId,
+            repositoryName: pushRepoName,
+          });
+
+          if (!repositoryId) {
+            this.logger.warn(`Push received for untracked repository GitHub ID: ${pushRepoId}`);
+            break;
+          }
+
+          const afterSha = pushPayload?.after || pushPayload?.head_commit?.id || '';
+          const refBranch = pushPayload?.ref?.replace('refs/heads/', '') || 'main';
+          const commitMsg = pushPayload?.head_commit?.message || 'Update documentation';
+
+          const workflowRun = await this.prisma.workflowRun.create({
+            data: {
+              status: 'QUEUED',
+              correlationId: deliveryId,
+              webhookDeliveryId: deliveryId,
+              commitSha: afterSha,
+              branch: refBranch,
+              commitMessage: commitMsg,
+              repositoryId: repositoryId,
+            },
+          });
+
+          const repositoryPath = this.workspaceService.getRepositoryPath(repositoryId);
+
+          const enqueued = await this.workflowQueueService.enqueueWorkflow({
+            repositoryId: repositoryId,
+            repositoryPath: repositoryPath,
+            runId: workflowRun.id,
+            executionMode: 'start',
+            metadata: {
+              event: 'push',
+              deliveryId,
+              commitSha: afterSha,
+              branch: refBranch,
+            },
+          });
+
+          this.logger.log('Workflow queued', {
+            runId: workflowRun.id,
+            jobId: enqueued.id,
+          });
+          this.logger.log('BullMQ job created');
+          this.logger.log('Workflow started');
+          break;
+        }
         default:
           this.logger.debug(`Webhook event received: ${normalizedEvent} — job dispatch pending Queue infrastructure`);
       }

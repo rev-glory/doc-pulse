@@ -69,6 +69,8 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
       },
       update: {
         // Refresh all GitHub-sourced metadata that can change over time.
+        installationId: data.installationId,
+        isActive: true,
         repositoryOwner: data.repositoryOwner,
         name: data.name,
         fullName: data.fullName,
@@ -80,7 +82,7 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
         htmlUrl: data.htmlUrl,
         visibility: data.visibility,
         lastSyncedAt: now,
-        // Intentionally NOT updated: docPaths, webhookId, isWebhookActive, isActive
+        // Intentionally NOT updated: docPaths, webhookId, isWebhookActive
         // These are user-controlled or managed by separate workflows.
       },
     });
@@ -120,7 +122,11 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
 
   async listRepositories(ownerId: string): Promise<Repository[]> {
     return this.prisma.repository.findMany({
-      where: { ownerId, isActive: true },
+      where: {
+        ownerId,
+        isActive: true,
+        installation: { isActive: true },
+      },
     });
   }
 }

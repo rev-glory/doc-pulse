@@ -95,32 +95,104 @@ export class RepositoriesService {
     synced: number;
     created: number;
     updated: number;
+    removed?: number;
   }> {
     const logCtx = { githubInstallationId: installation.installationId };
     const startedAt = Date.now();
 
     this.logger.log('Starting repository sync for installation', logCtx);
 
-    // Fetch all repos from GitHub (handles pagination internally).
-    const githubRepos = await this.gitHubRepositoryService.listInstallationRepositories(
-      installation.installationId,
-    );
+    let githubRepos: any[] = [];
+    try {
+      githubRepos = await this.gitHubRepositoryService.listInstallationRepositories(
+        installation.installationId,
+      );
+    } catch (error: any) {
+      const status = error?.status;
+      if (
+        status === 401 ||
+        status === 403 ||
+        status === 404 ||
+        error?.message?.includes('token is invalid') ||
+        error?.message?.includes('not found')
+      ) {
+        this.logger.warn(
+          `Installation ${installation.installationId} is revoked or inaccessible on GitHub. Marking installation and repositories inactive.`,
+          { error: error?.message || error },
+        );
+        await this.installationsPersistence.deactivateInstallation(installation.installationId);
+        return {
+          installationId: installation.installationId,
+          synced: 0,
+          created: 0,
+          updated: 0,
+        };
+      }
+      throw error;
+    }
 
     this.logger.log(
       `Fetched ${githubRepos.length} repositories from GitHub`,
       { ...logCtx, count: githubRepos.length },
     );
 
-    // Upsert all repositories atomically.
+    // Query existing database repositories for this installation or matching accessible GitHub IDs
+    const githubRepoIds = githubRepos.map((r) => r.githubRepositoryId);
+    const dbRepos = await this.prisma.repository.findMany({
+      where: {
+        OR: [
+          { installationId: installation.id },
+          ...(githubRepoIds.length > 0 ? [{ githubRepositoryId: { in: githubRepoIds } }] : []),
+        ],
+      },
+      select: { id: true, githubRepositoryId: true, fullName: true, isActive: true },
+    });
+
+    const githubIds = new Set(githubRepoIds);
+    const dbRepoMap = new Map(dbRepos.map((r) => [r.githubRepositoryId, r]));
+
+    const addedNames: string[] = [];
+    const removedNames: string[] = [];
     let createdCount = 0;
     let updatedCount = 0;
 
+    const removedIds: number[] = [];
+    for (const dbRepo of dbRepos) {
+      if (dbRepo.isActive && !githubIds.has(dbRepo.githubRepositoryId)) {
+        removedIds.push(dbRepo.githubRepositoryId);
+        removedNames.push(dbRepo.fullName);
+      }
+    }
+
+    const now = new Date();
+
     await this.prisma.$transaction(async (tx) => {
-      for (const repo of githubRepos) {
-        const existing = await tx.repository.findUnique({
-          where: { githubRepositoryId: repo.githubRepositoryId },
-          select: { id: true },
+      // Ensure installation record is active
+      await tx.installation.update({
+        where: { id: installation.id },
+        data: { isActive: true },
+      });
+
+      // Deactivate removed repositories
+      if (removedIds.length > 0) {
+        await tx.repository.updateMany({
+          where: { githubRepositoryId: { in: removedIds } },
+          data: { isActive: false, lastSyncedAt: now },
         });
+      }
+
+      // Upsert accessible repositories
+      for (const repo of githubRepos) {
+        const existing = dbRepoMap.get(repo.githubRepositoryId);
+        if (!existing) {
+          addedNames.push(repo.fullName);
+          createdCount++;
+        } else {
+          if (!existing.isActive) {
+            addedNames.push(repo.fullName);
+          }
+          updatedCount++;
+        }
 
         await this.repositoriesPersistence.syncUpsert(
           {
@@ -140,23 +212,24 @@ export class RepositoriesService {
           },
           tx,
         );
-
-        if (existing) {
-          updatedCount++;
-        } else {
-          createdCount++;
-        }
       }
     });
 
     const duration = Date.now() - startedAt;
 
-    this.logger.log('Repository sync completed', {
-      ...logCtx,
-      duration,
-      synced: githubRepos.length,
-      created: createdCount,
+    // Structured logging as per prompt specifications
+    this.logger.log(`Installation ${installation.installationId} reconciliation summary`, {
+      installationId: installation.installationId,
+      repositoryIds: githubRepos.map((r) => r.githubRepositoryId),
+      repositoryNames: githubRepos.map((r) => r.fullName),
+      repositoriesAdded: addedNames,
+      repositoriesRemoved: removedNames,
+      gitHubRepositoriesCount: githubRepos.length,
+      databaseRepositoriesCount: dbRepos.length,
+      added: createdCount,
+      removed: removedIds.length,
       updated: updatedCount,
+      duration,
     });
 
     return {
@@ -164,6 +237,7 @@ export class RepositoriesService {
       synced: githubRepos.length,
       created: createdCount,
       updated: updatedCount,
+      removed: removedIds.length,
     };
   }
 
@@ -185,6 +259,7 @@ export class RepositoriesService {
     synced: number;
     created: number;
     updated: number;
+    removed?: number;
   }> {
     const installation = await this.installationsPersistence.findByInstallationId(
       githubInstallationId,
@@ -223,6 +298,7 @@ export class RepositoriesService {
     synced: number;
     created: number;
     updated: number;
+    removed?: number;
   } | null> {
     const installation = await this.installationsPersistence.findByInstallationId(
       githubInstallationId,
@@ -236,6 +312,27 @@ export class RepositoriesService {
     }
 
     return this.syncInstallationRepositoriesInternal(installation);
+  }
+
+  /**
+   * Deactivate all repositories belonging to a given GitHub installation ID.
+   */
+  async deactivateInstallationRepositoriesByGithubId(
+    githubInstallationId: number,
+  ): Promise<void> {
+    const installation = await this.installationsPersistence.findByInstallationId(
+      githubInstallationId,
+    );
+    if (installation) {
+      const now = new Date();
+      await this.prisma.repository.updateMany({
+        where: { installationId: installation.id },
+        data: { isActive: false, lastSyncedAt: now },
+      });
+      this.logger.log(
+        `Deactivated all repositories for installation ${githubInstallationId}`,
+      );
+    }
   }
 
   /**

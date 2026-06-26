@@ -7,14 +7,14 @@ export class DocumentationLocatorNode {
   constructor(private readonly repositoryAnalysisService: RepositoryAnalysisService) {}
 
   public async invoke(state: typeof WorkflowAnnotation.State): Promise<Partial<typeof WorkflowAnnotation.State>> {
-    if (!state.repository?.rootPath) {
-      return state;
+    const rootPath = state.repository?.rootPath || (state as any).workspacePath;
+    if (!rootPath) {
+      return {};
     }
 
-    const documentation = await this.repositoryAnalysisService.analyzeDocumentation(state.repository.rootPath);
+    const documentation = await this.repositoryAnalysisService.analyzeDocumentation(rootPath);
     
     return {
-      ...state,
       documentation,
     };
   }

@@ -53,13 +53,26 @@ export class InstallationsPersistence {
   }
 
   /**
-   * Mark an installation as inactive without deleting it.
+   * Mark an installation and all its associated repositories as inactive without deleting them.
    * Preserves historical WorkflowRun data that references this installation.
    */
   async deactivateInstallation(installationId: number): Promise<void> {
-    await this.prisma.installation.updateMany({
+    const inst = await this.prisma.installation.findUnique({
       where: { installationId },
-      data: { isActive: false },
+      select: { id: true },
     });
+
+    if (inst) {
+      await this.prisma.$transaction([
+        this.prisma.installation.update({
+          where: { id: inst.id },
+          data: { isActive: false },
+        }),
+        this.prisma.repository.updateMany({
+          where: { installationId: inst.id },
+          data: { isActive: false },
+        }),
+      ]);
+    }
   }
 }

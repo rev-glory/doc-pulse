@@ -5,7 +5,8 @@ import { githubConfig } from '@/config';
 import { PrismaModule } from '@/database';
 import { RepositoriesModule } from '@/modules/repositories/repositories.module';
 import { WebhookEventsModule } from '@/modules/webhook-events/webhook-events.module';
-// TODO(queue-infrastructure): Re-add QueueModule import once the Queue module is implemented.
+import { QueueModule } from '@/modules/queue/queue.module';
+import { GitOperationsModule } from '@/modules/git-operations/git-operations.module';
 
 import { GitHubController } from './controllers/github.controller';
 import { GitHubWebhooksController } from './controllers/github-webhooks.controller';
@@ -24,6 +25,8 @@ import { InstallationsPersistence } from './persistence/installations.persistenc
     PrismaModule,
     forwardRef(() => RepositoriesModule),
     WebhookEventsModule,
+    forwardRef(() => QueueModule),
+    GitOperationsModule,
   ],
   controllers: [GitHubController, GitHubWebhooksController],
   providers: [
