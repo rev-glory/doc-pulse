@@ -109,11 +109,35 @@ export class GitHubWebhookService {
       deliveryId,
     });
 
-    const payload = rawPayload as WebhookPayloadWithAction;
+    let parsedPayload: any = rawPayload;
+    if (Buffer.isBuffer(rawPayload)) {
+      const str = rawPayload.toString('utf8');
+      try {
+        parsedPayload = JSON.parse(str);
+      } catch {
+        if (str.startsWith('payload=')) {
+          try {
+            parsedPayload = JSON.parse(decodeURIComponent(str.slice(8)));
+          } catch {}
+        }
+      }
+    } else if (typeof rawPayload === 'string') {
+      try {
+        parsedPayload = JSON.parse(rawPayload);
+      } catch {
+        if (rawPayload.startsWith('payload=')) {
+          try {
+            parsedPayload = JSON.parse(decodeURIComponent(rawPayload.slice(8)));
+          } catch {}
+        }
+      }
+    }
+
+    const payload = parsedPayload as WebhookPayloadWithAction;
     let repositoryId: string | undefined;
 
     // Try to find the repository ID if available
-    if (payload.repository?.id) {
+    if (payload?.repository?.id) {
       const repo = await this.prisma.repository.findUnique({
         where: { githubRepositoryId: payload.repository.id },
         select: { id: true },
@@ -121,27 +145,29 @@ export class GitHubWebhookService {
       repositoryId = repo?.id;
     }
 
+    const normalizedEvent = event?.toLowerCase()?.trim() || '';
+
     // Persist the event
     await this.webhookEventsService.createEvent({
       githubDeliveryId: deliveryId,
-      eventType: event,
-      action: payload.action,
+      eventType: normalizedEvent,
+      action: payload?.action,
       repositoryId,
-      payload: rawPayload,
+      payload: parsedPayload,
     });
 
     try {
-      switch (event) {
+      switch (normalizedEvent) {
         case 'installation':
-          const installationPayload = rawPayload as any;
-          if (installationPayload.action === 'created') {
+          const installationPayload = parsedPayload as any;
+          if (installationPayload?.action === 'created' || installationPayload?.action === 'edited') {
             await this.gitHubInstallationService.handleInstallationCreated(installationPayload);
-          } else if (installationPayload.action === 'deleted') {
-            await this.gitHubInstallationService.handleInstallationDeleted(installationPayload.installation?.id);
+          } else if (installationPayload?.action === 'deleted') {
+            await this.gitHubInstallationService.handleInstallationDeleted(installationPayload?.installation?.id);
           }
           break;
         default:
-          this.logger.debug(`Webhook event received: ${event} — job dispatch pending Queue infrastructure`);
+          this.logger.debug(`Webhook event received: ${normalizedEvent} — job dispatch pending Queue infrastructure`);
       }
 
       // Mark as processed on success

@@ -45,7 +45,7 @@ function OnboardingCallbackContent(): React.JSX.Element {
 
     const startOnboarding = async () => {
       // 1. Initial validation
-      if (!installationIdParam || setupAction !== 'install') {
+      if (!installationIdParam || (setupAction !== 'install' && setupAction !== 'update')) {
         addLog('Verifying installation query parameters...', 'error');
         setErrorState('Invalid onboarding request. No installation ID or setup action found.');
         return;

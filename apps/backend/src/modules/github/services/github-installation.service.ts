@@ -72,10 +72,10 @@ export class GitHubInstallationService {
   async handleInstallationCreated(payload: any): Promise<void> {
     this.logger.log('Processing installation.created');
 
-    const installationId = payload.installation?.id;
-    const accountLogin = payload.account?.login || payload.installation?.account?.login;
-    const accountType = payload.account?.type || payload.installation?.account?.type;
-    const senderId = payload.sender?.id;
+    const installationId = payload?.installation?.id;
+    const accountLogin = payload?.account?.login || payload?.installation?.account?.login;
+    const accountType = payload?.account?.type || payload?.installation?.account?.type;
+    const senderId = payload?.sender?.id || payload?.installation?.account?.id;
 
     if (!installationId || !accountLogin || !accountType || !senderId) {
       this.logger.error('Invalid payload fields in handleInstallationCreated', {
@@ -87,9 +87,9 @@ export class GitHubInstallationService {
       return;
     }
 
-    this.logger.log('Finding user by githubId');
+    this.logger.log('Finding user');
     const user = await this.prisma.user.findUnique({
-      where: { githubId: senderId },
+      where: { githubId: Number(senderId) },
     });
 
     if (!user) {
@@ -99,22 +99,28 @@ export class GitHubInstallationService {
 
     this.logger.log('User found');
 
-    const existing = await this.installationsPersistence.findByInstallationId(installationId);
+    const existing = await this.installationsPersistence.findByInstallationId(Number(installationId));
     if (existing) {
       this.logger.log('Updating installation');
     } else {
       this.logger.log('Creating installation');
     }
 
+    this.logger.log('Saving installation');
+
     const { installation } = await this.installationsPersistence.upsertInstallation({
-      installationId,
-      accountLogin,
-      accountType,
+      installationId: Number(installationId),
+      accountLogin: String(accountLogin),
+      accountType: String(accountType),
       isActive: true,
       userId: user.id,
     });
 
     this.logger.log('Installation saved');
+    this.logger.log(`Installation ID: ${installation.id}`);
+    this.logger.log(`GitHub Installation ID: ${installation.installationId}`);
+    this.logger.log(`Owner User ID: ${installation.userId}`);
+    this.logger.log(`GitHub Account Login: ${installation.accountLogin}`);
   }
 
   /**
