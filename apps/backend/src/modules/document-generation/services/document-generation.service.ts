@@ -5,14 +5,13 @@ import {
   InternalServerErrorException,
   Logger,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { LlmService } from '../../ai/services/llm.service';
-import { PromptTemplateService } from '../../ai/services/prompt-template.service';
-import { RepositorySummary } from '../../../domain/repository';
-import { DocumentationInventory } from '../../../domain/documentation';
-import { GeneratedDocument, GeneratedDocumentType } from '../../../domain/workflow';
-import { README_PROMPT_TEMPLATE } from '../prompts/readme.prompt';
-import { INSTALLATION_PROMPT_TEMPLATE } from '../prompts/installation.prompt';
-import { ARCHITECTURE_PROMPT_TEMPLATE } from '../prompts/architecture.prompt';
+import { GeneratedDocument, GeneratedDocumentType, WorkflowState } from '../../../domain/workflow';
+import { RepositoryContextBuilderService } from './repository-context-builder.service';
+import { PromptBuilderService } from './prompt-builder.service';
+import { OutputParserService } from './output-parser.service';
+import { MarkdownValidatorService } from './markdown-validator.service';
 
 @Injectable()
 export class DocumentGenerationService {
@@ -20,85 +19,78 @@ export class DocumentGenerationService {
 
   constructor(
     private readonly llmService: LlmService,
-    private readonly promptTemplateService: PromptTemplateService,
+    private readonly contextBuilder: RepositoryContextBuilderService,
+    private readonly promptBuilder: PromptBuilderService,
+    private readonly outputParser: OutputParserService,
+    private readonly markdownValidator: MarkdownValidatorService,
+    private readonly configService: ConfigService,
   ) {}
 
+  /**
+   * Orchestrates the Technical Writer pipeline across the 6 canonical document types.
+   * Implements bounded concurrency, prompt versioning, structured output parsing,
+   * diagnostic validation, structured JSON logging, and generation metrics persistence.
+   */
   public async generateDocuments(
-    repository: RepositorySummary,
-    documentation: DocumentationInventory,
+    arg1: WorkflowState | any,
+    arg2?: any,
   ): Promise<GeneratedDocument[]> {
-    this.logger.log(`Starting document generation for repository: ${repository?.name}`);
+    const state: WorkflowState =
+      arg2 === undefined && arg1 && typeof arg1 === 'object' && 'repository' in arg1
+        ? arg1
+        : { repository: arg1, documentation: arg2 };
 
-    if (!repository || !repository.name) {
+    const workflowId = state.runId ?? 'unknown-run';
+    const repositoryId = state.repositoryId ?? state.repository?.name ?? 'unknown-repo';
+
+    this.logger.log('Initiating bounded concurrent document generation', {
+      workflowId,
+      repositoryId,
+      stage: 'WRITING_START',
+    });
+
+    if (!state.repository || !state.repository.name) {
       throw new BadRequestException('Invalid repository summary provided to DocumentGenerationService');
     }
 
-    if (!documentation) {
+    if (!state.documentation) {
       throw new BadRequestException('Missing documentation inventory in DocumentGenerationService');
     }
 
-    const existingDocsSummary = documentation.documentationFiles
-      ? documentation.documentationFiles.map((f) => f.path).join(', ')
-      : 'None';
-
     try {
-      // Compile prompts
-      const [readmePrompt, installationPrompt, architecturePrompt] = await Promise.all([
-        this.promptTemplateService.compile(README_PROMPT_TEMPLATE, {
-          overview: `A project built with ${repository.languages.join(', ')}`,
-          technologies: [...repository.languages, ...repository.frameworks, ...repository.buildTools].join(', '),
-          structure: repository.workspaceFolders.join(', ') || 'Standard root layout',
-          existingDocs: existingDocsSummary,
-        }),
-        this.promptTemplateService.compile(INSTALLATION_PROMPT_TEMPLATE, {
-          frameworks: repository.frameworks.join(', ') || 'None',
-          scripts: Object.entries(repository.scripts || {}).map(([k, v]) => `${k}: ${v}`).join('\n') || 'None',
-          setup_instructions: repository.packageManager
-            ? `Run ${repository.packageManager} install`
-            : 'No package manager found',
-          existingDocs: existingDocsSummary,
-        }),
-        this.promptTemplateService.compile(ARCHITECTURE_PROMPT_TEMPLATE, {
-          structure: repository.workspaceFolders.join(', ') || 'Standard monolithic structure',
-          modules: 'N/A',
-          technologies: repository.dependencies.map((d) => d.name).slice(0, 10).join(', ') || 'None',
-          workspace_layout: repository.workspaceType || 'Standard',
-          existingDocs: existingDocsSummary,
-        }),
-      ]);
+      const context = this.contextBuilder.buildContext(state);
 
-      // Execute LLM generations in parallel
-      const [readmeResponse, installationResponse, architectureResponse] = await Promise.all([
-        this.llmService.generateText({ prompt: readmePrompt }),
-        this.llmService.generateText({ prompt: installationPrompt }),
-        this.llmService.generateText({ prompt: architecturePrompt }),
-      ]);
-
-      return [
-        {
-          id: crypto.randomUUID(),
-          title: 'README.md',
-          path: 'README.md',
-          content: readmeResponse.text,
-          type: GeneratedDocumentType.README,
-        },
-        {
-          id: crypto.randomUUID(),
-          title: 'INSTALLATION.md',
-          path: 'INSTALLATION.md',
-          content: installationResponse.text,
-          type: GeneratedDocumentType.INSTALLATION,
-        },
-        {
-          id: crypto.randomUUID(),
-          title: 'ARCHITECTURE.md',
-          path: 'ARCHITECTURE.md',
-          content: architectureResponse.text,
-          type: GeneratedDocumentType.ARCHITECTURE,
-        },
+      const orderedTypes = [
+        GeneratedDocumentType.README,
+        GeneratedDocumentType.ARCHITECTURE,
+        GeneratedDocumentType.API,
+        GeneratedDocumentType.INSTALLATION,
+        GeneratedDocumentType.CONTRIBUTING,
+        GeneratedDocumentType.DEPLOYMENT,
       ];
-    } catch (error) {
-      this.logger.error('Error during document generation', error instanceof Error ? error.stack : error);
+
+      const concurrencyLimit = Number(this.configService.get('DOC_GEN_CONCURRENCY', 2));
+
+      const tasks = orderedTypes.map((docType) => async () => {
+        return this.generateSingleDocument(docType, context, workflowId, repositoryId);
+      });
+
+      const generatedDocs = await this.executeBoundedPool(tasks, concurrencyLimit);
+
+      this.logger.log('Document generation pipeline finished successfully', {
+        workflowId,
+        repositoryId,
+        documentCount: generatedDocs.length,
+      });
+
+      return generatedDocs;
+    } catch (error: unknown) {
+      this.logger.error('Document generation pipeline failed permanently', {
+        workflowId,
+        repositoryId,
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       if (error instanceof HttpException) {
         throw error;
       }
@@ -106,5 +98,78 @@ export class DocumentGenerationService {
         `Document generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       );
     }
+  }
+
+  private async generateSingleDocument(
+    documentType: GeneratedDocumentType,
+    context: ReturnType<RepositoryContextBuilderService['buildContext']>,
+    workflowId: string,
+    repositoryId: string,
+  ): Promise<GeneratedDocument> {
+    const startTime = Date.now();
+
+    const compiledPrompt = await this.promptBuilder.buildPrompt(documentType, context);
+    const configuredModel = this.configService.get<string>('gemini.model') ?? 'gemini-2.5-flash';
+
+    const llmResponse = await this.llmService.generateStructured({
+      prompt: compiledPrompt.userPrompt,
+      systemInstruction: compiledPrompt.systemPrompt,
+      responseSchema: compiledPrompt.responseSchema,
+      temperature: 0.2,
+    });
+
+    const durationMs = Date.now() - startTime;
+    const usage = llmResponse.usage ?? { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+
+    const metrics = {
+      promptTokens: usage.promptTokens,
+      completionTokens: usage.completionTokens,
+      totalTokens: usage.totalTokens,
+      generationDurationMs: durationMs,
+      promptVersion: compiledPrompt.promptVersion,
+      model: configuredModel,
+    };
+
+    const parsedDocument = this.outputParser.parse(llmResponse.text, documentType, metrics);
+
+    const validationResult = this.markdownValidator.validate(parsedDocument.markdown);
+
+    this.logger.log('Document generated and validated', {
+      workflowId,
+      repositoryId,
+      documentType,
+      promptVersion: compiledPrompt.promptVersion,
+      model: configuredModel,
+      durationMs,
+      tokenUsage: usage,
+      validation: {
+        valid: validationResult.valid,
+        warnings: validationResult.warnings.length,
+        errors: validationResult.errors.length,
+      },
+    });
+
+    if (!validationResult.valid) {
+      this.logger.warn(`Markdown validation flagged errors for ${documentType}`, {
+        workflowId,
+        repositoryId,
+        errors: validationResult.errors,
+      });
+    }
+
+    return parsedDocument;
+  }
+
+  private async executeBoundedPool<T>(
+    tasks: (() => Promise<T>)[],
+    concurrencyLimit: number,
+  ): Promise<T[]> {
+    const results: T[] = [];
+    for (let i = 0; i < tasks.length; i += concurrencyLimit) {
+      const chunk = tasks.slice(i, i + concurrencyLimit);
+      const chunkResults = await Promise.all(chunk.map((fn) => fn()));
+      results.push(...chunkResults);
+    }
+    return results;
   }
 }

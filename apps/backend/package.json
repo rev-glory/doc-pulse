@@ -8,6 +8,7 @@
     "start": "nest start",
     "start:prod": "node dist/main.js",
     "lint": "tsc -p tsconfig.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --test",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",

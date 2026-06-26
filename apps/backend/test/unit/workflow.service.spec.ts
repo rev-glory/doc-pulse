@@ -21,7 +21,7 @@ describe('WorkflowService Orchestration Facade', () => {
   it('should delegate workflow execution directly to WorkflowExecutorService.start()', async () => {
     const mockRepo = { name: 'test-repo', rootPath: '/tmp/test' } as any;
     const mockDocs = { documentationFiles: [] } as any;
-    const mockGenDocs = [{ id: 'doc-1', title: 'README', path: 'README.md', content: 'hello', type: 'README' as any }];
+    const mockGenDocs = [{ id: 'doc-1', title: 'README', path: 'README.md', content: 'hello', markdown: 'hello', summary: 'hello', type: 'README' as any }];
     const mockReview = { score: 100, passed: true, issues: [], suggestions: [] };
 
     const expectedFinalState: WorkflowState = {

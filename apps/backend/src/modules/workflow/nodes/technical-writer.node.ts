@@ -11,10 +11,7 @@ export class TechnicalWriterNode {
       throw new BadRequestException('Repository summary or documentation inventory missing in state');
     }
 
-    const generatedDocuments = await this.documentGenerationService.generateDocuments(
-      state.repository,
-      state.documentation,
-    );
+    const generatedDocuments = await this.documentGenerationService.generateDocuments(state as any);
 
     return {
       generatedDocuments,

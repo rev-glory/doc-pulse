@@ -27,6 +27,7 @@ import { LlmService } from './services/llm.service';
 // ---------------------------------------------------------------------------
 
 import { PromptTemplateService } from './services/prompt-template.service';
+import { RetryPolicyService } from './services/retry-policy.service';
 
 @Module({
   imports: [
@@ -37,10 +38,12 @@ import { PromptTemplateService } from './services/prompt-template.service';
       provide: LLM_PROVIDER,
       useClass: GeminiProvider,
     },
+    RetryPolicyService,
     LlmService,
     PromptTemplateService,
   ],
   exports: [
+    RetryPolicyService,
     LlmService,
     PromptTemplateService,
   ],
