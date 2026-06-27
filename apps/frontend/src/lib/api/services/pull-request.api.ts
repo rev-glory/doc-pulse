@@ -5,4 +5,8 @@ export const PullRequestApi = {
   listPullRequests: async (): Promise<PullRequestSummary[]> => {
     return apiClient<PullRequestSummary[]>('/pull-requests');
   },
+
+  getPullRequestById: async (id: string): Promise<PullRequestSummary> => {
+    return apiClient<PullRequestSummary>(`/pull-requests/${id}`);
+  },
 };

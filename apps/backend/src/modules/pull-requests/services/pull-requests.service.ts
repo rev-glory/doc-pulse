@@ -47,6 +47,9 @@ export class PullRequestsService {
       repositoryName: pr.workflowRun.repository.name,
       repositoryOwner: pr.workflowRun.repository.repositoryOwner,
       criticScore: (pr.workflowRun.executionMetadata as any)?.criticScore ?? 95,
+      workflowRunId: pr.workflowRunId,
+      commitSha: pr.workflowRun.commitSha,
+      workflowStatus: pr.workflowRun.status,
     }));
   }
 
@@ -88,6 +91,9 @@ export class PullRequestsService {
       repositoryName: pr.workflowRun.repository.name,
       repositoryOwner: pr.workflowRun.repository.repositoryOwner,
       criticScore: (pr.workflowRun.executionMetadata as any)?.criticScore ?? 95,
+      workflowRunId: pr.workflowRunId,
+      commitSha: pr.workflowRun.commitSha,
+      workflowStatus: pr.workflowRun.status,
     };
   }
 }

@@ -3,15 +3,19 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/features/auth/providers/auth-provider';
 
 export const Sidebar: React.FC = () => {
   const pathname = usePathname() || '/';
+  const { logout } = useAuth();
 
   const navItems = [
     { label: 'Dashboard', href: '/dashboard', icon: '⚡' },
     { label: 'Repositories', href: '/repositories', icon: '📁' },
     { label: 'Workflow Runs', href: '/runs', icon: '🚀' },
     { label: 'Pull Requests', href: '/pull-requests', icon: '🔀' },
+    { label: 'Human Reviews', href: '/reviews', icon: '📝' },
+    { label: 'Settings', href: '/settings', icon: '⚙️' },
   ];
 
   return (
@@ -43,8 +47,18 @@ export const Sidebar: React.FC = () => {
         })}
       </nav>
 
-      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 text-xs text-zinc-500">
-        <span>DocPulse AI v1.0</span>
+      <div className="p-4 border-t border-zinc-200 dark:border-zinc-800 flex flex-col gap-2.5">
+        <button
+          onClick={() => logout()}
+          type="button"
+          className="flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/20 hover:text-rose-700 transition-colors w-full text-left cursor-pointer"
+        >
+          <span>🚪</span>
+          <span>Logout</span>
+        </button>
+        <div className="text-[10px] text-zinc-400 pl-3">
+          DocPulse AI v1.0
+        </div>
       </div>
     </aside>
   );

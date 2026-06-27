@@ -43,6 +43,7 @@ export class RunsService {
       repositoryName: r.repository.name,
       repositoryOwner: r.repository.repositoryOwner,
       errorMessage: r.errorMessage,
+      completedNodes: (r.checkpointSnapshot as any)?.completedNodes || [],
     }));
   }
 
@@ -68,6 +69,7 @@ export class RunsService {
     const snapshot = run.checkpointSnapshot as any;
     const generatedDocuments = snapshot?.generatedDocuments || [];
     const criticReview = snapshot?.criticReview || null;
+    const completedNodes = snapshot?.completedNodes || [];
 
     return {
       id: run.id,
@@ -88,6 +90,7 @@ export class RunsService {
       errorMessage: run.errorMessage,
       generatedDocuments,
       criticReview,
+      completedNodes,
     };
   }
 }

@@ -15,6 +15,9 @@ export interface PullRequestSummary {
   repositoryName: string;
   repositoryOwner: string;
   criticScore: number;
+  workflowRunId: string;
+  commitSha: string;
+  workflowStatus: string;
 }
 
 export interface GeneratedDocumentSummary {

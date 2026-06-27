@@ -30,4 +30,5 @@ export interface WorkflowRunSummary {
   errorMessage: string | null;
   generatedDocuments?: GeneratedDocument[];
   criticReview?: CriticReview | null;
+  completedNodes?: string[];
 }

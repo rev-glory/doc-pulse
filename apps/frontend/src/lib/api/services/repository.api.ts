@@ -66,4 +66,16 @@ export const RepositoryApi = {
       { method: 'POST' },
     );
   },
+
+  activateRepository: async (id: string): Promise<any> => {
+    return apiClient<any>(`/repositories/${id}/activate`, { method: 'PATCH' });
+  },
+
+  deactivateRepository: async (id: string): Promise<any> => {
+    return apiClient<any>(`/repositories/${id}/deactivate`, { method: 'PATCH' });
+  },
+
+  deleteRepository: async (id: string): Promise<void> => {
+    return apiClient<void>(`/repositories/${id}`, { method: 'DELETE' });
+  },
 };

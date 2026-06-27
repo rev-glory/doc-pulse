@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import type { PullRequestSummary } from '@docpulse/shared-types';
 import { EmptyState } from '@/components/feedback/empty-state';
 
@@ -18,7 +19,7 @@ export const RecentPullRequests: React.FC<RecentPullRequestsProps> = ({ pullRequ
         return (
           <div
             key={pr.id}
-            className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-white dark:bg-zinc-900 flex items-center justify-between hover:border-emerald-500/40 transition-colors shadow-sm"
+            className="border border-zinc-200 dark:border-zinc-800 rounded-lg p-4 bg-white dark:bg-zinc-900 flex items-center justify-between hover:border-emerald-500/40 transition-colors shadow-sm animate-fade-in"
           >
             <div className="flex items-start gap-3.5 min-w-0">
               <span className={`text-lg shrink-0 ${isMerged ? 'text-purple-500 font-black' : 'text-emerald-500'}`}>
@@ -26,20 +27,24 @@ export const RecentPullRequests: React.FC<RecentPullRequestsProps> = ({ pullRequ
               </span>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  {pr.url ? (
+                  <Link
+                    href={`/pull-requests/${pr.id}`}
+                    className="text-sm font-bold text-zinc-900 dark:text-zinc-100 hover:text-emerald-600 dark:hover:text-emerald-400 truncate"
+                  >
+                    {pr.title}
+                  </Link>
+                  {pr.prNumber && (
+                    <span className="text-xs font-mono text-zinc-400">#{pr.prNumber}</span>
+                  )}
+                  {pr.url && (
                     <a
                       href={pr.url}
                       target="_blank"
                       rel="noreferrer noopener"
-                      className="text-sm font-bold text-zinc-900 dark:text-zinc-100 hover:text-emerald-600 dark:hover:text-emerald-400 truncate"
+                      className="inline-flex items-center text-[10px] bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 px-1.5 py-0.5 rounded text-zinc-500 hover:text-zinc-850 font-bold transition-all ml-1"
                     >
-                      {pr.title}
+                      ↗ GitHub
                     </a>
-                  ) : (
-                    <span className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">{pr.title}</span>
-                  )}
-                  {pr.prNumber && (
-                    <span className="text-xs font-mono text-zinc-400">#{pr.prNumber}</span>
                   )}
                 </div>
                 <div className="flex items-center gap-2 text-xs text-zinc-500 mt-1">

@@ -176,7 +176,7 @@ function RepositoriesListContent(): React.JSX.Element {
       )}
 
       <SectionCard title="Installed Repositories" description="Select which repositories to monitor for documentation changes.">
-        <RepositoryTable repositories={repositories || []} />
+        <RepositoryTable repositories={repositories || []} onActionComplete={refetchRepos} />
       </SectionCard>
     </div>
   );
