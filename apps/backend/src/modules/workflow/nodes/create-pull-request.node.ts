@@ -32,12 +32,13 @@ export class CreatePullRequestNode {
     if (this.prisma && this.prisma.repository) {
       const dbRepo = await this.prisma.repository.findUnique({
         where: { id: state.repositoryId },
+        include: { installation: true },
       });
       if (dbRepo) {
         owner = dbRepo.repositoryOwner;
         repo = dbRepo.name;
-        if (dbRepo.installationId) {
-          installationId = Number(dbRepo.installationId);
+        if (dbRepo.installation?.installationId) {
+          installationId = Number(dbRepo.installation.installationId);
         }
       }
     }

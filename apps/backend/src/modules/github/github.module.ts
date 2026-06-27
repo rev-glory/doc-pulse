@@ -26,7 +26,7 @@ import { InstallationsPersistence } from './persistence/installations.persistenc
     forwardRef(() => RepositoriesModule),
     WebhookEventsModule,
     forwardRef(() => QueueModule),
-    GitOperationsModule,
+    forwardRef(() => GitOperationsModule),
   ],
   controllers: [GitHubController, GitHubWebhooksController],
   providers: [
