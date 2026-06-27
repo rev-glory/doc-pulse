@@ -25,9 +25,22 @@ export class CreatePullRequestNode {
     }
 
     // Extract installation metadata (fallback to 0 or metadata)
-    const installationId = Number(state.metadata?.installationId || 0);
-    const owner = (repoSummary as any).owner || (state.metadata?.owner as string) || 'docpulse';
-    const repo = repoSummary.name || 'doc-pulse';
+    let installationId = Number(state.metadata?.installationId || 0);
+    let owner = (repoSummary as any).owner || (state.metadata?.owner as string) || 'docpulse';
+    let repo = repoSummary.name || 'doc-pulse';
+
+    if (this.prisma && this.prisma.repository) {
+      const dbRepo = await this.prisma.repository.findUnique({
+        where: { id: state.repositoryId },
+      });
+      if (dbRepo) {
+        owner = dbRepo.repositoryOwner;
+        repo = dbRepo.name;
+        if (dbRepo.installationId) {
+          installationId = Number(dbRepo.installationId);
+        }
+      }
+    }
 
     const prSummary = await this.prService.createPullRequest(
       installationId,

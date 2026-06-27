@@ -15,6 +15,7 @@ import { WorkflowEventService } from '../../realtime/services/workflow-event.ser
 import { PrismaService } from '@/database';
 import { RunStatus as PrismaRunStatus, WorkflowStage as PrismaWorkflowStage } from '@/generated/prisma/enums';
 import { RepositoryCloneService } from '../../git-operations/services/repository-clone.service';
+import { WorkspaceService } from '../../git-operations/services/workspace.service';
 
 @Injectable()
 export class WorkflowExecutorService implements OnModuleInit {
@@ -37,6 +38,7 @@ export class WorkflowExecutorService implements OnModuleInit {
     private readonly checkpointRepository: WorkflowCheckpointRepository,
     private readonly prisma: PrismaService,
     private readonly repositoryCloneService: RepositoryCloneService,
+    private readonly workspaceService: WorkspaceService,
     @Optional() private readonly eventService?: WorkflowEventService,
   ) {}
 
@@ -90,7 +92,8 @@ export class WorkflowExecutorService implements OnModuleInit {
     }
 
     // 1. Re-clone if workspace directory is missing on disk
-    if (input.workspacePath && !require('fs').existsSync(input.workspacePath)) {
+    const workspacePath = this.workspaceService.getWorkspacePath(input.repositoryId);
+    if (!require('fs').existsSync(workspacePath)) {
       this.logger.log(`[${input.runId}] Local workspace directory missing. Re-cloning repository...`);
       const repoRecord = await this.prisma.repository.findUnique({
         where: { id: runRecord.repositoryId },
@@ -197,10 +200,12 @@ export class WorkflowExecutorService implements OnModuleInit {
   ): Partial<WorkflowGraphState> | undefined {
     if (!snapshot) return undefined;
 
+    const workspacePath = this.workspaceService.getWorkspacePath(input.repositoryId);
+
     return {
       runId: input.runId,
       repositoryId: input.repositoryId,
-      workspacePath: input.workspacePath,
+      workspacePath,
       repository: snapshot.analysisReference ? snapshot.analysisReference : undefined,
       documentation: (snapshot as any).documentation ?? undefined,
       generatedDocuments: (snapshot as any).generatedDocuments ?? undefined,

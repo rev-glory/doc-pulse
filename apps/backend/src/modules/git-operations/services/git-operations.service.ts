@@ -33,6 +33,47 @@ export class GitOperationsService {
     return collisionName;
   }
 
+  private async logGitDiagnostics(repositoryPath: string, branchName: string): Promise<void> {
+    try {
+      const git = (this.gitService as any).createGitClient(repositoryPath);
+      const cwd = process.cwd();
+      let gitRoot = 'unknown';
+      try {
+        gitRoot = await git.revparse(['--show-toplevel']);
+      } catch (e) {
+        gitRoot = `Error: ${(e as Error).message}`;
+      }
+      
+      let owner = 'unknown';
+      let repo = 'unknown';
+      try {
+        const remoteUrl = await git.remote(['get-url', 'origin']) as string;
+        if (remoteUrl) {
+          const match = remoteUrl.trim().match(/github\.com[/:]([^/]+)\/([^.]+)/);
+          if (match) {
+            owner = match[1]!;
+            repo = match[2]!;
+          }
+        }
+      } catch (e) {
+        // remote url may not be set or git error
+      }
+
+      this.logger.log(`
+================ GIT DIAGNOSTICS ================
+Repository workspace: ${repositoryPath}
+Repository owner:     ${owner}
+Repository name:      ${repo}
+Branch:               ${branchName}
+Current cwd:          ${cwd}
+Git root:             ${gitRoot}
+=================================================
+      `);
+    } catch (err) {
+      this.logger.error(`Failed to print Git diagnostics: ${(err as Error).message}`);
+    }
+  }
+
   /**
    * Orchestrates safe staging and committing of generated documentation files.
    */
@@ -47,6 +88,7 @@ export class GitOperationsService {
     try {
       // 1. Generate branch & create/checkout
       const branchName = await this.generateBranchName(repositoryPath, runId);
+      await this.logGitDiagnostics(repositoryPath, branchName);
       await this.gitService.checkoutLocalBranch(repositoryPath, branchName);
 
       // Run Git safety checks on branch and workspace
@@ -116,6 +158,7 @@ export class GitOperationsService {
    */
   async pushBranch(repositoryPath: string, branchName: string): Promise<void> {
     const startTime = Date.now();
+    await this.logGitDiagnostics(repositoryPath, branchName);
     this.logger.debug(`Pushing branch [${branchName}] to remote origin...`);
     try {
       // Run Git safety checks on branch and workspace before push
