@@ -1,23 +1,4 @@
-import { RealtimeWorkflowStage } from '../events/workflow-events.js';
-
-export interface WorkflowRunSummary {
-  id: string;
-  correlationId: string;
-  commitSha: string;
-  branch: string;
-  commitMessage: string | null;
-  status: string;
-  currentStage: string | null;
-  currentNode: string | null;
-  progress: number;
-  startedAt: string | null;
-  completedAt: string | null;
-  durationMs: number | null;
-  repositoryId: string;
-  repositoryName: string;
-  repositoryOwner: string;
-  errorMessage: string | null;
-}
+import { WorkflowRunSummary } from './workflow.types.js';
 
 export interface PullRequestSummary {
   id: string;

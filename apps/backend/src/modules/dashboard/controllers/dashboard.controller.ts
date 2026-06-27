@@ -17,4 +17,10 @@ export class DashboardController {
   async getStats(@CurrentUser() user: User) {
     return this.dashboardService.getDashboardStats(user);
   }
+
+  @Get('settings')
+  @ApiOperation({ summary: 'Get current system and workspace configurations' })
+  async getSettings() {
+    return this.dashboardService.getSettings();
+  }
 }

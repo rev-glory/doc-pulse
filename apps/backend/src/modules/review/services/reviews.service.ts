@@ -6,6 +6,8 @@ import type { User } from '@/generated/prisma/client';
 import { ReviewDecisionDto } from '../dto/review-decision.dto';
 import { RunStatus as PrismaRunStatus } from '@/generated/prisma/enums';
 
+import { ReviewDetail, RunStatus } from '@docpulse/shared-types';
+
 @Injectable()
 export class ReviewsService {
   private readonly logger = new Logger(ReviewsService.name);
@@ -67,7 +69,7 @@ export class ReviewsService {
     });
   }
 
-  async getReviewById(id: string, user: User) {
+  async getReviewById(id: string, user: User): Promise<ReviewDetail> {
     this.logger.log(`Getting review ${id} for user ${user.id}`);
     const review = await this.prisma.review.findUnique({
       where: { id },
@@ -101,19 +103,28 @@ export class ReviewsService {
       // Fallback
     }
 
+    const snapshot = review.workflowRun.checkpointSnapshot as any;
+    const generatedDocuments = snapshot?.generatedDocuments || [];
+    const criticReview = snapshot?.criticReview || null;
+
     return {
       id: review.id,
-      status: review.status,
+      status: review.status as any,
       comment: parsed.comment,
       reviewer: parsed.reviewer,
       reviewedAt: review.reviewedAt?.toISOString() ?? null,
       createdAt: review.createdAt.toISOString(),
       updatedAt: review.updatedAt.toISOString(),
       workflowRunId: review.workflowRunId,
+      repositoryId: review.workflowRun.repositoryId,
       repositoryName: review.workflowRun.repository.name,
       repositoryOwner: review.workflowRun.repository.repositoryOwner,
       commitSha: review.workflowRun.commitSha,
       branch: review.workflowRun.branch,
+      workflowStage: review.workflowRun.currentStage ? String(review.workflowRun.currentStage) : null,
+      workflowStatus: review.workflowRun.status as unknown as RunStatus,
+      generatedDocuments,
+      criticReview,
     };
   }
 

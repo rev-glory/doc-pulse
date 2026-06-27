@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/database';
 import type { User } from '@/generated/prisma/client';
-import type { DashboardStats } from '@docpulse/shared-types';
+import type { DashboardStats, DashboardSettings } from '@docpulse/shared-types';
 import { RunsService } from '@/modules/runs/services/runs.service';
 import { PullRequestsService } from '@/modules/pull-requests/services/pull-requests.service';
 
@@ -46,6 +46,29 @@ export class DashboardService {
       },
       recentRuns: recentRuns.slice(0, 10),
       recentPullRequests: recentPullRequests.slice(0, 5),
+    };
+  }
+
+  async getSettings(): Promise<DashboardSettings> {
+    this.logger.log('Getting dashboard settings');
+    return {
+      general: {
+        theme: 'dark',
+        defaultBranch: 'main',
+      },
+      models: {
+        activeModel: process.env.GEMINI_MODEL || 'gemini-3.1-flash-lite',
+        temperature: 0.2,
+      },
+      workflow: {
+        triggerEvent: 'push',
+        webhookUrl: process.env.GITHUB_WEBHOOK_URL || 'http://localhost:3001/github/webhooks',
+        appId: process.env.GITHUB_APP_ID || '123456',
+      },
+      performance: {
+        concurrencyLimit: 3,
+        retryLimit: 5,
+      },
     };
   }
 }

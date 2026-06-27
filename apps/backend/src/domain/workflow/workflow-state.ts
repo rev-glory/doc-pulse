@@ -1,6 +1,12 @@
 import { RepositorySummary } from '../repository';
 import { DocumentationInventory } from '../documentation';
 import { WorkflowStatus, GitOperationStatus } from './enums';
+import {
+  GeneratedDocument as SharedGeneratedDocument,
+  CriticReview as SharedCriticReview,
+  DocumentationReview as SharedDocumentationReview,
+  CriticIssue as SharedCriticIssue,
+} from '@docpulse/shared-types';
 
 export enum GeneratedDocumentType {
   README = 'README',
@@ -20,16 +26,10 @@ export interface GeneratedDocumentMetrics {
   model: string;
 }
 
-export interface GeneratedDocument {
-  id: string;
-  title: string;
-  path: string;
-  markdown: string;
-  summary: string;
-  content?: string;
+export type GeneratedDocument = SharedGeneratedDocument & {
   type: GeneratedDocumentType;
   metrics?: GeneratedDocumentMetrics;
-}
+};
 
 /**
  * Factory helper creating canonical GeneratedDocument instances.
@@ -48,12 +48,7 @@ export function createGeneratedDocument(data: Omit<GeneratedDocument, 'content'>
   return doc;
 }
 
-export interface ReviewIssue {
-  severity: 'CRITICAL' | 'MAJOR' | 'MINOR';
-  category: string;
-  message: string;
-  location?: string;
-}
+export type ReviewIssue = SharedCriticIssue;
 
 export interface ReviewMetrics {
   promptVersion: number;
@@ -65,24 +60,14 @@ export interface ReviewMetrics {
   reviewedAt: string;
 }
 
-export interface DocumentationReview {
+export interface DocumentationReview extends Omit<SharedDocumentationReview, 'documentType' | 'issues'> {
   documentType: GeneratedDocumentType;
-  score: number;
-  approved: boolean;
   issues: ReviewIssue[];
-  suggestions: string[];
   metrics?: ReviewMetrics;
 }
 
-export interface CriticReview {
-  score: number; // average score across all documents
-  passed: boolean; // true if all documents approved
-  approvedCount: number;
-  failedCount: number;
-  totalDocuments: number;
-  issues: string[]; // formatted string list of issues for legacy wrapper compatibility
-  suggestions: string[]; // combined suggestions
-  reviews?: DocumentationReview[]; // detailed per-document reviews
+export interface CriticReview extends Omit<SharedCriticReview, 'reviews'> {
+  reviews?: DocumentationReview[];
 }
 
 export interface PullRequestSummary {
