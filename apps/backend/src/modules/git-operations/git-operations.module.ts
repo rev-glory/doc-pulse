@@ -1,4 +1,5 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
+import { GitHubModule } from '../github/github.module';
 
 import {
   GitService,
@@ -10,6 +11,9 @@ import {
 } from './services';
 
 @Module({
+  imports: [
+    forwardRef(() => GitHubModule),
+  ],
   providers: [
     GitService,
     WorkspaceService,

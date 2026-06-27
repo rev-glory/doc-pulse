@@ -30,6 +30,22 @@ export class DelayedRetryWorkflowError extends TransientWorkflowError {
 
 
 /**
+ * Helper to check for authentication/permission signatures that should not be retried.
+ */
+function isAuthOrPermissionError(message: string): boolean {
+  const signatures = [
+    'permission denied',
+    'authentication failed',
+    'error: 403',
+    'could not read username',
+    'repository access denied',
+    'invalid credentials',
+    'remote rejected',
+  ];
+  return signatures.some(sig => message.includes(sig));
+}
+
+/**
  * Classifies unknown exceptions into Transient or Permanent failures.
  * Permanent failures bypass retry loops and are sent directly to DLQ.
  */
@@ -51,7 +67,8 @@ export function classifyWorkflowError(error: unknown): QueueErrorClassification 
     message.includes('invalid configuration') ||
     message.includes('unsupported') ||
     message.includes('malformed') ||
-    message.includes('validation failed')
+    message.includes('validation failed') ||
+    isAuthOrPermissionError(message)
   ) {
     return QueueErrorClassification.PERMANENT;
   }

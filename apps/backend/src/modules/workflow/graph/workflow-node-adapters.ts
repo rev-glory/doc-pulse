@@ -64,10 +64,15 @@ export class WorkflowNodeAdapters {
   /**
    * Determines if a node should be skipped during recovery because it precedes firstNodeToExecute.
    */
-  private shouldSkip(runId: string | undefined, nodeName: WorkflowNodeName): boolean {
+  private shouldSkip(runId: string | undefined, nodeName: WorkflowNodeName, state?: WorkflowGraphState): boolean {
     if (!runId) return false;
     const context = this.activeContexts.get(runId);
     if (!context) return false;
+
+    // Issue 4: If checkpoint state already contains commitSha and branchName, skip GitCommit node
+    if (nodeName === WorkflowNodeName.GitCommit && state?.commitSha && state?.branchName) {
+      return true;
+    }
 
     const targetIndex = this.sequentialOrder.indexOf(context.firstNodeToExecute);
     const currentIndex = this.sequentialOrder.indexOf(nodeName);
@@ -85,7 +90,7 @@ export class WorkflowNodeAdapters {
 
   public async repositoryAnalyzerStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
     const nodeName = WorkflowNodeName.RepositoryAnalyzer;
-    if (this.shouldSkip(state.runId, nodeName)) {
+    if (this.shouldSkip(state.runId, nodeName, state)) {
       this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
       return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
@@ -98,7 +103,7 @@ export class WorkflowNodeAdapters {
 
   public async documentationLocatorStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
     const nodeName = WorkflowNodeName.DocumentationLocator;
-    if (this.shouldSkip(state.runId, nodeName)) {
+    if (this.shouldSkip(state.runId, nodeName, state)) {
       this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
       return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
@@ -111,7 +116,7 @@ export class WorkflowNodeAdapters {
 
   public async technicalWriterStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
     const nodeName = WorkflowNodeName.TechnicalWriter;
-    if (this.shouldSkip(state.runId, nodeName)) {
+    if (this.shouldSkip(state.runId, nodeName, state)) {
       this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
       return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
@@ -124,7 +129,7 @@ export class WorkflowNodeAdapters {
 
   public async documentationCriticStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
     const nodeName = WorkflowNodeName.DocumentationCritic;
-    if (this.shouldSkip(state.runId, nodeName)) {
+    if (this.shouldSkip(state.runId, nodeName, state)) {
       this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
       return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
@@ -139,7 +144,7 @@ export class WorkflowNodeAdapters {
 
   public async gitCommitStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
     const nodeName = WorkflowNodeName.GitCommit;
-    if (this.shouldSkip(state.runId, nodeName)) {
+    if (this.shouldSkip(state.runId, nodeName, state)) {
       this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
       return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
@@ -152,7 +157,7 @@ export class WorkflowNodeAdapters {
 
   public async pushBranchStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
     const nodeName = WorkflowNodeName.PushBranch;
-    if (this.shouldSkip(state.runId, nodeName)) {
+    if (this.shouldSkip(state.runId, nodeName, state)) {
       this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
       return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }
@@ -165,7 +170,7 @@ export class WorkflowNodeAdapters {
 
   public async createPullRequestStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
     const nodeName = WorkflowNodeName.CreatePullRequest;
-    if (this.shouldSkip(state.runId, nodeName)) {
+    if (this.shouldSkip(state.runId, nodeName, state)) {
       this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
       return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
     }

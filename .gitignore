@@ -80,8 +80,6 @@ Desktop.ini
 
 .idea/
 
-docpulse.mdc
-
 # ==========================================================
 # Testing
 # ==========================================================
@@ -142,3 +140,5 @@ playwright-report/
 # Private Documentation
 # ==========================================================
 ARCHITECTURE.md
+PROJECT_STATUS.md
+docpulse.mdc

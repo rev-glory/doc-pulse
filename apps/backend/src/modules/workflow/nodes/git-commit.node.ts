@@ -28,7 +28,7 @@ export class GitCommitNode {
     const writeResult = await this.writerService.writeDocuments(repoPath, runId, docs);
 
     // 2. Commit changes
-    const commitResult = await this.gitOpsService.commitChanges(repoPath, runId, writeResult.writtenFiles);
+    const commitResult = await this.gitOpsService.commitChanges(repoPath, runId, writeResult.writtenFiles, state.branchName);
 
     this.logger.log(`GitCommitNode completed successfully [branch: ${commitResult.branchName}, sha: ${commitResult.commitSha}]`);
 
