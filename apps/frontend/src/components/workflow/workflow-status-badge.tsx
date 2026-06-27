@@ -29,6 +29,10 @@ export const WorkflowStatusBadge: React.FC<WorkflowStatusBadgeProps> = ({ status
       label = 'Cancelled';
       color = 'yellow';
       break;
+    case 'waiting_for_review':
+      label = 'Review Pending';
+      color = '#8b5cf6';
+      break;
     default:
       label = 'Pending';
       color = 'gray';

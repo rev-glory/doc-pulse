@@ -15,7 +15,8 @@ export const RunStatus = {
   CHECKPOINTED: 'CHECKPOINTED',
   COMPLETED: 'COMPLETED',
   FAILED: 'FAILED',
-  CANCELLED: 'CANCELLED'
+  CANCELLED: 'CANCELLED',
+  WAITING_FOR_REVIEW: 'WAITING_FOR_REVIEW'
 } as const
 
 export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus]

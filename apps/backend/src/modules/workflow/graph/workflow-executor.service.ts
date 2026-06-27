@@ -12,6 +12,9 @@ import {
   WorkflowCheckpointSnapshot,
 } from '../../../domain/workflow';
 import { WorkflowEventService } from '../../realtime/services/workflow-event.service';
+import { PrismaService } from '@/database';
+import { RunStatus as PrismaRunStatus, WorkflowStage as PrismaWorkflowStage } from '@/generated/prisma/enums';
+import { RepositoryCloneService } from '../../git-operations/services/repository-clone.service';
 
 @Injectable()
 export class WorkflowExecutorService implements OnModuleInit {
@@ -23,7 +26,6 @@ export class WorkflowExecutorService implements OnModuleInit {
     WorkflowNodeName.DocumentationLocator,
     WorkflowNodeName.TechnicalWriter,
     WorkflowNodeName.DocumentationCritic,
-    WorkflowNodeName.HumanReview,
     WorkflowNodeName.GitCommit,
     WorkflowNodeName.PushBranch,
     WorkflowNodeName.CreatePullRequest,
@@ -33,6 +35,8 @@ export class WorkflowExecutorService implements OnModuleInit {
     private readonly adapters: WorkflowNodeAdapters,
     private readonly configService: ConfigService,
     private readonly checkpointRepository: WorkflowCheckpointRepository,
+    private readonly prisma: PrismaService,
+    private readonly repositoryCloneService: RepositoryCloneService,
     @Optional() private readonly eventService?: WorkflowEventService,
   ) {}
 
@@ -85,11 +89,52 @@ export class WorkflowExecutorService implements OnModuleInit {
       return { runId: input.runId, repositoryId: input.repositoryId, executionStatus: WorkflowStatus.Completed } as any;
     }
 
+    // 1. Re-clone if workspace directory is missing on disk
+    if (input.workspacePath && !require('fs').existsSync(input.workspacePath)) {
+      this.logger.log(`[${input.runId}] Local workspace directory missing. Re-cloning repository...`);
+      const repoRecord = await this.prisma.repository.findUnique({
+        where: { id: runRecord.repositoryId },
+      });
+      if (!repoRecord) {
+        throw new Error(`Cannot resume workflow: Repository [${runRecord.repositoryId}] not found in database.`);
+      }
+      await this.repositoryCloneService.cloneRepository({
+        id: repoRecord.id,
+        cloneUrl: repoRecord.cloneUrl,
+        defaultBranch: repoRecord.defaultBranch,
+      });
+    }
+
     const snapshot = (runRecord.checkpointSnapshot ?? null) as WorkflowCheckpointSnapshot | null;
     const completedNodes = snapshot?.completedNodes ?? [];
     const lastNode = snapshot?.currentNode;
 
-    const firstNodeToExecute = this.determineNextNode(lastNode);
+    // 2. Derive start node statelessly based on database review status (Invariant 4)
+    let firstNodeToExecute: WorkflowNodeName;
+    let activeReview: any = null;
+
+    if (runRecord.currentReviewId) {
+      activeReview = await this.prisma.review.findUnique({
+        where: { id: runRecord.currentReviewId },
+      });
+    }
+
+    if (lastNode === ('HumanReview' as any)) {
+      firstNodeToExecute = WorkflowNodeName.GitCommit;
+    } else if (activeReview && activeReview.status === 'REJECTED') {
+      firstNodeToExecute = WorkflowNodeName.TechnicalWriter;
+    } else if (activeReview && activeReview.status === 'APPROVED') {
+      firstNodeToExecute = WorkflowNodeName.GitCommit;
+    } else {
+      firstNodeToExecute = this.determineNextNode(lastNode);
+    }
+
+    // 3. Mark run status as RUNNING (accurate status lifecycle)
+    await this.prisma.workflowRun.update({
+      where: { id: input.runId },
+      data: { status: 'RUNNING' },
+    });
+
     const nodeRetries = (runRecord.nodeRetries && typeof runRecord.nodeRetries === 'object'
       ? runRecord.nodeRetries
       : {}) as Record<string, number>;
@@ -102,7 +147,10 @@ export class WorkflowExecutorService implements OnModuleInit {
       firstNodeToExecute,
       completedNodes,
       nodeRetries,
-      initialStateOverride: hydratedState,
+      initialStateOverride: {
+        ...hydratedState,
+        humanReviewStatus: activeReview ? activeReview.status : undefined,
+      },
     });
   }
 
@@ -126,6 +174,11 @@ export class WorkflowExecutorService implements OnModuleInit {
 
   private determineNextNode(lastCompletedNode?: WorkflowNodeName): WorkflowNodeName {
     if (!lastCompletedNode) return WorkflowNodeName.RepositoryAnalyzer;
+
+    // Legacy checkpoint compatibility (Invariant 7)
+    if (lastCompletedNode === ('HumanReview' as any)) {
+      return WorkflowNodeName.GitCommit;
+    }
 
     const idx = this.sequentialOrder.indexOf(lastCompletedNode);
     if (idx === -1 || idx === this.sequentialOrder.length - 1) {
@@ -195,44 +248,51 @@ export class WorkflowExecutorService implements OnModuleInit {
       const finalState = (await this.compiledGraph.invoke(baselineState as WorkflowGraphState)) as any;
       const durationMs = Date.now() - startTime;
 
-      if (finalState.humanReviewStatus === 'PENDING') {
+      if (finalState.currentNode === WorkflowNodeName.DocumentationCritic) {
         this.logger.log(`[${input.runId}] Workflow execution suspended at node [${finalState.currentNode}] for human review.`);
-        await this.checkpointRepository.markRunNeedsReview(input.runId);
-        return {
-          ...finalState,
-          executionStatus: WorkflowStatus.NeedsReview,
-        } as unknown as DomainWorkflowState;
-      }
+        
+        // Atomic suspension transaction (Invariant 1, Invariant 6)
+        await this.prisma.$transaction(async (tx) => {
+          const existingPending = await tx.review.findFirst({
+            where: { workflowRunId: input.runId, status: 'PENDING' },
+          });
+          if (existingPending) {
+            throw new Error(`Invariant Violation: Pending review already exists for WorkflowRun [${input.runId}].`);
+          }
 
-      if (finalState.humanReviewStatus === 'REJECTED') {
-        this.logger.log(`[${input.runId}] Workflow execution rejected by human review.`);
-        await this.checkpointRepository.markRunFailed(input.runId, 'Human review rejected');
-        this.eventService?.publishFailureEvent(
+          const newReview = await tx.review.create({
+            data: {
+              workflowRunId: input.runId,
+              status: 'PENDING',
+              metrics: finalState.criticReview || {},
+            },
+          });
+
+          await tx.workflowRun.update({
+            where: { id: input.runId },
+            data: {
+              currentReviewId: newReview.id,
+              status: PrismaRunStatus.WAITING_FOR_REVIEW,
+              currentNode: WorkflowNodeName.DocumentationCritic,
+              currentStage: PrismaWorkflowStage.REVIEWING,
+              completedAt: null,
+              errorMessage: null,
+              updatedAt: new Date(),
+            },
+          });
+        });
+        this.logger.log(`WorkflowRun [${input.runId}] suspended and marked as WAITING_FOR_REVIEW.`);
+        
+        this.eventService?.publishWaitingForReviewEvent(
           input.runId,
           input.repositoryId,
           input.runId,
-          'Human review rejected',
-          WorkflowNodeName.HumanReview,
+          finalState.criticReview,
         );
-        return {
-          ...finalState,
-          executionStatus: WorkflowStatus.ReviewFailed,
-        } as unknown as DomainWorkflowState;
-      }
 
-      if (finalState.criticReview?.passed === false) {
-        this.logger.log(`[${input.runId}] Workflow execution rejected by documentation critic.`);
-        await this.checkpointRepository.markRunFailed(input.runId, 'Documentation critic rejected');
-        this.eventService?.publishFailureEvent(
-          input.runId,
-          input.repositoryId,
-          input.runId,
-          'Documentation critic rejected',
-          WorkflowNodeName.DocumentationCritic,
-        );
         return {
           ...finalState,
-          executionStatus: WorkflowStatus.ReviewFailed,
+          executionStatus: WorkflowStatus.WaitingForReview,
         } as unknown as DomainWorkflowState;
       }
 

@@ -18,6 +18,7 @@ export enum WorkflowEventType {
   WorkflowCompleted = 'workflow.completed',
   WorkflowFailed = 'workflow.failed',
   WorkflowCancelled = 'workflow.cancelled',
+  WorkflowWaitingForReview = 'workflow.waiting_for_review',
   QueueEvent = 'queue.event',
 }
 

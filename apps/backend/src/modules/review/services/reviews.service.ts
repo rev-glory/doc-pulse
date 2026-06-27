@@ -137,23 +137,23 @@ export class ReviewsService {
       text: decision.comment || 'Approved',
     });
 
-    // 1. Update database status
-    await this.prisma.review.update({
-      where: { id },
-      data: {
-        status: 'APPROVED',
-        reviewedAt: new Date(),
-        comment: commentJson,
-      },
+    // 1. Transactionally update review (Invariant 3 atomic guard)
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.review.updateMany({
+        where: { id, status: 'PENDING' },
+        data: {
+          status: 'APPROVED',
+          reviewedAt: new Date(),
+          comment: commentJson,
+        },
+      });
+
+      if (updated.count === 0) {
+        throw new BadRequestException('Review is already processed.');
+      }
     });
 
-    // 2. Set workflowRun status to RUNNING
-    await this.prisma.workflowRun.update({
-      where: { id: review.workflowRunId },
-      data: { status: PrismaRunStatus.RUNNING },
-    });
-
-    // 3. Enqueue workflow execution resume job to BullMQ
+    // 2. Enqueue resume job (run status is updated to RUNNING only inside worker resume startup)
     const repositoryPath = this.workspaceService.getRepositoryPath(review.workflowRun.repositoryId);
     await this.workflowQueueService.enqueueWorkflow({
       runId: review.workflowRunId,
@@ -180,35 +180,40 @@ export class ReviewsService {
       throw new NotFoundException(`Review ${id} not found`);
     }
 
-    if (review.status !== 'PENDING') {
-      throw new BadRequestException(`Review is already in status ${review.status}`);
-    }
-
     const commentJson = JSON.stringify({
       reviewer: user.githubLogin || user.id,
       text: decision.comment || 'Rejected',
     });
 
-    // 1. Update review to REJECTED
-    await this.prisma.review.update({
-      where: { id },
-      data: {
-        status: 'REJECTED',
-        reviewedAt: new Date(),
-        comment: commentJson,
+    // 1. Transactionally update review (Invariant 3 atomic guard)
+    await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.review.updateMany({
+        where: { id, status: 'PENDING' },
+        data: {
+          status: 'REJECTED',
+          reviewedAt: new Date(),
+          comment: commentJson,
+        },
+      });
+
+      if (updated.count === 0) {
+        throw new BadRequestException('Review is already processed.');
+      }
+    });
+
+    // 2. Enqueue loopback resume job to go back to TechnicalWriter
+    const repositoryPath = this.workspaceService.getRepositoryPath(review.workflowRun.repositoryId);
+    await this.workflowQueueService.enqueueWorkflow({
+      runId: review.workflowRunId,
+      repositoryId: review.workflowRun.repositoryId,
+      repositoryPath,
+      executionMode: 'resume',
+      metadata: {
+        reviewer: user.githubLogin || user.id,
+        resumedAt: new Date().toISOString(),
       },
     });
 
-    // 2. Update run status to FAILED in the database
-    await this.prisma.workflowRun.update({
-      where: { id: review.workflowRunId },
-      data: {
-        status: PrismaRunStatus.FAILED,
-        errorMessage: decision.comment || 'Human review rejected',
-        completedAt: new Date(),
-      },
-    });
-
-    return { message: 'Review rejected and workflow run terminated' };
+    return { message: 'Review rejected and workflow execution resumed for document regeneration' };
   }
 }

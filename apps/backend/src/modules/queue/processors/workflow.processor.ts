@@ -175,7 +175,7 @@ export class WorkflowProcessor extends WorkerHost {
     durationMs: number,
   ): Omit<WorkflowProgressEvent, 'jobId'> {
     switch (finalState.executionStatus) {
-      case WorkflowStatus.NeedsReview:
+      case WorkflowStatus.WaitingForReview:
         return {
           runId,
           repositoryId,
@@ -184,22 +184,21 @@ export class WorkflowProcessor extends WorkerHost {
           percentage: 100,
           timestamp: new Date().toISOString(),
           queueStatus: QueueEventStatus.Waiting,
-          realtimeStatus: 'waiting',
+          realtimeStatus: 'waiting_for_review',
           realtimeStage: RealtimeWorkflowStage.Reviewing,
           metadata: { durationMs, workflowStatus: finalState.executionStatus },
         };
-      case WorkflowStatus.ReviewFailed:
       case WorkflowStatus.Failed:
         return {
           runId,
           repositoryId,
           stage: 'FAILED',
-          message: 'Workflow execution terminated with a failed review outcome',
+          message: 'Workflow execution failed',
           percentage: 100,
           timestamp: new Date().toISOString(),
           queueStatus: QueueEventStatus.Failed,
           realtimeStatus: 'failed',
-          realtimeStage: RealtimeWorkflowStage.Reviewing,
+          realtimeStage: RealtimeWorkflowStage.Failed,
           metadata: { durationMs, workflowStatus: finalState.executionStatus },
         };
       case WorkflowStatus.Completed:

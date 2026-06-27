@@ -3,9 +3,7 @@ export enum WorkflowStatus {
   Running = 'Running',
   Completed = 'Completed',
   Failed = 'Failed',
-  NeedsReview = 'NeedsReview',
-  RegenerationRequired = 'RegenerationRequired',
-  ReviewFailed = 'ReviewFailed',
+  WaitingForReview = 'waiting_for_review',
 }
 
 export enum GitOperationStatus {

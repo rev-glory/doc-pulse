@@ -51,6 +51,7 @@ export type ReviewCountAggregateOutputType = {
   updatedAt: number
   status: number
   comment: number
+  metrics: number
   reviewedAt: number
   workflowRunId: number
   _all: number
@@ -83,6 +84,7 @@ export type ReviewCountAggregateInputType = {
   updatedAt?: true
   status?: true
   comment?: true
+  metrics?: true
   reviewedAt?: true
   workflowRunId?: true
   _all?: true
@@ -166,6 +168,7 @@ export type ReviewGroupByOutputType = {
   updatedAt: Date
   status: $Enums.ReviewStatus
   comment: string | null
+  metrics: runtime.JsonValue | null
   reviewedAt: Date | null
   workflowRunId: string
   _count: ReviewCountAggregateOutputType | null
@@ -197,9 +200,11 @@ export type ReviewWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   status?: Prisma.EnumReviewStatusFilter<"Review"> | $Enums.ReviewStatus
   comment?: Prisma.StringNullableFilter<"Review"> | string | null
+  metrics?: Prisma.JsonNullableFilter<"Review">
   reviewedAt?: Prisma.DateTimeNullableFilter<"Review"> | Date | string | null
   workflowRunId?: Prisma.StringFilter<"Review"> | string
   workflowRun?: Prisma.XOR<Prisma.WorkflowRunScalarRelationFilter, Prisma.WorkflowRunWhereInput>
+  currentReviewFor?: Prisma.WorkflowRunListRelationFilter
 }
 
 export type ReviewOrderByWithRelationInput = {
@@ -208,14 +213,15 @@ export type ReviewOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
+  metrics?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   workflowRunId?: Prisma.SortOrder
   workflowRun?: Prisma.WorkflowRunOrderByWithRelationInput
+  currentReviewFor?: Prisma.WorkflowRunOrderByRelationAggregateInput
 }
 
 export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   id?: string
-  workflowRunId?: string
   AND?: Prisma.ReviewWhereInput | Prisma.ReviewWhereInput[]
   OR?: Prisma.ReviewWhereInput[]
   NOT?: Prisma.ReviewWhereInput | Prisma.ReviewWhereInput[]
@@ -223,9 +229,12 @@ export type ReviewWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"Review"> | Date | string
   status?: Prisma.EnumReviewStatusFilter<"Review"> | $Enums.ReviewStatus
   comment?: Prisma.StringNullableFilter<"Review"> | string | null
+  metrics?: Prisma.JsonNullableFilter<"Review">
   reviewedAt?: Prisma.DateTimeNullableFilter<"Review"> | Date | string | null
+  workflowRunId?: Prisma.StringFilter<"Review"> | string
   workflowRun?: Prisma.XOR<Prisma.WorkflowRunScalarRelationFilter, Prisma.WorkflowRunWhereInput>
-}, "id" | "workflowRunId">
+  currentReviewFor?: Prisma.WorkflowRunListRelationFilter
+}, "id">
 
 export type ReviewOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
@@ -233,6 +242,7 @@ export type ReviewOrderByWithAggregationInput = {
   updatedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   comment?: Prisma.SortOrderInput | Prisma.SortOrder
+  metrics?: Prisma.SortOrderInput | Prisma.SortOrder
   reviewedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   workflowRunId?: Prisma.SortOrder
   _count?: Prisma.ReviewCountOrderByAggregateInput
@@ -249,6 +259,7 @@ export type ReviewScalarWhereWithAggregatesInput = {
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Review"> | Date | string
   status?: Prisma.EnumReviewStatusWithAggregatesFilter<"Review"> | $Enums.ReviewStatus
   comment?: Prisma.StringNullableWithAggregatesFilter<"Review"> | string | null
+  metrics?: Prisma.JsonNullableWithAggregatesFilter<"Review">
   reviewedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"Review"> | Date | string | null
   workflowRunId?: Prisma.StringWithAggregatesFilter<"Review"> | string
 }
@@ -259,8 +270,10 @@ export type ReviewCreateInput = {
   updatedAt?: Date | string
   status?: $Enums.ReviewStatus
   comment?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Date | string | null
-  workflowRun: Prisma.WorkflowRunCreateNestedOneWithoutReviewInput
+  workflowRun: Prisma.WorkflowRunCreateNestedOneWithoutReviewsInput
+  currentReviewFor?: Prisma.WorkflowRunCreateNestedManyWithoutCurrentReviewInput
 }
 
 export type ReviewUncheckedCreateInput = {
@@ -269,8 +282,10 @@ export type ReviewUncheckedCreateInput = {
   updatedAt?: Date | string
   status?: $Enums.ReviewStatus
   comment?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Date | string | null
   workflowRunId: string
+  currentReviewFor?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutCurrentReviewInput
 }
 
 export type ReviewUpdateInput = {
@@ -279,8 +294,10 @@ export type ReviewUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReviewStatusFieldUpdateOperationsInput | $Enums.ReviewStatus
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
-  workflowRun?: Prisma.WorkflowRunUpdateOneRequiredWithoutReviewNestedInput
+  workflowRun?: Prisma.WorkflowRunUpdateOneRequiredWithoutReviewsNestedInput
+  currentReviewFor?: Prisma.WorkflowRunUpdateManyWithoutCurrentReviewNestedInput
 }
 
 export type ReviewUncheckedUpdateInput = {
@@ -289,8 +306,10 @@ export type ReviewUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReviewStatusFieldUpdateOperationsInput | $Enums.ReviewStatus
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   workflowRunId?: Prisma.StringFieldUpdateOperationsInput | string
+  currentReviewFor?: Prisma.WorkflowRunUncheckedUpdateManyWithoutCurrentReviewNestedInput
 }
 
 export type ReviewCreateManyInput = {
@@ -299,6 +318,7 @@ export type ReviewCreateManyInput = {
   updatedAt?: Date | string
   status?: $Enums.ReviewStatus
   comment?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Date | string | null
   workflowRunId: string
 }
@@ -309,6 +329,7 @@ export type ReviewUpdateManyMutationInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReviewStatusFieldUpdateOperationsInput | $Enums.ReviewStatus
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
@@ -318,6 +339,7 @@ export type ReviewUncheckedUpdateManyInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReviewStatusFieldUpdateOperationsInput | $Enums.ReviewStatus
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   workflowRunId?: Prisma.StringFieldUpdateOperationsInput | string
 }
@@ -327,12 +349,23 @@ export type ReviewNullableScalarRelationFilter = {
   isNot?: Prisma.ReviewWhereInput | null
 }
 
+export type ReviewListRelationFilter = {
+  every?: Prisma.ReviewWhereInput
+  some?: Prisma.ReviewWhereInput
+  none?: Prisma.ReviewWhereInput
+}
+
+export type ReviewOrderByRelationAggregateInput = {
+  _count?: Prisma.SortOrder
+}
+
 export type ReviewCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   status?: Prisma.SortOrder
   comment?: Prisma.SortOrder
+  metrics?: Prisma.SortOrder
   reviewedAt?: Prisma.SortOrder
   workflowRunId?: Prisma.SortOrder
 }
@@ -357,40 +390,93 @@ export type ReviewMinOrderByAggregateInput = {
   workflowRunId?: Prisma.SortOrder
 }
 
-export type ReviewCreateNestedOneWithoutWorkflowRunInput = {
-  create?: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput>
-  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput
+export type ReviewCreateNestedOneWithoutCurrentReviewForInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutCurrentReviewForInput, Prisma.ReviewUncheckedCreateWithoutCurrentReviewForInput>
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutCurrentReviewForInput
   connect?: Prisma.ReviewWhereUniqueInput
 }
 
-export type ReviewUncheckedCreateNestedOneWithoutWorkflowRunInput = {
-  create?: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput>
-  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput
-  connect?: Prisma.ReviewWhereUniqueInput
+export type ReviewCreateNestedManyWithoutWorkflowRunInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput> | Prisma.ReviewCreateWithoutWorkflowRunInput[] | Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput | Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput[]
+  createMany?: Prisma.ReviewCreateManyWorkflowRunInputEnvelope
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
 }
 
-export type ReviewUpdateOneWithoutWorkflowRunNestedInput = {
-  create?: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput>
-  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput
-  upsert?: Prisma.ReviewUpsertWithoutWorkflowRunInput
+export type ReviewUncheckedCreateNestedManyWithoutWorkflowRunInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput> | Prisma.ReviewCreateWithoutWorkflowRunInput[] | Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput | Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput[]
+  createMany?: Prisma.ReviewCreateManyWorkflowRunInputEnvelope
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+}
+
+export type ReviewUpdateOneWithoutCurrentReviewForNestedInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutCurrentReviewForInput, Prisma.ReviewUncheckedCreateWithoutCurrentReviewForInput>
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutCurrentReviewForInput
+  upsert?: Prisma.ReviewUpsertWithoutCurrentReviewForInput
   disconnect?: Prisma.ReviewWhereInput | boolean
   delete?: Prisma.ReviewWhereInput | boolean
   connect?: Prisma.ReviewWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ReviewUpdateToOneWithWhereWithoutWorkflowRunInput, Prisma.ReviewUpdateWithoutWorkflowRunInput>, Prisma.ReviewUncheckedUpdateWithoutWorkflowRunInput>
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ReviewUpdateToOneWithWhereWithoutCurrentReviewForInput, Prisma.ReviewUpdateWithoutCurrentReviewForInput>, Prisma.ReviewUncheckedUpdateWithoutCurrentReviewForInput>
 }
 
-export type ReviewUncheckedUpdateOneWithoutWorkflowRunNestedInput = {
-  create?: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput>
-  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput
-  upsert?: Prisma.ReviewUpsertWithoutWorkflowRunInput
-  disconnect?: Prisma.ReviewWhereInput | boolean
-  delete?: Prisma.ReviewWhereInput | boolean
-  connect?: Prisma.ReviewWhereUniqueInput
-  update?: Prisma.XOR<Prisma.XOR<Prisma.ReviewUpdateToOneWithWhereWithoutWorkflowRunInput, Prisma.ReviewUpdateWithoutWorkflowRunInput>, Prisma.ReviewUncheckedUpdateWithoutWorkflowRunInput>
+export type ReviewUpdateManyWithoutWorkflowRunNestedInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput> | Prisma.ReviewCreateWithoutWorkflowRunInput[] | Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput | Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput[]
+  upsert?: Prisma.ReviewUpsertWithWhereUniqueWithoutWorkflowRunInput | Prisma.ReviewUpsertWithWhereUniqueWithoutWorkflowRunInput[]
+  createMany?: Prisma.ReviewCreateManyWorkflowRunInputEnvelope
+  set?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  disconnect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  delete?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  update?: Prisma.ReviewUpdateWithWhereUniqueWithoutWorkflowRunInput | Prisma.ReviewUpdateWithWhereUniqueWithoutWorkflowRunInput[]
+  updateMany?: Prisma.ReviewUpdateManyWithWhereWithoutWorkflowRunInput | Prisma.ReviewUpdateManyWithWhereWithoutWorkflowRunInput[]
+  deleteMany?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
+}
+
+export type ReviewUncheckedUpdateManyWithoutWorkflowRunNestedInput = {
+  create?: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput> | Prisma.ReviewCreateWithoutWorkflowRunInput[] | Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput[]
+  connectOrCreate?: Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput | Prisma.ReviewCreateOrConnectWithoutWorkflowRunInput[]
+  upsert?: Prisma.ReviewUpsertWithWhereUniqueWithoutWorkflowRunInput | Prisma.ReviewUpsertWithWhereUniqueWithoutWorkflowRunInput[]
+  createMany?: Prisma.ReviewCreateManyWorkflowRunInputEnvelope
+  set?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  disconnect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  delete?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  connect?: Prisma.ReviewWhereUniqueInput | Prisma.ReviewWhereUniqueInput[]
+  update?: Prisma.ReviewUpdateWithWhereUniqueWithoutWorkflowRunInput | Prisma.ReviewUpdateWithWhereUniqueWithoutWorkflowRunInput[]
+  updateMany?: Prisma.ReviewUpdateManyWithWhereWithoutWorkflowRunInput | Prisma.ReviewUpdateManyWithWhereWithoutWorkflowRunInput[]
+  deleteMany?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
 }
 
 export type EnumReviewStatusFieldUpdateOperationsInput = {
   set?: $Enums.ReviewStatus
+}
+
+export type ReviewCreateWithoutCurrentReviewForInput = {
+  id?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  status?: $Enums.ReviewStatus
+  comment?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reviewedAt?: Date | string | null
+  workflowRun: Prisma.WorkflowRunCreateNestedOneWithoutReviewsInput
+}
+
+export type ReviewUncheckedCreateWithoutCurrentReviewForInput = {
+  id?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  status?: $Enums.ReviewStatus
+  comment?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reviewedAt?: Date | string | null
+  workflowRunId: string
+}
+
+export type ReviewCreateOrConnectWithoutCurrentReviewForInput = {
+  where: Prisma.ReviewWhereUniqueInput
+  create: Prisma.XOR<Prisma.ReviewCreateWithoutCurrentReviewForInput, Prisma.ReviewUncheckedCreateWithoutCurrentReviewForInput>
 }
 
 export type ReviewCreateWithoutWorkflowRunInput = {
@@ -399,7 +485,9 @@ export type ReviewCreateWithoutWorkflowRunInput = {
   updatedAt?: Date | string
   status?: $Enums.ReviewStatus
   comment?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Date | string | null
+  currentReviewFor?: Prisma.WorkflowRunCreateNestedManyWithoutCurrentReviewInput
 }
 
 export type ReviewUncheckedCreateWithoutWorkflowRunInput = {
@@ -408,7 +496,9 @@ export type ReviewUncheckedCreateWithoutWorkflowRunInput = {
   updatedAt?: Date | string
   status?: $Enums.ReviewStatus
   comment?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Date | string | null
+  currentReviewFor?: Prisma.WorkflowRunUncheckedCreateNestedManyWithoutCurrentReviewInput
 }
 
 export type ReviewCreateOrConnectWithoutWorkflowRunInput = {
@@ -416,15 +506,82 @@ export type ReviewCreateOrConnectWithoutWorkflowRunInput = {
   create: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput>
 }
 
-export type ReviewUpsertWithoutWorkflowRunInput = {
-  update: Prisma.XOR<Prisma.ReviewUpdateWithoutWorkflowRunInput, Prisma.ReviewUncheckedUpdateWithoutWorkflowRunInput>
-  create: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput>
+export type ReviewCreateManyWorkflowRunInputEnvelope = {
+  data: Prisma.ReviewCreateManyWorkflowRunInput | Prisma.ReviewCreateManyWorkflowRunInput[]
+  skipDuplicates?: boolean
+}
+
+export type ReviewUpsertWithoutCurrentReviewForInput = {
+  update: Prisma.XOR<Prisma.ReviewUpdateWithoutCurrentReviewForInput, Prisma.ReviewUncheckedUpdateWithoutCurrentReviewForInput>
+  create: Prisma.XOR<Prisma.ReviewCreateWithoutCurrentReviewForInput, Prisma.ReviewUncheckedCreateWithoutCurrentReviewForInput>
   where?: Prisma.ReviewWhereInput
 }
 
-export type ReviewUpdateToOneWithWhereWithoutWorkflowRunInput = {
+export type ReviewUpdateToOneWithWhereWithoutCurrentReviewForInput = {
   where?: Prisma.ReviewWhereInput
+  data: Prisma.XOR<Prisma.ReviewUpdateWithoutCurrentReviewForInput, Prisma.ReviewUncheckedUpdateWithoutCurrentReviewForInput>
+}
+
+export type ReviewUpdateWithoutCurrentReviewForInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumReviewStatusFieldUpdateOperationsInput | $Enums.ReviewStatus
+  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  workflowRun?: Prisma.WorkflowRunUpdateOneRequiredWithoutReviewsNestedInput
+}
+
+export type ReviewUncheckedUpdateWithoutCurrentReviewForInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumReviewStatusFieldUpdateOperationsInput | $Enums.ReviewStatus
+  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  workflowRunId?: Prisma.StringFieldUpdateOperationsInput | string
+}
+
+export type ReviewUpsertWithWhereUniqueWithoutWorkflowRunInput = {
+  where: Prisma.ReviewWhereUniqueInput
+  update: Prisma.XOR<Prisma.ReviewUpdateWithoutWorkflowRunInput, Prisma.ReviewUncheckedUpdateWithoutWorkflowRunInput>
+  create: Prisma.XOR<Prisma.ReviewCreateWithoutWorkflowRunInput, Prisma.ReviewUncheckedCreateWithoutWorkflowRunInput>
+}
+
+export type ReviewUpdateWithWhereUniqueWithoutWorkflowRunInput = {
+  where: Prisma.ReviewWhereUniqueInput
   data: Prisma.XOR<Prisma.ReviewUpdateWithoutWorkflowRunInput, Prisma.ReviewUncheckedUpdateWithoutWorkflowRunInput>
+}
+
+export type ReviewUpdateManyWithWhereWithoutWorkflowRunInput = {
+  where: Prisma.ReviewScalarWhereInput
+  data: Prisma.XOR<Prisma.ReviewUpdateManyMutationInput, Prisma.ReviewUncheckedUpdateManyWithoutWorkflowRunInput>
+}
+
+export type ReviewScalarWhereInput = {
+  AND?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
+  OR?: Prisma.ReviewScalarWhereInput[]
+  NOT?: Prisma.ReviewScalarWhereInput | Prisma.ReviewScalarWhereInput[]
+  id?: Prisma.StringFilter<"Review"> | string
+  createdAt?: Prisma.DateTimeFilter<"Review"> | Date | string
+  updatedAt?: Prisma.DateTimeFilter<"Review"> | Date | string
+  status?: Prisma.EnumReviewStatusFilter<"Review"> | $Enums.ReviewStatus
+  comment?: Prisma.StringNullableFilter<"Review"> | string | null
+  metrics?: Prisma.JsonNullableFilter<"Review">
+  reviewedAt?: Prisma.DateTimeNullableFilter<"Review"> | Date | string | null
+  workflowRunId?: Prisma.StringFilter<"Review"> | string
+}
+
+export type ReviewCreateManyWorkflowRunInput = {
+  id?: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  status?: $Enums.ReviewStatus
+  comment?: string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reviewedAt?: Date | string | null
 }
 
 export type ReviewUpdateWithoutWorkflowRunInput = {
@@ -433,7 +590,9 @@ export type ReviewUpdateWithoutWorkflowRunInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReviewStatusFieldUpdateOperationsInput | $Enums.ReviewStatus
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentReviewFor?: Prisma.WorkflowRunUpdateManyWithoutCurrentReviewNestedInput
 }
 
 export type ReviewUncheckedUpdateWithoutWorkflowRunInput = {
@@ -442,9 +601,50 @@ export type ReviewUncheckedUpdateWithoutWorkflowRunInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   status?: Prisma.EnumReviewStatusFieldUpdateOperationsInput | $Enums.ReviewStatus
   comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  currentReviewFor?: Prisma.WorkflowRunUncheckedUpdateManyWithoutCurrentReviewNestedInput
+}
+
+export type ReviewUncheckedUpdateManyWithoutWorkflowRunInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  status?: Prisma.EnumReviewStatusFieldUpdateOperationsInput | $Enums.ReviewStatus
+  comment?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  metrics?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   reviewedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
 }
 
+
+/**
+ * Count Type ReviewCountOutputType
+ */
+
+export type ReviewCountOutputType = {
+  currentReviewFor: number
+}
+
+export type ReviewCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  currentReviewFor?: boolean | ReviewCountOutputTypeCountCurrentReviewForArgs
+}
+
+/**
+ * ReviewCountOutputType without action
+ */
+export type ReviewCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ReviewCountOutputType
+   */
+  select?: Prisma.ReviewCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ReviewCountOutputType without action
+ */
+export type ReviewCountOutputTypeCountCurrentReviewForArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.WorkflowRunWhereInput
+}
 
 
 export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -453,9 +653,12 @@ export type ReviewSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   updatedAt?: boolean
   status?: boolean
   comment?: boolean
+  metrics?: boolean
   reviewedAt?: boolean
   workflowRunId?: boolean
   workflowRun?: boolean | Prisma.WorkflowRunDefaultArgs<ExtArgs>
+  currentReviewFor?: boolean | Prisma.Review$currentReviewForArgs<ExtArgs>
+  _count?: boolean | Prisma.ReviewCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["review"]>
 
 export type ReviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -464,6 +667,7 @@ export type ReviewSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extens
   updatedAt?: boolean
   status?: boolean
   comment?: boolean
+  metrics?: boolean
   reviewedAt?: boolean
   workflowRunId?: boolean
   workflowRun?: boolean | Prisma.WorkflowRunDefaultArgs<ExtArgs>
@@ -475,6 +679,7 @@ export type ReviewSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extens
   updatedAt?: boolean
   status?: boolean
   comment?: boolean
+  metrics?: boolean
   reviewedAt?: boolean
   workflowRunId?: boolean
   workflowRun?: boolean | Prisma.WorkflowRunDefaultArgs<ExtArgs>
@@ -486,13 +691,16 @@ export type ReviewSelectScalar = {
   updatedAt?: boolean
   status?: boolean
   comment?: boolean
+  metrics?: boolean
   reviewedAt?: boolean
   workflowRunId?: boolean
 }
 
-export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "comment" | "reviewedAt" | "workflowRunId", ExtArgs["result"]["review"]>
+export type ReviewOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "comment" | "metrics" | "reviewedAt" | "workflowRunId", ExtArgs["result"]["review"]>
 export type ReviewInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workflowRun?: boolean | Prisma.WorkflowRunDefaultArgs<ExtArgs>
+  currentReviewFor?: boolean | Prisma.Review$currentReviewForArgs<ExtArgs>
+  _count?: boolean | Prisma.ReviewCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ReviewIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   workflowRun?: boolean | Prisma.WorkflowRunDefaultArgs<ExtArgs>
@@ -505,6 +713,7 @@ export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
   name: "Review"
   objects: {
     workflowRun: Prisma.$WorkflowRunPayload<ExtArgs>
+    currentReviewFor: Prisma.$WorkflowRunPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -512,6 +721,7 @@ export type $ReviewPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     updatedAt: Date
     status: $Enums.ReviewStatus
     comment: string | null
+    metrics: runtime.JsonValue | null
     reviewedAt: Date | null
     workflowRunId: string
   }, ExtArgs["result"]["review"]>
@@ -909,6 +1119,7 @@ readonly fields: ReviewFieldRefs;
 export interface Prisma__ReviewClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   workflowRun<T extends Prisma.WorkflowRunDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkflowRunDefaultArgs<ExtArgs>>): Prisma.Prisma__WorkflowRunClient<runtime.Types.Result.GetResult<Prisma.$WorkflowRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  currentReviewFor<T extends Prisma.Review$currentReviewForArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Review$currentReviewForArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkflowRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -943,6 +1154,7 @@ export interface ReviewFieldRefs {
   readonly updatedAt: Prisma.FieldRef<"Review", 'DateTime'>
   readonly status: Prisma.FieldRef<"Review", 'ReviewStatus'>
   readonly comment: Prisma.FieldRef<"Review", 'String'>
+  readonly metrics: Prisma.FieldRef<"Review", 'Json'>
   readonly reviewedAt: Prisma.FieldRef<"Review", 'DateTime'>
   readonly workflowRunId: Prisma.FieldRef<"Review", 'String'>
 }
@@ -1343,6 +1555,30 @@ export type ReviewDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Reviews to delete.
    */
   limit?: number
+}
+
+/**
+ * Review.currentReviewFor
+ */
+export type Review$currentReviewForArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WorkflowRun
+   */
+  select?: Prisma.WorkflowRunSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the WorkflowRun
+   */
+  omit?: Prisma.WorkflowRunOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.WorkflowRunInclude<ExtArgs> | null
+  where?: Prisma.WorkflowRunWhereInput
+  orderBy?: Prisma.WorkflowRunOrderByWithRelationInput | Prisma.WorkflowRunOrderByWithRelationInput[]
+  cursor?: Prisma.WorkflowRunWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.WorkflowRunScalarFieldEnum | Prisma.WorkflowRunScalarFieldEnum[]
 }
 
 /**

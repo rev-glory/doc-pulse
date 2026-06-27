@@ -112,7 +112,9 @@ model WorkflowRun {
 
   notifications     Notification[]
   pullRequest       PullRequest?
-  review            Review?
+  currentReviewId   String?        @map("current_review_id")
+  currentReview     Review?        @relation("CurrentReview", fields: [currentReviewId], references: [id])
+  reviews           Review[]       @relation("RunReviews")
   repository        Repository     @relation(fields: [repositoryId], references: [id], onDelete: Cascade)
   triggeredBy       User?          @relation(fields: [triggeredById], references: [id])
 
@@ -127,9 +129,13 @@ model Review {
   updatedAt     DateTime     @updatedAt @map("updated_at")
   status        ReviewStatus @default(PENDING)
   comment       String?
+  metrics       Json?
   reviewedAt    DateTime?    @map("reviewed_at")
-  workflowRunId String       @unique @map("workflow_run_id")
-  workflowRun   WorkflowRun  @relation(fields: [workflowRunId], references: [id], onDelete: Cascade)
+  workflowRunId String       @map("workflow_run_id")
+  workflowRun   WorkflowRun  @relation("RunReviews", fields: [workflowRunId], references: [id], onDelete: Cascade)
+
+  // Back-reference for WorkflowRun.currentReview relation
+  currentReviewFor WorkflowRun[] @relation("CurrentReview")
 
   @@map("reviews")
 }
@@ -174,6 +180,8 @@ model Notification {
 }
 
 /// Pipeline overall lifecycle status.
+/// We rely on a manual PostgreSQL partial unique index unique_pending_review_per_run
+/// on the reviews table to enforce no more than one PENDING review per run.
 enum RunStatus {
   QUEUED
   RUNNING
@@ -181,6 +189,7 @@ enum RunStatus {
   COMPLETED
   FAILED
   CANCELLED
+  WAITING_FOR_REVIEW
 }
 
 /// Pipeline granular execution stage.

@@ -13,7 +13,7 @@ describe('Human Review, Checkpoint & PR Persistence Unit Tests', () => {
 
       const mockPrisma = {
         review: {
-          findUnique: async () => null,
+          findFirst: async () => null,
           create: async (args: any) => {
             reviewCreated = true;
             assert.equal(args.data.workflowRunId, 'run-123');
@@ -45,7 +45,7 @@ describe('Human Review, Checkpoint & PR Persistence Unit Tests', () => {
     it('should continue as running if review is already APPROVED', async () => {
       const mockPrisma = {
         review: {
-          findUnique: async () => ({ id: 'rev-1', status: 'APPROVED', workflowRunId: 'run-123' }),
+          findFirst: async () => ({ id: 'rev-1', status: 'APPROVED', workflowRunId: 'run-123' }),
         },
       } as any;
 

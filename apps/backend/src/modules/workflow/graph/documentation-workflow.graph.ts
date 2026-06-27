@@ -16,12 +16,9 @@ function compileDocumentationGraph(
     .addNode(WorkflowNodeName.DocumentationLocator, (state: WorkflowGraphState) => adapters.documentationLocatorStep(state))
     .addNode(WorkflowNodeName.TechnicalWriter, (state: WorkflowGraphState) => adapters.technicalWriterStep(state))
     .addNode(WorkflowNodeName.DocumentationCritic, (state: WorkflowGraphState) => adapters.documentationCriticStep(state))
-    .addNode(WorkflowNodeName.HumanReview, (state: WorkflowGraphState) => adapters.humanReviewStep(state))
     .addNode(WorkflowNodeName.GitCommit, (state: WorkflowGraphState) => adapters.gitCommitStep(state))
     .addNode(WorkflowNodeName.PushBranch, (state: WorkflowGraphState) => adapters.pushBranchStep(state))
     .addNode(WorkflowNodeName.CreatePullRequest, (state: WorkflowGraphState) => adapters.createPullRequestStep(state))
-
-    // Pure unchanged declarative linear topology
     .addEdge(START, WorkflowNodeName.RepositoryAnalyzer)
     .addEdge(WorkflowNodeName.RepositoryAnalyzer, WorkflowNodeName.DocumentationLocator)
     .addEdge(WorkflowNodeName.DocumentationLocator, WorkflowNodeName.TechnicalWriter)
@@ -30,25 +27,12 @@ function compileDocumentationGraph(
     .addConditionalEdges(
       WorkflowNodeName.DocumentationCritic,
       (state: WorkflowGraphState) => {
-        const passed = state.criticReview?.passed ?? false;
-        return passed ? 'approve' : 'reject';
-      },
-      {
-        approve: WorkflowNodeName.HumanReview,
-        reject: END,
-      },
-    )
-    .addConditionalEdges(
-      WorkflowNodeName.HumanReview,
-      (state: WorkflowGraphState) => {
         const status = state.humanReviewStatus;
         if (status === 'APPROVED') return 'approve';
-        if (status === 'REJECTED') return 'reject';
         return 'wait';
       },
       {
         approve: WorkflowNodeName.GitCommit,
-        reject: END,
         wait: END,
       },
     )

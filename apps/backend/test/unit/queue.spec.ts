@@ -107,14 +107,14 @@ describe('Queue Module Infrastructure Verification', () => {
       } as any;
 
       mockWorkflowService.run.mock.mockImplementation(async () => ({
-        executionStatus: WorkflowStatus.NeedsReview,
+        executionStatus: WorkflowStatus.WaitingForReview,
       }));
 
       await processor.process(mockJob);
 
       const terminalEvent = mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
       assert.equal(terminalEvent.queueStatus, QueueEventStatus.Waiting);
-      assert.equal(terminalEvent.realtimeStatus, 'waiting');
+      assert.equal(terminalEvent.realtimeStatus, 'waiting_for_review');
       assert.equal(terminalEvent.realtimeStage, RealtimeWorkflowStage.Reviewing);
     });
 
@@ -126,7 +126,7 @@ describe('Queue Module Infrastructure Verification', () => {
       } as any;
 
       mockWorkflowService.run.mock.mockImplementation(async () => ({
-        executionStatus: WorkflowStatus.ReviewFailed,
+        executionStatus: WorkflowStatus.Failed,
       }));
 
       await processor.process(mockJob);
@@ -134,7 +134,7 @@ describe('Queue Module Infrastructure Verification', () => {
       const terminalEvent = mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
       assert.equal(terminalEvent.queueStatus, QueueEventStatus.Failed);
       assert.equal(terminalEvent.realtimeStatus, 'failed');
-      assert.equal(terminalEvent.realtimeStage, RealtimeWorkflowStage.Reviewing);
+      assert.equal(terminalEvent.realtimeStage, RealtimeWorkflowStage.Failed);
     });
 
     it('should log and rethrow errors when WorkflowService execution fails', async () => {

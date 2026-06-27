@@ -21,6 +21,7 @@ export interface RunRecordData {
   lastError: unknown;
   executionMetadata: unknown;
   repositoryId: string;
+  currentReviewId: string | null;
 }
 
 type PrismaRunStatusValue = (typeof PrismaRunStatus)[keyof typeof PrismaRunStatus];

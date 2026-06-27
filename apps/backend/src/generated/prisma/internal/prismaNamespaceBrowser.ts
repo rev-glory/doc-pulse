@@ -154,7 +154,8 @@ export const WorkflowRunScalarFieldEnum = {
   checkpointSnapshot: 'checkpointSnapshot',
   nodeRetries: 'nodeRetries',
   lastError: 'lastError',
-  executionMetadata: 'executionMetadata'
+  executionMetadata: 'executionMetadata',
+  currentReviewId: 'currentReviewId'
 } as const
 
 export type WorkflowRunScalarFieldEnum = (typeof WorkflowRunScalarFieldEnum)[keyof typeof WorkflowRunScalarFieldEnum]
@@ -166,6 +167,7 @@ export const ReviewScalarFieldEnum = {
   updatedAt: 'updatedAt',
   status: 'status',
   comment: 'comment',
+  metrics: 'metrics',
   reviewedAt: 'reviewedAt',
   workflowRunId: 'workflowRunId'
 } as const

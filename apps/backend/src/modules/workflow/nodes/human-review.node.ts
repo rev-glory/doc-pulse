@@ -14,7 +14,7 @@ export class HumanReviewNode {
     this.logger.debug(`Executing HumanReviewNode for run [${runId}]...`);
 
     // 1. Check if a review already exists for this run
-    let review = await this.prisma.review.findUnique({
+    let review = await this.prisma.review.findFirst({
       where: { workflowRunId: runId },
     });
 

@@ -1,13 +1,11 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { WorkflowGraphState } from '../graph/graph.types';
 import { DocumentReviewService } from '../../document-review/services/document-review.service';
-import { PrismaService } from '@/database';
 
 @Injectable()
 export class DocumentationCriticNode {
   constructor(
     private readonly documentReviewService: DocumentReviewService,
-    private readonly prisma: PrismaService,
   ) {}
 
   public async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
@@ -26,21 +24,6 @@ export class DocumentationCriticNode {
       state.runId,
       state.repositoryId,
     );
-
-    await this.prisma.review.upsert({
-      where: { workflowRunId: state.runId },
-      update: {
-        status: criticReview.passed ? 'APPROVED' : 'REJECTED',
-        comment: `Critic Score: ${criticReview.score}. Issues: ${criticReview.issues?.length || 0}. Suggestions: ${criticReview.suggestions?.length || 0}`,
-        reviewedAt: new Date(),
-      },
-      create: {
-        workflowRunId: state.runId,
-        status: criticReview.passed ? 'APPROVED' : 'REJECTED',
-        comment: `Critic Score: ${criticReview.score}. Issues: ${criticReview.issues?.length || 0}. Suggestions: ${criticReview.suggestions?.length || 0}`,
-        reviewedAt: new Date(),
-      },
-    });
 
     return {
       criticReview,

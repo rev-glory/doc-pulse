@@ -141,6 +141,27 @@ export class WorkflowEventService {
     this.publishWorkflowEvent(payload);
   }
 
+  public publishWaitingForReviewEvent(
+    runId: string,
+    repositoryId: string,
+    workflowId: string,
+    metrics?: any,
+  ): void {
+    const payload: RealtimeEventPayload = {
+      runId,
+      repositoryId,
+      workflowId,
+      stage: RealtimeWorkflowStage.Reviewing,
+      progress: 50,
+      status: 'waiting_for_review',
+      timestamp: new Date().toISOString(),
+      eventType: WorkflowEventType.WorkflowWaitingForReview,
+      metadata: metrics ? { metrics } : {},
+    };
+
+    this.publishWorkflowEvent(payload);
+  }
+
   public mapNodeToStage(nodeName: string): RealtimeWorkflowStage {
     switch (nodeName) {
       case 'RepositoryAnalyzer':

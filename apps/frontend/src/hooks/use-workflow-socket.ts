@@ -94,6 +94,7 @@ export function useWorkflowSocket(options: WorkflowSocketOptions): WorkflowSocke
       WorkflowEventType.WorkflowCompleted,
       WorkflowEventType.WorkflowFailed,
       WorkflowEventType.WorkflowCancelled,
+      WorkflowEventType.WorkflowWaitingForReview,
       WorkflowEventType.QueueEvent,
       'workflow.event',
     ];
