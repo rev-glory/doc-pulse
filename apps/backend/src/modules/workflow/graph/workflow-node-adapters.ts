@@ -3,6 +3,7 @@ import { RepositoryAnalyzerNode } from '../nodes/repository-analyzer.node';
 import { DocumentationLocatorNode } from '../nodes/documentation-locator.node';
 import { TechnicalWriterNode } from '../nodes/technical-writer.node';
 import { DocumentationCriticNode } from '../nodes/documentation-critic.node';
+import { HumanReviewNode } from '../nodes/human-review.node';
 import { GitCommitNode } from '../nodes/git-commit.node';
 import { PushBranchNode } from '../nodes/push-branch.node';
 import { CreatePullRequestNode } from '../nodes/create-pull-request.node';
@@ -35,6 +36,7 @@ export class WorkflowNodeAdapters {
     WorkflowNodeName.DocumentationLocator,
     WorkflowNodeName.TechnicalWriter,
     WorkflowNodeName.DocumentationCritic,
+    WorkflowNodeName.HumanReview,
     WorkflowNodeName.GitCommit,
     WorkflowNodeName.PushBranch,
     WorkflowNodeName.CreatePullRequest,
@@ -45,6 +47,7 @@ export class WorkflowNodeAdapters {
     private readonly documentationLocator: DocumentationLocatorNode,
     private readonly technicalWriter: TechnicalWriterNode,
     private readonly documentationCritic: DocumentationCriticNode,
+    private readonly humanReview: HumanReviewNode,
     private readonly gitCommit: GitCommitNode,
     private readonly pushBranch: PushBranchNode,
     private readonly createPullRequest: CreatePullRequestNode,
@@ -130,6 +133,19 @@ export class WorkflowNodeAdapters {
     const ctx = this.getOrchestrationContext(state.runId);
     return this.wrapper.executeNode(nodeName, WorkflowStage.REVIEWING, state, ctx, async (st) =>
       this.documentationCritic.invoke(st as any),
+    );
+  }
+
+  public async humanReviewStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
+    const nodeName = WorkflowNodeName.HumanReview;
+    if (this.shouldSkip(state.runId, nodeName)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
+    }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.REVIEWING, state, ctx, async (st) =>
+      this.humanReview.invoke(st as any),
     );
   }
 

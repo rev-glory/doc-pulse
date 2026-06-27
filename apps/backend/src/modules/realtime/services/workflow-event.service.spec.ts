@@ -48,5 +48,30 @@ describe('WorkflowEventService', () => {
     assert.strictEqual(emittedPayloads.length, 1);
     assert.strictEqual(emittedPayloads[0].eventType, WorkflowEventType.QueueEvent);
     assert.strictEqual(emittedPayloads[0].stage, RealtimeWorkflowStage.Cloning);
+    assert.strictEqual(emittedPayloads[0].status, 'running');
+  });
+
+  it('should map completed queue events to completed realtime payloads', () => {
+    service.publishQueueEvent('run-3', 'repo-3', 'wf-3', QueueEventStatus.Completed, 100);
+    assert.strictEqual(emittedPayloads.length, 1);
+    assert.strictEqual(emittedPayloads[0].stage, RealtimeWorkflowStage.Completed);
+    assert.strictEqual(emittedPayloads[0].status, 'completed');
+  });
+
+  it('should honor queue event overrides for waiting review payloads', () => {
+    service.publishQueueEvent(
+      'run-4',
+      'repo-4',
+      'wf-4',
+      QueueEventStatus.Waiting,
+      100,
+      { message: 'Awaiting review' },
+      { stage: RealtimeWorkflowStage.Reviewing, status: 'waiting' },
+    );
+
+    assert.strictEqual(emittedPayloads.length, 1);
+    assert.strictEqual(emittedPayloads[0].stage, RealtimeWorkflowStage.Reviewing);
+    assert.strictEqual(emittedPayloads[0].status, 'waiting');
+    assert.strictEqual(emittedPayloads[0].queueStatus, QueueEventStatus.Waiting);
   });
 });

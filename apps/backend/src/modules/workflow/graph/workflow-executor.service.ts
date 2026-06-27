@@ -23,6 +23,7 @@ export class WorkflowExecutorService implements OnModuleInit {
     WorkflowNodeName.DocumentationLocator,
     WorkflowNodeName.TechnicalWriter,
     WorkflowNodeName.DocumentationCritic,
+    WorkflowNodeName.HumanReview,
     WorkflowNodeName.GitCommit,
     WorkflowNodeName.PushBranch,
     WorkflowNodeName.CreatePullRequest,
@@ -148,6 +149,11 @@ export class WorkflowExecutorService implements OnModuleInit {
       repositoryId: input.repositoryId,
       workspacePath: input.workspacePath,
       repository: snapshot.analysisReference ? snapshot.analysisReference : undefined,
+      documentation: (snapshot as any).documentation ?? undefined,
+      generatedDocuments: (snapshot as any).generatedDocuments ?? undefined,
+      criticReview: (snapshot as any).criticReview ?? undefined,
+      branchName: (snapshot as any).branchName ?? undefined,
+      commitSha: (snapshot as any).commitSha ?? undefined,
       metadata: { ...(snapshot.executionMetadata ?? {}), hydratedAt: new Date().toISOString() },
     };
   }
@@ -186,8 +192,49 @@ export class WorkflowExecutorService implements OnModuleInit {
     };
 
     try {
-      const finalState = await this.compiledGraph.invoke(baselineState as WorkflowGraphState);
+      const finalState = (await this.compiledGraph.invoke(baselineState as WorkflowGraphState)) as any;
       const durationMs = Date.now() - startTime;
+
+      if (finalState.humanReviewStatus === 'PENDING') {
+        this.logger.log(`[${input.runId}] Workflow execution suspended at node [${finalState.currentNode}] for human review.`);
+        await this.checkpointRepository.markRunNeedsReview(input.runId);
+        return {
+          ...finalState,
+          executionStatus: WorkflowStatus.NeedsReview,
+        } as unknown as DomainWorkflowState;
+      }
+
+      if (finalState.humanReviewStatus === 'REJECTED') {
+        this.logger.log(`[${input.runId}] Workflow execution rejected by human review.`);
+        await this.checkpointRepository.markRunFailed(input.runId, 'Human review rejected');
+        this.eventService?.publishFailureEvent(
+          input.runId,
+          input.repositoryId,
+          input.runId,
+          'Human review rejected',
+          WorkflowNodeName.HumanReview,
+        );
+        return {
+          ...finalState,
+          executionStatus: WorkflowStatus.ReviewFailed,
+        } as unknown as DomainWorkflowState;
+      }
+
+      if (finalState.criticReview?.passed === false) {
+        this.logger.log(`[${input.runId}] Workflow execution rejected by documentation critic.`);
+        await this.checkpointRepository.markRunFailed(input.runId, 'Documentation critic rejected');
+        this.eventService?.publishFailureEvent(
+          input.runId,
+          input.repositoryId,
+          input.runId,
+          'Documentation critic rejected',
+          WorkflowNodeName.DocumentationCritic,
+        );
+        return {
+          ...finalState,
+          executionStatus: WorkflowStatus.ReviewFailed,
+        } as unknown as DomainWorkflowState;
+      }
 
       this.logger.log(`[${input.runId}] Workflow execution completed successfully in ${durationMs}ms.`);
 

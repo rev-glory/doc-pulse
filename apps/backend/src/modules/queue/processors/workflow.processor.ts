@@ -1,15 +1,17 @@
 import { Logger, Optional } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job, UnrecoverableError, DelayedError } from 'bullmq';
+import { QueueEventStatus, RealtimeWorkflowStage } from '@docpulse/shared-types';
 
 import { WORKFLOW_EXECUTION_QUEUE } from '../constants/queue.constants';
 import type { WorkflowJobPayload } from '../interfaces/workflow-job.interface';
 import { WorkflowService } from '../../workflow/services/workflow.service';
-import type { WorkflowState } from '../../../domain/workflow';
+import { WorkflowStatus, type WorkflowState } from '../../../domain/workflow';
 import { QueueProgressPublisherService } from '../services/queue-progress-publisher.service';
 import { QueueMetricsService } from '../services/queue-metrics.service';
 import { DeadLetterService } from '../dead-letter/dead-letter.service';
 import { classifyWorkflowError, QueueErrorClassification, DelayedRetryWorkflowError } from '../types/queue-errors';
+import type { WorkflowProgressEvent } from '../types/progress.types';
 
 @Processor(WORKFLOW_EXECUTION_QUEUE)
 export class WorkflowProcessor extends WorkerHost {
@@ -51,6 +53,9 @@ export class WorkflowProcessor extends WorkerHost {
       message: `Execution initiated on worker [${this.workerId}] (attempt ${attempt})`,
       percentage: 5,
       timestamp: new Date().toISOString(),
+      queueStatus: QueueEventStatus.Active,
+      realtimeStatus: 'running',
+      realtimeStage: RealtimeWorkflowStage.Cloning,
       metadata: { workerId: this.workerId, attempt, executionMode },
     });
 
@@ -81,13 +86,7 @@ export class WorkflowProcessor extends WorkerHost {
       });
 
       await this.progressPublisher?.publishJobProgress(job, {
-        runId,
-        repositoryId,
-        stage: 'FINISHED',
-        message: 'Workflow execution completed successfully',
-        percentage: 100,
-        timestamp: new Date().toISOString(),
-        metadata: { durationMs },
+        ...this.buildTerminalProgressEvent(runId, repositoryId, finalState, durationMs),
       });
 
       return finalState;
@@ -119,6 +118,9 @@ export class WorkflowProcessor extends WorkerHost {
         message: `Job terminated (${errorClassification}): ${error instanceof Error ? error.message : String(error)}`,
         percentage: 100,
         timestamp: new Date().toISOString(),
+        queueStatus: QueueEventStatus.Failed,
+        realtimeStatus: 'failed',
+        realtimeStage: RealtimeWorkflowStage.Failed,
         metadata: { durationMs, classification: errorClassification },
       });
 
@@ -164,6 +166,57 @@ export class WorkflowProcessor extends WorkerHost {
       curr = curr.causeError ?? curr.cause ?? curr.workflowError;
     }
     return null;
+  }
+
+  private buildTerminalProgressEvent(
+    runId: string,
+    repositoryId: string,
+    finalState: WorkflowState,
+    durationMs: number,
+  ): Omit<WorkflowProgressEvent, 'jobId'> {
+    switch (finalState.executionStatus) {
+      case WorkflowStatus.NeedsReview:
+        return {
+          runId,
+          repositoryId,
+          stage: 'REVIEWING',
+          message: 'Workflow execution is waiting for human review',
+          percentage: 100,
+          timestamp: new Date().toISOString(),
+          queueStatus: QueueEventStatus.Waiting,
+          realtimeStatus: 'waiting',
+          realtimeStage: RealtimeWorkflowStage.Reviewing,
+          metadata: { durationMs, workflowStatus: finalState.executionStatus },
+        };
+      case WorkflowStatus.ReviewFailed:
+      case WorkflowStatus.Failed:
+        return {
+          runId,
+          repositoryId,
+          stage: 'FAILED',
+          message: 'Workflow execution terminated with a failed review outcome',
+          percentage: 100,
+          timestamp: new Date().toISOString(),
+          queueStatus: QueueEventStatus.Failed,
+          realtimeStatus: 'failed',
+          realtimeStage: RealtimeWorkflowStage.Reviewing,
+          metadata: { durationMs, workflowStatus: finalState.executionStatus },
+        };
+      case WorkflowStatus.Completed:
+      default:
+        return {
+          runId,
+          repositoryId,
+          stage: 'FINISHED',
+          message: 'Workflow execution completed successfully',
+          percentage: 100,
+          timestamp: new Date().toISOString(),
+          queueStatus: QueueEventStatus.Completed,
+          realtimeStatus: 'completed',
+          realtimeStage: RealtimeWorkflowStage.Completed,
+          metadata: { durationMs, workflowStatus: finalState.executionStatus ?? WorkflowStatus.Completed },
+        };
+    }
   }
 }
 

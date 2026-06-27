@@ -9,6 +9,7 @@ export enum WorkflowNodeName {
   DocumentationLocator = 'DocumentationLocator',
   TechnicalWriter = 'TechnicalWriter',
   DocumentationCritic = 'DocumentationCritic',
+  HumanReview = 'HumanReview',
   GitCommit = 'GitCommit',
   PushBranch = 'PushBranch',
   CreatePullRequest = 'CreatePullRequest',

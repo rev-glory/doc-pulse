@@ -1,5 +1,4 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { WorkflowStatus } from '../../../domain/workflow';
 import { WorkflowGraphState } from '../graph/graph.types';
 import { DocumentReviewService } from '../../document-review/services/document-review.service';
 import { PrismaService } from '@/database';
@@ -28,8 +27,6 @@ export class DocumentationCriticNode {
       state.repositoryId,
     );
 
-    const executionStatus = criticReview.passed ? state.executionStatus : WorkflowStatus.RegenerationRequired;
-
     await this.prisma.review.upsert({
       where: { workflowRunId: state.runId },
       update: {
@@ -47,7 +44,6 @@ export class DocumentationCriticNode {
 
     return {
       criticReview,
-      executionStatus,
     };
   }
 }

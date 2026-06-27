@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '@/database';
 import { WorkflowNodeName, WorkflowStage, WorkflowCheckpointSnapshot } from '../../../domain/workflow';
+import { RunStatus as PrismaRunStatus, WorkflowStage as PrismaWorkflowStage } from '@/generated/prisma/enums';
 
 export class OptimisticLockException extends Error {
   constructor(runId: string, expectedVersion: number) {
@@ -22,11 +23,37 @@ export interface RunRecordData {
   repositoryId: string;
 }
 
+type PrismaRunStatusValue = (typeof PrismaRunStatus)[keyof typeof PrismaRunStatus];
+type PrismaWorkflowStageValue = (typeof PrismaWorkflowStage)[keyof typeof PrismaWorkflowStage];
+
 @Injectable()
 export class WorkflowCheckpointRepository {
   private readonly logger = new Logger(WorkflowCheckpointRepository.name);
 
   constructor(private readonly prisma: PrismaService) {}
+
+  private toPrismaWorkflowStage(stage: WorkflowStage): PrismaWorkflowStageValue {
+    switch (stage) {
+      case WorkflowStage.CLONING:
+        return PrismaWorkflowStage.CLONING;
+      case WorkflowStage.ANALYZING:
+        return PrismaWorkflowStage.ANALYZING;
+      case WorkflowStage.LOCATING_DOCUMENTATION:
+        return PrismaWorkflowStage.LOCATING_DOCUMENTATION;
+      case WorkflowStage.WRITING:
+        return PrismaWorkflowStage.WRITING;
+      case WorkflowStage.REVIEWING:
+        return PrismaWorkflowStage.REVIEWING;
+      case WorkflowStage.COMMITTING:
+        return PrismaWorkflowStage.COMMITTING;
+      case WorkflowStage.PUSHING:
+        return PrismaWorkflowStage.PUSHING;
+      case WorkflowStage.CREATING_PULL_REQUEST:
+        return PrismaWorkflowStage.CREATING_PULL_REQUEST;
+      case WorkflowStage.FINISHED:
+        return PrismaWorkflowStage.FINISHED;
+    }
+  }
 
   /**
    * Initializes or resets a WorkflowRun database record prior to execution.
@@ -43,7 +70,7 @@ export class WorkflowCheckpointRepository {
     const created = await this.prisma.workflowRun.upsert({
       where: { id: data.runId },
       update: {
-        status: 'RUNNING' as any,
+        status: PrismaRunStatus.RUNNING,
         startedAt: now,
         updatedAt: now,
       },
@@ -54,7 +81,7 @@ export class WorkflowCheckpointRepository {
         webhookDeliveryId: data.webhookDeliveryId,
         commitSha: data.commitSha,
         branch: data.branch,
-        status: 'RUNNING' as any,
+        status: PrismaRunStatus.RUNNING,
         startedAt: now,
         version: 1,
         nodeRetries: {},
@@ -87,7 +114,7 @@ export class WorkflowCheckpointRepository {
     nodeName: WorkflowNodeName;
     stage: WorkflowStage;
     snapshot: WorkflowCheckpointSnapshot;
-    status: string;
+    status: PrismaRunStatusValue;
     nodeRetries: Record<string, number>;
     error?: unknown;
     newMetadata?: Record<string, unknown>;
@@ -125,8 +152,8 @@ export class WorkflowCheckpointRepository {
         data: {
           version: nextVersion,
           currentNode: nodeName,
-          currentStage: stage as any,
-          status: status as any,
+          currentStage: this.toPrismaWorkflowStage(stage),
+          status,
           checkpointSnapshot: JSON.parse(JSON.stringify(snapshot)) as any,
           nodeRetries: JSON.parse(JSON.stringify(nodeRetries)) as any,
           lastError: (error ? JSON.parse(JSON.stringify(error)) : null) as any,
@@ -172,7 +199,7 @@ export class WorkflowCheckpointRepository {
           nodeRetries: {},
           lastError: null as any,
           errorMessage: null,
-          status: 'RUNNING' as any,
+          status: PrismaRunStatus.RUNNING,
           startedAt: now,
           completedAt: null,
           updatedAt: now,
@@ -196,7 +223,7 @@ export class WorkflowCheckpointRepository {
     await this.prisma.workflowRun.update({
       where: { id: runId },
       data: {
-        status: 'COMPLETED' as any,
+        status: PrismaRunStatus.COMPLETED,
         completedAt: now,
         updatedAt: now,
       },
@@ -212,12 +239,31 @@ export class WorkflowCheckpointRepository {
     await this.prisma.workflowRun.update({
       where: { id: runId },
       data: {
-        status: 'FAILED' as any,
+        status: PrismaRunStatus.FAILED,
         errorMessage,
         completedAt: now,
         updatedAt: now,
       },
     });
     this.logger.log(`WorkflowRun [${runId}] marked as FAILED. Error: ${errorMessage}`);
+  }
+
+  /**
+   * Marks a WorkflowRun as checkpointed while waiting for human review.
+   */
+  public async markRunNeedsReview(runId: string): Promise<void> {
+    const now = new Date();
+    await this.prisma.workflowRun.update({
+      where: { id: runId },
+      data: {
+        status: PrismaRunStatus.CHECKPOINTED,
+        currentNode: WorkflowNodeName.HumanReview,
+        currentStage: PrismaWorkflowStage.REVIEWING,
+        completedAt: null,
+        errorMessage: null,
+        updatedAt: now,
+      },
+    });
+    this.logger.log(`WorkflowRun [${runId}] marked as CHECKPOINTED (awaiting human review).`);
   }
 }

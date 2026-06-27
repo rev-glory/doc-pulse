@@ -1,4 +1,5 @@
 import { WorkflowStage } from '../../../domain/workflow';
+import { QueueEventStatus, RealtimeWorkflowStage } from '@docpulse/shared-types';
 
 export interface WorkflowProgressEvent {
   jobId: string;
@@ -8,6 +9,9 @@ export interface WorkflowProgressEvent {
   message: string;
   percentage: number;
   timestamp: string;
+  queueStatus?: QueueEventStatus;
+  realtimeStatus?: string;
+  realtimeStage?: RealtimeWorkflowStage;
   metadata?: Record<string, unknown>;
 }
 

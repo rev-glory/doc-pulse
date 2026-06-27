@@ -88,6 +88,10 @@ export interface CriticReview {
 export interface PullRequestSummary {
   url: string;
   number: number;
+  headBranch?: string;
+  baseBranch?: string;
+  title?: string;
+  body?: string;
 }
 
 export interface WorkflowState {

@@ -14,6 +14,7 @@ import {
   GitCommitNode,
   PushBranchNode,
   CreatePullRequestNode,
+  HumanReviewNode,
 } from './nodes';
 import { RepositoryAnalysisModule } from '../repository-analysis/repository-analysis.module';
 import { DocumentGenerationModule } from '../document-generation/document-generation.module';
@@ -44,6 +45,7 @@ import { GitHubModule } from '../github/github.module';
     GitCommitNode,
     PushBranchNode,
     CreatePullRequestNode,
+    HumanReviewNode,
   ],
   exports: [WorkflowService, WorkflowCheckpointRepository],
 })

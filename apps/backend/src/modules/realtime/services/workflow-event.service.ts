@@ -37,20 +37,21 @@ export class WorkflowEventService {
     runId: string,
     repositoryId: string,
     workflowId: string,
-    status: QueueEventStatus,
+    queueStatus: QueueEventStatus,
     progress: number,
     metadata?: Record<string, unknown>,
+    overrides?: { stage?: RealtimeWorkflowStage; status?: string },
   ): void {
     const payload: RealtimeEventPayload = {
       runId,
       repositoryId,
       workflowId,
-      stage: status === QueueEventStatus.Active ? RealtimeWorkflowStage.Cloning : RealtimeWorkflowStage.Queued,
+      stage: overrides?.stage ?? this.mapQueueStatusToStage(queueStatus),
       progress,
-      status: status === QueueEventStatus.Failed ? 'failed' : status === QueueEventStatus.Completed ? 'completed' : 'running',
+      status: overrides?.status ?? this.mapQueueStatusToStatus(queueStatus),
       timestamp: new Date().toISOString(),
       eventType: WorkflowEventType.QueueEvent,
-      queueStatus: status,
+      queueStatus,
       metadata,
     };
 
@@ -155,6 +156,40 @@ export class WorkflowEventService {
         return RealtimeWorkflowStage.CreatingPR;
       default:
         return RealtimeWorkflowStage.Analyzing;
+    }
+  }
+
+  private mapQueueStatusToStage(queueStatus: QueueEventStatus): RealtimeWorkflowStage {
+    switch (queueStatus) {
+      case QueueEventStatus.Active:
+        return RealtimeWorkflowStage.Cloning;
+      case QueueEventStatus.Completed:
+        return RealtimeWorkflowStage.Completed;
+      case QueueEventStatus.Failed:
+      case QueueEventStatus.Stalled:
+        return RealtimeWorkflowStage.Failed;
+      case QueueEventStatus.Waiting:
+      case QueueEventStatus.Queued:
+      default:
+        return RealtimeWorkflowStage.Queued;
+    }
+  }
+
+  private mapQueueStatusToStatus(queueStatus: QueueEventStatus): string {
+    switch (queueStatus) {
+      case QueueEventStatus.Completed:
+        return 'completed';
+      case QueueEventStatus.Failed:
+        return 'failed';
+      case QueueEventStatus.Stalled:
+        return 'cancelled';
+      case QueueEventStatus.Waiting:
+        return 'waiting';
+      case QueueEventStatus.Queued:
+        return 'queued';
+      case QueueEventStatus.Active:
+      default:
+        return 'running';
     }
   }
 

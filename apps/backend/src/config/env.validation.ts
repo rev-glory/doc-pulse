@@ -71,10 +71,7 @@ const envSchema = z.object({
     .min(1, 'GITHUB_CLIENT_SECRET is required'),
 
   // ── OpenAI ────────────────────────────────────────────────────────────────
-  OPENAI_API_KEY: z
-    .string()
-    .min(1, 'OPENAI_API_KEY is required')
-    .startsWith('sk-', 'OPENAI_API_KEY must start with sk-'),
+  OPENAI_API_KEY: optionalString,
   OPENAI_MODEL: z.string().default('gpt-4o'),
   OPENAI_TEMPERATURE: z.coerce.number().min(0).max(2).default(0.2),
 

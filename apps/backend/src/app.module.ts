@@ -32,6 +32,7 @@ import { RealtimeModule } from './modules/realtime/realtime.module';
 import { RunsModule } from './modules/runs/runs.module';
 import { PullRequestsModule } from './modules/pull-requests/pull-requests.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { ReviewModule } from './modules/review/review.module';
 
 @Module({
   imports: [
@@ -71,6 +72,7 @@ import { DashboardModule } from './modules/dashboard/dashboard.module';
     RunsModule,
     PullRequestsModule,
     DashboardModule,
+    ReviewModule,
   ],
   controllers: [AppController],
   providers: [AppService],

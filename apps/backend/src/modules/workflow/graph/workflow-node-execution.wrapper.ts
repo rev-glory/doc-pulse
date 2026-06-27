@@ -208,6 +208,12 @@ export class WorkflowNodeExecutionWrapper {
       pullRequestReference: state.pullRequest ? { url: state.pullRequest.url, number: state.pullRequest.number } : undefined,
       executionMetadata: state.metadata ?? {},
       lastUpdatedTimestamp: new Date().toISOString(),
-    };
+      // Complete state details persisted for recovery:
+      documentation: state.documentation ?? undefined,
+      generatedDocuments: state.generatedDocuments ?? undefined,
+      criticReview: state.criticReview ?? undefined,
+      branchName: state.branchName ?? undefined,
+      commitSha: state.commitSha ?? undefined,
+    } as any;
   }
 }

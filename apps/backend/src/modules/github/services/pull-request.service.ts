@@ -70,6 +70,10 @@ export class PullRequestService {
       return {
         number: prNumber,
         url: prUrl,
+        headBranch,
+        baseBranch,
+        title,
+        body,
       };
     } catch (error: any) {
       this.logger.error(`GitHub API Pull Request creation failed for [${owner}/${repo}]: ${error.message}`);

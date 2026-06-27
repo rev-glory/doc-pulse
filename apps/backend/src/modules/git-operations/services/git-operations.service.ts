@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { GitService } from './git.service';
+import * as path from 'path';
 
 export interface CommitResult {
   branchName: string;
@@ -47,6 +48,9 @@ export class GitOperationsService {
       // 1. Generate branch & create/checkout
       const branchName = await this.generateBranchName(repositoryPath, runId);
       await this.gitService.checkoutLocalBranch(repositoryPath, branchName);
+
+      // Run Git safety checks on branch and workspace
+      await this.runGitSafetyChecks(repositoryPath, branchName);
 
       // 2. Validate dirty tree & detect changes
       const statusBefore = await this.gitService.status(repositoryPath);
@@ -114,6 +118,9 @@ export class GitOperationsService {
     const startTime = Date.now();
     this.logger.debug(`Pushing branch [${branchName}] to remote origin...`);
     try {
+      // Run Git safety checks on branch and workspace before push
+      await this.runGitSafetyChecks(repositoryPath, branchName);
+
       await this.gitService.push(repositoryPath, 'origin', branchName, ['-u']);
       const durationMs = Date.now() - startTime;
       this.logger.log({
@@ -140,5 +147,54 @@ export class GitOperationsService {
     } catch (err) {
       this.logger.error(`Rollback failed for [${repositoryPath}]: ${(err as Error).message}`);
     }
+  }
+
+  /**
+   * Runs local safety and security checks on a branch and the current repository state before writing/pushing.
+   */
+  async runGitSafetyChecks(repositoryPath: string, branchName: string): Promise<void> {
+    this.logger.debug(`Running Git safety checks in [${repositoryPath}] for branch [${branchName}]...`);
+
+    // 1. Protected Branch Detection
+    const protectedBranches = ['main', 'master', 'production', 'release'];
+    if (protectedBranches.includes(branchName)) {
+      throw new Error(`Git safety violation: Cannot commit or push directly to protected branch [${branchName}].`);
+    }
+
+    const status = await this.gitService.status(repositoryPath);
+
+    // 2. Merge Conflict Detection
+    if (status.conflicted && status.conflicted.length > 0) {
+      throw new Error(`Git safety violation: Merge conflicts detected in workspace: ${status.conflicted.join(', ')}.`);
+    }
+
+    // 3. Sensitive File Detection
+    const sensitivePatterns = [
+      /\.env.*/i,
+      /id_rsa/i,
+      /id_dsa/i,
+      /\.pem$/i,
+      /\.key$/i,
+      /passwd/i,
+      /shadow/i,
+      /credentials/i,
+      /secret/i
+    ];
+
+    const allChangedFiles = [
+      ...status.modified,
+      ...status.created,
+      ...status.not_added,
+      ...status.staged,
+    ];
+
+    for (const file of allChangedFiles) {
+      const filename = path.basename(file);
+      if (sensitivePatterns.some(pattern => pattern.test(filename))) {
+        throw new Error(`Git safety violation: Sensitive file detected in changes: [${file}]. Committing/pushing is aborted.`);
+      }
+    }
+
+    this.logger.log(`All Git safety checks passed successfully for branch [${branchName}].`);
   }
 }

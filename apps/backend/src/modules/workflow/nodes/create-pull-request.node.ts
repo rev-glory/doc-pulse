@@ -1,13 +1,17 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PullRequestService } from '../../github/services/pull-request.service';
 import { GitOperationStatus } from '../../../domain/workflow';
+import { PrismaService } from '@/database';
 import type { WorkflowGraphState } from '../graph/graph.types';
 
 @Injectable()
 export class CreatePullRequestNode {
   private readonly logger = new Logger(CreatePullRequestNode.name);
 
-  constructor(private readonly prService: PullRequestService) {}
+  constructor(
+    private readonly prService: PullRequestService,
+    @Optional() private readonly prisma?: PrismaService,
+  ) {}
 
   async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
     const runId = state.runId || 'automated';
@@ -33,7 +37,32 @@ export class CreatePullRequestNode {
       state as any,
     );
 
-    this.logger.log(`CreatePullRequestNode completed successfully [PR #${prSummary.number}]`);
+    // Save/Persist the Pull Request details to the database if prisma is provided
+    if (this.prisma) {
+      const dbPr = await this.prisma.pullRequest.upsert({
+        where: { workflowRunId: runId },
+        update: {
+          githubPrNumber: prSummary.number,
+          githubPrUrl: prSummary.url,
+          title: prSummary.title || `docs(docpulse): update automated documentation [${runId}]`,
+          body: prSummary.body || '',
+          headBranch: prSummary.headBranch || headBranch,
+          baseBranch: prSummary.baseBranch || 'main',
+        },
+        create: {
+          workflowRunId: runId,
+          githubPrNumber: prSummary.number,
+          githubPrUrl: prSummary.url,
+          title: prSummary.title || `docs(docpulse): update automated documentation [${runId}]`,
+          body: prSummary.body || '',
+          headBranch: prSummary.headBranch || headBranch,
+          baseBranch: prSummary.baseBranch || 'main',
+        },
+      });
+      this.logger.log(`CreatePullRequestNode completed successfully [PR #${prSummary.number}, DB ID: ${dbPr.id}]`);
+    } else {
+      this.logger.log(`CreatePullRequestNode completed successfully [PR #${prSummary.number}] (Prisma persistence bypassed)`);
+    }
 
     // Does NOT mark workflow executionStatus as Completed.
     return {

@@ -35,7 +35,7 @@ export const aiConfig = registerAs('ai', (): AiConfig => {
 
   return {
     openai: {
-      apiKey: env.OPENAI_API_KEY,
+      apiKey: env.OPENAI_API_KEY || '',
       model: env.OPENAI_MODEL,
       temperature: Number(env.OPENAI_TEMPERATURE),
     },
