@@ -42,7 +42,7 @@ const envSchema = z.object({
   REDIS_URL: z
     .string()
     .min(1, 'REDIS_URL is required')
-    .startsWith('redis://', 'REDIS_URL must start with redis://'),
+    .regex(/^rediss?:\/\//, 'REDIS_URL must start with redis:// or rediss://'),
   REDIS_PASSWORD: z.string().min(1, 'REDIS_PASSWORD is required'),
 
   // ── JWT ───────────────────────────────────────────────────────────────────
@@ -80,7 +80,7 @@ const envSchema = z.object({
 
   // ── Anthropic (optional — fallback AI provider) ───────────────────────────
   ANTHROPIC_API_KEY: optionalString,
-  ANTHROPIC_MODEL: z.string().default('claude-3-5-sonnet-20241022'),
+  ANTHROPIC_MODEL: z.string().default('claude-3-5-sonnet-latest'),
 
   // ── Gemini ────────────────────────────────────────────────────────────────
   GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),

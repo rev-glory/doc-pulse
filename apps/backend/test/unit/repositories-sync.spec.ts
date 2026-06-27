@@ -32,6 +32,9 @@ describe('RepositoriesService - Synchronization & Reconciliation', () => {
     };
 
     mockPrisma = {
+      installation: {
+        update: mock.fn(),
+      },
       repository: {
         findMany: mock.fn(),
         updateMany: mock.fn(),

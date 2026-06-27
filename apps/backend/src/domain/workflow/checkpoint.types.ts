@@ -1,3 +1,5 @@
+import { RepositorySummary } from '../repository/repository-summary';
+
 /**
  * Canonical shared enum representing LangGraph documentation graph nodes.
  * Used across orchestration, graph compilation, checkpoint snapshots, and retry tracking.
@@ -7,7 +9,6 @@ export enum WorkflowNodeName {
   DocumentationLocator = 'DocumentationLocator',
   TechnicalWriter = 'TechnicalWriter',
   DocumentationCritic = 'DocumentationCritic',
-  PullRequestGenerator = 'PullRequestGenerator',
   GitCommit = 'GitCommit',
   PushBranch = 'PushBranch',
   CreatePullRequest = 'CreatePullRequest',
@@ -60,7 +61,7 @@ export interface WorkflowCheckpointSnapshot {
   workspacePath: string;
   currentNode?: WorkflowNodeName;
   completedNodes: WorkflowNodeName[];
-  analysisReference?: Record<string, unknown>;
+  analysisReference?: RepositorySummary;
   documentationInventoryReference?: Record<string, unknown>;
   generatedDocumentReferences?: GeneratedDocumentReference[];
   criticReviewReference?: CriticReviewReference;

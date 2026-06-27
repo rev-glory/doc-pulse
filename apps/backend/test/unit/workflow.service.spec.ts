@@ -37,12 +37,14 @@ describe('WorkflowService Orchestration Facade', () => {
       return expectedFinalState;
     });
 
-    const initialState: WorkflowState = {
-      repository: mockRepo,
-      documentation: undefined as any,
+    const input = {
+      runId: 'run-1',
+      repositoryId: 'test-repo',
+      workspacePath: '/tmp/test',
+      metadata: {},
     };
 
-    const finalState = await workflowService.run(initialState);
+    const finalState = await workflowService.run(input);
 
     assert.equal(finalState, expectedFinalState);
     assert.equal(mockExecutorService.start.mock.calls.length, 1);

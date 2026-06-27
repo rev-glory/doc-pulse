@@ -4,7 +4,6 @@
     { "path": "packages/shared-types" },
     { "path": "packages/shared-utils" },
     { "path": "apps/backend" },
-    { "path": "apps/worker" },
     { "path": "apps/frontend" }
   ]
 }

@@ -152,7 +152,6 @@ export class WorkflowEventService {
       case 'GitCommit':
       case 'PushBranch':
       case 'CreatePullRequest':
-      case 'PullRequestGenerator':
         return RealtimeWorkflowStage.CreatingPR;
       default:
         return RealtimeWorkflowStage.Analyzing;
@@ -177,7 +176,6 @@ export class WorkflowEventService {
       case 'PushBranch':
         return isCompleted ? 95 : 90;
       case 'CreatePullRequest':
-      case 'PullRequestGenerator':
         return isCompleted ? 100 : 95;
       default:
         return 50;

@@ -14,6 +14,8 @@ import {
   DOCUMENTATION_CRITIC_SYSTEM_PROMPT,
   DOCUMENTATION_CRITIC_USER_PROMPT_TEMPLATE,
   DOCUMENTATION_CRITIC_SCHEMA,
+  BATCH_DOCUMENTATION_CRITIC_USER_PROMPT_TEMPLATE,
+  BATCH_DOCUMENTATION_CRITIC_SCHEMA,
 } from '../../document-review/prompts/documentation-critic.prompt';
 
 export interface CompiledDocumentPrompt {
@@ -30,8 +32,7 @@ export class PromptBuilderService {
   constructor(private readonly promptTemplateService: PromptTemplateService) {}
 
   /**
-   * Assembles system and user prompt strings isolated from generation business logic.
-   * Records prompt versioning and interpolates deterministic repository context.
+   * Compiles domain prompt templates with populated repository context and document guidelines.
    */
   public async buildPrompt(
     documentType: GeneratedDocumentType,
@@ -80,6 +81,36 @@ export class PromptBuilderService {
       userPrompt,
       promptVersion: DOCUMENTATION_CRITIC_PROMPT_VERSION,
       responseSchema: DOCUMENTATION_CRITIC_SCHEMA,
+    };
+  }
+
+  /**
+   * Assembles versioned system and user prompt strings for evaluating all generated documents in a single batch request.
+   */
+  public async buildBatchCriticPrompt(
+    documents: GeneratedDocument[],
+    context: RepositoryGenerationContext,
+  ): Promise<CompiledDocumentPrompt> {
+    this.logger.debug(`Building v${DOCUMENTATION_CRITIC_PROMPT_VERSION} batch critic prompt for ${documents.length} documents`);
+
+    const documentsContent = documents
+      .map(
+        (doc) =>
+          `### Document Type: [${doc.type}]\nPath: ${doc.path}\nGuidelines: ${DOCUMENT_TYPE_GUIDELINES[doc.type] ?? ''}\n\n\`\`\`markdown\n${doc.markdown}\n\`\`\``,
+      )
+      .join('\n\n---\n\n');
+
+    const userPrompt = await this.promptTemplateService.compile(BATCH_DOCUMENTATION_CRITIC_USER_PROMPT_TEMPLATE, {
+      repositoryName: context.repositoryName,
+      repositoryContext: context.formattedSummary,
+      documentsContent,
+    });
+
+    return {
+      systemPrompt: DOCUMENTATION_CRITIC_SYSTEM_PROMPT,
+      userPrompt,
+      promptVersion: DOCUMENTATION_CRITIC_PROMPT_VERSION,
+      responseSchema: BATCH_DOCUMENTATION_CRITIC_SCHEMA,
     };
   }
 }

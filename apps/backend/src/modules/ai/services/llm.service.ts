@@ -25,7 +25,9 @@ export class LlmService {
    */
   async generateText(options: GenerationOptions): Promise<LlmResponse> {
     this.logger.debug('Delegating generateText to provider via RetryPolicy');
-    return this.retryPolicy.execute('generateText', () => this.provider.generateText(options));
+    return this.retryPolicy.execute('generateText', () => this.provider.generateText(options), {
+      signal: options.signal,
+    });
   }
 
   /**
@@ -33,8 +35,10 @@ export class LlmService {
    */
   async generateStructured(options: StructuredGenerationOptions): Promise<LlmResponse> {
     this.logger.debug('Delegating generateStructured to provider via RetryPolicy');
-    return this.retryPolicy.execute('generateStructured', () =>
-      this.provider.generateStructured(options),
+    return this.retryPolicy.execute(
+      'generateStructured',
+      () => this.provider.generateStructured(options),
+      { signal: options.signal },
     );
   }
 

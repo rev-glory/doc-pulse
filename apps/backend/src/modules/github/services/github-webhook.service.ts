@@ -108,37 +108,13 @@ export class GitHubWebhookService {
    * Always resolves — errors are caught and logged.
    * The controller returns 200 regardless so GitHub does not retry.
    */
-  async handleEvent(event: string, deliveryId: string, rawPayload: unknown): Promise<void> {
+  async handleEvent(event: string, deliveryId: string, payload: Record<string, any>): Promise<void> {
     this.logger.log('Received GitHub webhook event', {
       event,
       deliveryId,
     });
 
-    let parsedPayload: any = rawPayload;
-    if (Buffer.isBuffer(rawPayload)) {
-      const str = rawPayload.toString('utf8');
-      try {
-        parsedPayload = JSON.parse(str);
-      } catch {
-        if (str.startsWith('payload=')) {
-          try {
-            parsedPayload = JSON.parse(decodeURIComponent(str.slice(8)));
-          } catch {}
-        }
-      }
-    } else if (typeof rawPayload === 'string') {
-      try {
-        parsedPayload = JSON.parse(rawPayload);
-      } catch {
-        if (rawPayload.startsWith('payload=')) {
-          try {
-            parsedPayload = JSON.parse(decodeURIComponent(rawPayload.slice(8)));
-          } catch {}
-        }
-      }
-    }
-
-    const payload = parsedPayload as WebhookPayloadWithAction;
+    const parsedPayload = payload;
     let repositoryId: string | undefined;
 
     // Try to find the repository ID if available

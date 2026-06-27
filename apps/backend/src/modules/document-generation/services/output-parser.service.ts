@@ -131,6 +131,61 @@ export class OutputParserService {
   }
 
   /**
+   * Parses structured LLM JSON batch review evaluation responses.
+   */
+  public parseBatchCriticReview(rawText: string): Record<string, RawCriticReviewOutput> {
+    if (!rawText || typeof rawText !== 'string') {
+      throw new UnprocessableEntityException('[OutputParser] Empty or invalid batch critic output received');
+    }
+
+    const cleanedJson = this.recoverJson(rawText);
+    let parsed: any;
+
+    try {
+      parsed = JSON.parse(cleanedJson);
+    } catch (error) {
+      this.logger.error('[OutputParser] Failed to parse batch critic review JSON:', rawText);
+      throw new UnprocessableEntityException(
+        `[OutputParser] Malformed batch critic JSON structure: ${error instanceof Error ? error.message : 'Syntax error'}`,
+      );
+    }
+
+    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.reviews)) {
+      throw new UnprocessableEntityException('[OutputParser] Missing required array field [reviews] in batch critic response');
+    }
+
+    const resultMap: Record<string, RawCriticReviewOutput> = {};
+
+    for (const item of parsed.reviews) {
+      if (!item || typeof item !== 'object') continue;
+      const docType = typeof item.documentType === 'string' ? item.documentType.toUpperCase() : 'UNKNOWN';
+      const rawScore = typeof item.score === 'number' ? item.score : 0;
+      const clampedScore = Math.max(0, Math.min(100, Math.round(rawScore)));
+
+      const issues = Array.isArray(item.issues)
+        ? item.issues.map((iss: any) => ({
+            severity: (['CRITICAL', 'MAJOR', 'MINOR'].includes(iss?.severity) ? iss.severity : 'MINOR') as any,
+            category: typeof iss?.category === 'string' ? iss.category : 'General',
+            message: typeof iss?.message === 'string' ? iss.message : 'Unspecified issue',
+            location: typeof iss?.location === 'string' ? iss.location : undefined,
+          }))
+        : [];
+
+      const suggestions = Array.isArray(item.suggestions)
+        ? item.suggestions.filter((s: any) => typeof s === 'string').map((s: string) => s.trim())
+        : [];
+
+      resultMap[docType] = {
+        score: clampedScore,
+        issues,
+        suggestions,
+      };
+    }
+
+    return resultMap;
+  }
+
+  /**
    * Recovers JSON payload from markdown code blocks or wrapped text.
    */
   public recoverJson(rawText: string): string {

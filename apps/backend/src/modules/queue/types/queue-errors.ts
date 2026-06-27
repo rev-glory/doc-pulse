@@ -21,6 +21,14 @@ export class TransientWorkflowError extends Error {
   }
 }
 
+export class DelayedRetryWorkflowError extends TransientWorkflowError {
+  constructor(message: string = 'Delayed retry scheduled', public readonly delayMs: number = 0, metadata?: Record<string, unknown>) {
+    super(message, metadata);
+    this.name = 'DelayedRetryWorkflowError';
+  }
+}
+
+
 /**
  * Classifies unknown exceptions into Transient or Permanent failures.
  * Permanent failures bypass retry loops and are sent directly to DLQ.

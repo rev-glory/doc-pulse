@@ -20,18 +20,11 @@ export class PushBranchNode {
       throw new Error(`PushBranchNode error: Missing workspacePath or branchName in workflow state.`);
     }
 
-    try {
-      await this.gitOpsService.pushBranch(repoPath, branchName);
-      this.logger.log(`PushBranchNode completed successfully.`);
+    await this.gitOpsService.pushBranch(repoPath, branchName);
+    this.logger.log(`PushBranchNode completed successfully.`);
 
-      return {
-        gitOperationStatus: GitOperationStatus.Pushed,
-      };
-    } catch (error) {
-      this.logger.error(`PushBranchNode failed. Setting status to Failed.`, (error as Error).stack);
-      return {
-        gitOperationStatus: GitOperationStatus.Failed,
-      };
-    }
+    return {
+      gitOperationStatus: GitOperationStatus.Pushed,
+    };
   }
 }

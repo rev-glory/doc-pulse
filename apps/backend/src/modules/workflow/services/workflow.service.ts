@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { WorkflowExecutorService } from '../graph/workflow-executor.service';
+import { WorkflowExecutionInput } from '../graph/graph.types';
 import { WorkflowState } from '../../../domain/workflow';
 
 /**
@@ -15,15 +16,12 @@ export class WorkflowService {
   /**
    * Executes or resumes a workflow run.
    */
-  public async run(initialState: WorkflowState, executionMode: 'start' | 'resume' | 'restart' = 'start'): Promise<WorkflowState> {
-    this.logger.debug(`Delegating workflow run [${initialState.runId}] (mode: ${executionMode}) to WorkflowExecutorService...`);
+  public async run(input: WorkflowExecutionInput, executionMode: 'start' | 'resume' | 'restart' = 'start'): Promise<WorkflowState> {
+    this.logger.debug(`Delegating workflow run [${input.runId}] (mode: ${executionMode}) to WorkflowExecutorService...`);
 
-    const input = {
-      runId: initialState.runId ?? 'unknown',
-      repositoryId: initialState.repositoryId ?? initialState.repository?.name ?? 'unknown',
-      workspacePath: initialState.repository?.rootPath ?? '',
-      metadata: initialState.generation ?? {},
-    };
+    if (!input.repositoryId || input.repositoryId === 'unknown') {
+      throw new Error('Missing or invalid repositoryId in workflow execution input');
+    }
 
     switch (executionMode) {
       case 'resume':

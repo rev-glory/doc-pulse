@@ -35,6 +35,11 @@ export interface GenerationOptions {
    * Leave unset to use the model's default limit.
    */
   maxOutputTokens?: number;
+
+  /**
+   * Optional AbortSignal to cancel in-flight API calls and retry loops.
+   */
+  signal?: AbortSignal;
 }
 
 /**

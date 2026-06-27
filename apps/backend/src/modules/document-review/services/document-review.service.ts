@@ -10,6 +10,7 @@ import { PromptBuilderService } from '../../document-generation/services/prompt-
 import { RepositoryContextBuilderService } from '../../document-generation/services/repository-context-builder.service';
 import { DOCUMENTATION_CRITIC_PROMPT_VERSION } from '../prompts/documentation-critic.prompt';
 import { ReviewEvaluatorService } from './review-evaluator.service';
+import { DelayedRetryWorkflowError, QueueErrorClassification } from '../../queue/types/queue-errors';
 
 @Injectable()
 export class DocumentReviewService {
@@ -26,7 +27,7 @@ export class DocumentReviewService {
   ) {}
 
   /**
-   * Orchestrates independent multi-agent critic evaluations across all generated documents.
+   * Orchestrates batch critic evaluations across all generated documents in a single LLM request.
    * Handles partial provider failures via fallback objects and delegates business rules to ReviewEvaluatorService.
    */
   public async reviewDocuments(
@@ -34,8 +35,10 @@ export class DocumentReviewService {
     documentation: DocumentationInventory,
     generatedDocuments: GeneratedDocument[],
     runId: string = 'unknown-run',
+    repositoryId?: string,
   ): Promise<CriticReview> {
-    this.logger.log(`[${runId}] Starting multi-agent documentation critic review for repository [${repository?.name}]`);
+    const repoIdentifier = repositoryId || (repository as any)?.id || repository?.name || 'unknown-repository';
+    this.logger.log(`[${runId}] Reviewing ${generatedDocuments?.length || 0} documents for repository: ${repoIdentifier}`);
 
     if (!repository || !repository.name) {
       throw new BadRequestException('Invalid repository summary provided to DocumentReviewService');
@@ -50,64 +53,53 @@ export class DocumentReviewService {
     // 1. Build deterministic repository context
     const repoContext = this.contextBuilder.buildContext({ repository, documentation } as any);
     const configuredModel = this.configService.get<string>('gemini.model') ?? 'gemini-2.5-flash';
+    const startTime = Date.now();
 
-    // 2. Evaluate each document independently using Promise.allSettled
-    const reviewPromises = generatedDocuments.map(async (doc): Promise<DocumentationReview> => {
-      const startTime = Date.now();
-      try {
-        // Assemble versioned prompt
-        const compiledPrompt = await this.promptBuilder.buildCriticPrompt(doc, repoContext);
+    // 2. Evaluate all documents in one batch request
+    const compiledPrompt = await this.promptBuilder.buildBatchCriticPrompt(generatedDocuments, repoContext);
 
-        // Generate structured evaluation
-        const llmResponse = await this.llmService.generateStructured({
-          prompt: compiledPrompt.userPrompt,
-          systemInstruction: compiledPrompt.systemPrompt,
-          responseSchema: compiledPrompt.responseSchema,
-        });
+    let rawOutputMap: Record<string, any> = {};
+    let usage = { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+    let durationMs = 0;
 
-        const durationMs = Date.now() - startTime;
-        const usage = llmResponse.usage ?? { promptTokens: 0, completionTokens: 0, totalTokens: 0 };
+    try {
+      const llmResponse = await this.llmService.generateStructured({
+        prompt: compiledPrompt.userPrompt,
+        systemInstruction: compiledPrompt.systemPrompt,
+        responseSchema: compiledPrompt.responseSchema,
+      });
+      durationMs = Date.now() - startTime;
+      usage = llmResponse.usage ?? usage;
+      rawOutputMap = this.outputParser.parseBatchCriticReview(llmResponse.text);
+    } catch (error: unknown) {
+      if (
+        error instanceof DelayedRetryWorkflowError ||
+        (error as any)?.delayMs ||
+        (error as any)?.classification === QueueErrorClassification.TRANSIENT
+      ) {
+        throw error;
+      }
+      durationMs = Date.now() - startTime;
+      this.logger.error(
+        `[${runId}] Batch review evaluation failed for repository [${repoIdentifier}]: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
+    }
 
-        // Parse structured JSON output
-        const rawOutput = this.outputParser.parseCriticReview(llmResponse.text, doc.type);
+    const completedReviews: DocumentationReview[] = generatedDocuments.map((doc) => {
+      const docTypeKey = doc.type.toUpperCase();
+      const rawOutput = rawOutputMap[docTypeKey];
 
-        // Diagnose Markdown syntax structure
-        const validationResult = this.markdownValidator.validate(doc.markdown);
+      const perDocMetrics = {
+        promptVersion: DOCUMENTATION_CRITIC_PROMPT_VERSION,
+        model: configuredModel,
+        reviewDurationMs: Math.round(durationMs / generatedDocuments.length),
+        promptTokens: Math.round(usage.promptTokens / generatedDocuments.length),
+        completionTokens: Math.round(usage.completionTokens / generatedDocuments.length),
+        totalTokens: Math.round(usage.totalTokens / generatedDocuments.length),
+        reviewedAt: new Date().toISOString(),
+      };
 
-        // Apply threshold and scoring business logic
-        const metrics = {
-          promptVersion: DOCUMENTATION_CRITIC_PROMPT_VERSION,
-          model: configuredModel,
-          reviewDurationMs: durationMs,
-          promptTokens: usage.promptTokens,
-          completionTokens: usage.completionTokens,
-          totalTokens: usage.totalTokens,
-          reviewedAt: new Date().toISOString(),
-        };
-
-        const reviewResult = this.reviewEvaluator.evaluate(rawOutput, validationResult, doc.type, metrics);
-
-        this.logger.log(
-          JSON.stringify({
-            event: 'document_review_completed',
-            runId,
-            repositoryId: (repository as any).id ?? repository.name,
-            documentType: doc.type,
-            score: reviewResult.score,
-            approved: reviewResult.approved,
-            durationMs,
-            metrics,
-          }),
-        );
-
-        return reviewResult;
-      } catch (error) {
-        const durationMs = Date.now() - startTime;
-        this.logger.error(
-          `[${runId}] Independent review evaluation failed for document [${doc.type}]: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        );
-
-        // Return fallback failed review object so partial failures never crash the workflow
+      if (!rawOutput) {
         return {
           documentType: doc.type,
           score: 0,
@@ -116,51 +108,31 @@ export class DocumentReviewService {
             {
               severity: 'CRITICAL',
               category: 'System Error',
-              message: `Automated critic evaluation failed: ${error instanceof Error ? error.message : 'Timeout or unparseable output'}`,
+              message: `Automated critic evaluation missing or failed in batch response for ${doc.type}`,
             },
           ],
           suggestions: ['Regenerate document due to review subsystem exception'],
-          metrics: {
-            promptVersion: DOCUMENTATION_CRITIC_PROMPT_VERSION,
-            model: 'fallback-error-handler',
-            reviewDurationMs: durationMs,
-            promptTokens: 0,
-            completionTokens: 0,
-            totalTokens: 0,
-            reviewedAt: new Date().toISOString(),
-          },
+          metrics: perDocMetrics,
         };
       }
-    });
 
-    const settledResults = await Promise.allSettled(reviewPromises);
-    const completedReviews = settledResults.map((res, idx) => {
-      if (res.status === 'fulfilled') {
-        return res.value;
-      }
-      const doc = generatedDocuments[idx]!;
-      return {
-        documentType: doc.type,
-        score: 0,
-        approved: false,
-        issues: [
-          {
-            severity: 'CRITICAL' as const,
-            category: 'System Error',
-            message: `Promise rejection during evaluation: ${res.reason?.message ?? res.reason}`,
-          },
-        ],
-        suggestions: ['Regenerate document'],
-        metrics: {
-          promptVersion: DOCUMENTATION_CRITIC_PROMPT_VERSION,
-          model: 'unhandled-rejection-fallback',
-          reviewDurationMs: 0,
-          promptTokens: 0,
-          completionTokens: 0,
-          totalTokens: 0,
-          reviewedAt: new Date().toISOString(),
-        },
-      };
+      const validationResult = this.markdownValidator.validate(doc.markdown);
+      const reviewResult = this.reviewEvaluator.evaluate(rawOutput, validationResult, doc.type, perDocMetrics);
+
+      this.logger.log(
+        JSON.stringify({
+          event: 'document_review_completed',
+          runId,
+          repositoryId: repoIdentifier,
+          documentType: doc.type,
+          score: reviewResult.score,
+          approved: reviewResult.approved,
+          durationMs: perDocMetrics.reviewDurationMs,
+          metrics: perDocMetrics,
+        }),
+      );
+
+      return reviewResult;
     });
 
     // 3. Aggregate consolidated statistical summary
@@ -173,3 +145,4 @@ export class DocumentReviewService {
     return aggregatedReview;
   }
 }
+

@@ -12,6 +12,8 @@ import { RepositoryContextBuilderService } from './repository-context-builder.se
 import { PromptBuilderService } from './prompt-builder.service';
 import { OutputParserService } from './output-parser.service';
 import { MarkdownValidatorService } from './markdown-validator.service';
+import { DelayedRetryWorkflowError, QueueErrorClassification } from '../../queue/types/queue-errors';
+
 
 @Injectable()
 export class DocumentGenerationService {
@@ -71,8 +73,8 @@ export class DocumentGenerationService {
 
       const concurrencyLimit = Number(this.configService.get('DOC_GEN_CONCURRENCY', 2));
 
-      const tasks = orderedTypes.map((docType) => async () => {
-        return this.generateSingleDocument(docType, context, workflowId, repositoryId);
+      const tasks = orderedTypes.map((docType) => async (signal: AbortSignal) => {
+        return this.generateSingleDocument(docType, context, workflowId, repositoryId, signal);
       });
 
       const generatedDocs = await this.executeBoundedPool(tasks, concurrencyLimit);
@@ -85,6 +87,13 @@ export class DocumentGenerationService {
 
       return generatedDocs;
     } catch (error: unknown) {
+      if (
+        error instanceof DelayedRetryWorkflowError ||
+        (error as any)?.delayMs ||
+        (error as any)?.classification === QueueErrorClassification.TRANSIENT
+      ) {
+        throw error;
+      }
       this.logger.error('Document generation pipeline failed permanently', {
         workflowId,
         repositoryId,
@@ -105,6 +114,7 @@ export class DocumentGenerationService {
     context: ReturnType<RepositoryContextBuilderService['buildContext']>,
     workflowId: string,
     repositoryId: string,
+    signal?: AbortSignal,
   ): Promise<GeneratedDocument> {
     const startTime = Date.now();
 
@@ -116,6 +126,7 @@ export class DocumentGenerationService {
       systemInstruction: compiledPrompt.systemPrompt,
       responseSchema: compiledPrompt.responseSchema,
       temperature: 0.2,
+      signal,
     });
 
     const durationMs = Date.now() - startTime;
@@ -161,15 +172,23 @@ export class DocumentGenerationService {
   }
 
   private async executeBoundedPool<T>(
-    tasks: (() => Promise<T>)[],
+    tasks: ((signal: AbortSignal) => Promise<T>)[],
     concurrencyLimit: number,
   ): Promise<T[]> {
+    const abortController = new AbortController();
     const results: T[] = [];
-    for (let i = 0; i < tasks.length; i += concurrencyLimit) {
-      const chunk = tasks.slice(i, i + concurrencyLimit);
-      const chunkResults = await Promise.all(chunk.map((fn) => fn()));
-      results.push(...chunkResults);
+    try {
+      for (let i = 0; i < tasks.length; i += concurrencyLimit) {
+        const chunk = tasks.slice(i, i + concurrencyLimit);
+        const chunkResults = await Promise.all(
+          chunk.map((fn) => fn(abortController.signal)),
+        );
+        results.push(...chunkResults);
+      }
+      return results;
+    } catch (error) {
+      abortController.abort();
+      throw error;
     }
-    return results;
   }
 }

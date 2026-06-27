@@ -14,7 +14,15 @@ import type { RealtimeEventPayload } from '@docpulse/shared-types';
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: '*',
+    origin: (origin: string, callback: (err: Error | null, allow?: boolean) => void) => {
+      const allowed = process.env['FRONTEND_URL'] || 'http://localhost:3000';
+      if (!origin || origin === allowed) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
   },
 })
 export class WorkflowGateway implements OnGatewayConnection, OnGatewayDisconnect {

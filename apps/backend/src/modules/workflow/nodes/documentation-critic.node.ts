@@ -1,13 +1,17 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { WorkflowStatus } from '../../../domain/workflow';
-import { WorkflowAnnotation } from '../graph/state.annotation';
+import { WorkflowGraphState } from '../graph/graph.types';
 import { DocumentReviewService } from '../../document-review/services/document-review.service';
+import { PrismaService } from '@/database';
 
 @Injectable()
 export class DocumentationCriticNode {
-  constructor(private readonly documentReviewService: DocumentReviewService) {}
+  constructor(
+    private readonly documentReviewService: DocumentReviewService,
+    private readonly prisma: PrismaService,
+  ) {}
 
-  public async invoke(state: typeof WorkflowAnnotation.State): Promise<Partial<typeof WorkflowAnnotation.State>> {
+  public async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
     if (!state.repository || !state.documentation) {
       throw new BadRequestException('Repository summary or documentation inventory missing in state');
     }
@@ -21,9 +25,25 @@ export class DocumentationCriticNode {
       state.documentation,
       state.generatedDocuments,
       state.runId,
+      state.repositoryId,
     );
 
     const executionStatus = criticReview.passed ? state.executionStatus : WorkflowStatus.RegenerationRequired;
+
+    await this.prisma.review.upsert({
+      where: { workflowRunId: state.runId },
+      update: {
+        status: criticReview.passed ? 'APPROVED' : 'REJECTED',
+        comment: `Critic Score: ${criticReview.score}. Issues: ${criticReview.issues?.length || 0}. Suggestions: ${criticReview.suggestions?.length || 0}`,
+        reviewedAt: new Date(),
+      },
+      create: {
+        workflowRunId: state.runId,
+        status: criticReview.passed ? 'APPROVED' : 'REJECTED',
+        comment: `Critic Score: ${criticReview.score}. Issues: ${criticReview.issues?.length || 0}. Suggestions: ${criticReview.suggestions?.length || 0}`,
+        reviewedAt: new Date(),
+      },
+    });
 
     return {
       criticReview,

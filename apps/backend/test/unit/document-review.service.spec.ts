@@ -18,6 +18,11 @@ describe('DocumentReviewService Orchestrator Unit Tests', () => {
       userPrompt: 'usr',
       responseSchema: {},
     }),
+    buildBatchCriticPrompt: async () => ({
+      systemPrompt: 'sys',
+      userPrompt: 'usr',
+      responseSchema: {},
+    }),
   } as any;
 
   const mockOutputParser = new OutputParserService();
@@ -27,16 +32,15 @@ describe('DocumentReviewService Orchestrator Unit Tests', () => {
   const dummyRepository = { name: 'test-repo' } as any;
   const dummyInventory = { documentationFiles: [] } as any;
 
-  it('should successfully handle partial provider failures using Promise.allSettled', async () => {
-    let callCount = 0;
+  it('should successfully handle partial missing document evaluations in batch response', async () => {
     const mockLlmService = {
       generateStructured: async () => {
-        callCount++;
-        if (callCount === 1) {
-          throw new Error('LLM Provider Timeout');
-        }
         return {
-          text: JSON.stringify({ score: 90, issues: [], suggestions: ['Good doc'] }),
+          text: JSON.stringify({
+            reviews: [
+              { documentType: 'API', score: 90, issues: [], suggestions: ['Good doc'] },
+            ],
+          }),
           metadata: { model: 'gemini-2.5-flash', promptTokens: 5, completionTokens: 5, totalTokens: 10 },
         };
       },
@@ -65,7 +69,7 @@ describe('DocumentReviewService Orchestrator Unit Tests', () => {
     assert.equal(result.passed, false);
     assert.equal(result.reviews?.length, 2);
 
-    // First doc failed
+    // First doc failed (missing in batch response)
     assert.equal(result.reviews[0]?.approved, false);
     assert.equal(result.reviews[0]?.issues[0]?.category, 'System Error');
 
@@ -74,3 +78,4 @@ describe('DocumentReviewService Orchestrator Unit Tests', () => {
     assert.equal(result.reviews[1]?.score, 90);
   });
 });
+

@@ -123,12 +123,8 @@ export class WorkflowExecutorService implements OnModuleInit {
     });
   }
 
-  /**
-   * Determines the first sequential node that must execute given the last completed checkpoint node.
-   */
   private determineNextNode(lastCompletedNode?: WorkflowNodeName): WorkflowNodeName {
     if (!lastCompletedNode) return WorkflowNodeName.RepositoryAnalyzer;
-    if (lastCompletedNode === WorkflowNodeName.PullRequestGenerator) return WorkflowNodeName.GitCommit;
 
     const idx = this.sequentialOrder.indexOf(lastCompletedNode);
     if (idx === -1 || idx === this.sequentialOrder.length - 1) {
@@ -151,6 +147,7 @@ export class WorkflowExecutorService implements OnModuleInit {
       runId: input.runId,
       repositoryId: input.repositoryId,
       workspacePath: input.workspacePath,
+      repository: snapshot.analysisReference ? snapshot.analysisReference : undefined,
       metadata: { ...(snapshot.executionMetadata ?? {}), hydratedAt: new Date().toISOString() },
     };
   }
@@ -194,6 +191,9 @@ export class WorkflowExecutorService implements OnModuleInit {
 
       this.logger.log(`[${input.runId}] Workflow execution completed successfully in ${durationMs}ms.`);
 
+      await this.checkpointRepository.markRunCompleted(input.runId);
+      this.eventService?.publishCompletionEvent(input.runId, input.repositoryId, input.runId, finalState.metadata);
+
       return {
         ...finalState,
         executionStatus: WorkflowStatus.Completed,
@@ -210,11 +210,26 @@ export class WorkflowExecutorService implements OnModuleInit {
         this.logger.error(
           `[${input.runId}] Workflow terminated at node [${error.node}] after ${durationMs}ms: ${error.workflowError.message}`,
         );
+        await this.checkpointRepository.markRunFailed(input.runId, error.workflowError.message);
+        this.eventService?.publishFailureEvent(
+          input.runId,
+          input.repositoryId,
+          input.runId,
+          error.workflowError.message,
+          error.node,
+        );
         throw error;
       }
 
       const cause = error instanceof Error ? error : new Error(String(error));
       this.logger.error(`[${input.runId}] Unexpected orchestration failure: ${cause.message}`, cause.stack);
+      await this.checkpointRepository.markRunFailed(input.runId, cause.message);
+      this.eventService?.publishFailureEvent(
+        input.runId,
+        input.repositoryId,
+        input.runId,
+        cause.message,
+      );
       throw cause;
     } finally {
       this.adapters.clearExecutionContext(input.runId);

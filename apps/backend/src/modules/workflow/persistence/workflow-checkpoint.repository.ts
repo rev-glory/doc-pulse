@@ -187,4 +187,37 @@ export class WorkflowCheckpointRepository {
       return nextVersion;
     });
   }
+
+  /**
+   * Marks a WorkflowRun as completed in the database.
+   */
+  public async markRunCompleted(runId: string): Promise<void> {
+    const now = new Date();
+    await this.prisma.workflowRun.update({
+      where: { id: runId },
+      data: {
+        status: 'COMPLETED' as any,
+        completedAt: now,
+        updatedAt: now,
+      },
+    });
+    this.logger.log(`WorkflowRun [${runId}] marked as COMPLETED.`);
+  }
+
+  /**
+   * Marks a WorkflowRun as failed in the database (unconditional update).
+   */
+  public async markRunFailed(runId: string, errorMessage: string): Promise<void> {
+    const now = new Date();
+    await this.prisma.workflowRun.update({
+      where: { id: runId },
+      data: {
+        status: 'FAILED' as any,
+        errorMessage,
+        completedAt: now,
+        updatedAt: now,
+      },
+    });
+    this.logger.log(`WorkflowRun [${runId}] marked as FAILED. Error: ${errorMessage}`);
+  }
 }

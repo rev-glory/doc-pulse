@@ -67,6 +67,20 @@ export class WorkflowNodeExecutionWrapper {
         nextCompletedNodes,
       );
 
+      const SEQUENTIAL_NODES = [
+        WorkflowNodeName.RepositoryAnalyzer,
+        WorkflowNodeName.DocumentationLocator,
+        WorkflowNodeName.TechnicalWriter,
+        WorkflowNodeName.DocumentationCritic,
+        WorkflowNodeName.GitCommit,
+        WorkflowNodeName.PushBranch,
+        WorkflowNodeName.CreatePullRequest,
+      ];
+      const progress = Math.min(
+        Math.round((nextCompletedNodes.filter(n => SEQUENTIAL_NODES.includes(n)).length / SEQUENTIAL_NODES.length) * 100),
+        99
+      );
+
       // 4. Atomically persist checkpoint transaction
       const nextVersion = await this.checkpointRepository.saveNodeCheckpoint({
         runId,
@@ -79,6 +93,7 @@ export class WorkflowNodeExecutionWrapper {
         newMetadata: {
           lastSuccessfulNode: nodeName,
           lastNodeDurationMs: durationMs,
+          progress,
         },
       });
 
@@ -184,7 +199,7 @@ export class WorkflowNodeExecutionWrapper {
       workspacePath: state.workspacePath ?? '',
       currentNode,
       completedNodes,
-      analysisReference: state.repository ? { name: state.repository.name, rootPath: state.repository.rootPath } : undefined,
+      analysisReference: state.repository ? JSON.parse(JSON.stringify(state.repository)) : undefined,
       documentationInventoryReference: state.documentation
         ? { fileCount: (state.documentation.documentationFiles ?? []).length }
         : undefined,

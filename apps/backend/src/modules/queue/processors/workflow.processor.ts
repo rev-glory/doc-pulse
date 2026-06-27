@@ -1,15 +1,15 @@
 import { Logger, Optional } from '@nestjs/common';
 import { Processor, WorkerHost } from '@nestjs/bullmq';
-import { Job, UnrecoverableError } from 'bullmq';
+import { Job, UnrecoverableError, DelayedError } from 'bullmq';
 
 import { WORKFLOW_EXECUTION_QUEUE } from '../constants/queue.constants';
 import type { WorkflowJobPayload } from '../interfaces/workflow-job.interface';
-import { WorkflowExecutorService } from '../../workflow/graph/workflow-executor.service';
+import { WorkflowService } from '../../workflow/services/workflow.service';
 import type { WorkflowState } from '../../../domain/workflow';
 import { QueueProgressPublisherService } from '../services/queue-progress-publisher.service';
 import { QueueMetricsService } from '../services/queue-metrics.service';
 import { DeadLetterService } from '../dead-letter/dead-letter.service';
-import { classifyWorkflowError, QueueErrorClassification } from '../types/queue-errors';
+import { classifyWorkflowError, QueueErrorClassification, DelayedRetryWorkflowError } from '../types/queue-errors';
 
 @Processor(WORKFLOW_EXECUTION_QUEUE)
 export class WorkflowProcessor extends WorkerHost {
@@ -17,7 +17,7 @@ export class WorkflowProcessor extends WorkerHost {
   private readonly workerId = `worker-${process.pid}`;
 
   constructor(
-    private readonly executorService: WorkflowExecutorService,
+    private readonly workflowService: WorkflowService,
     @Optional() private readonly progressPublisher?: QueueProgressPublisherService,
     @Optional() private readonly metricsService?: QueueMetricsService,
     @Optional() private readonly deadLetterService?: DeadLetterService,
@@ -28,7 +28,7 @@ export class WorkflowProcessor extends WorkerHost {
   /**
    * Consumes workflow execution jobs with full resiliency, observability, and DLQ routing.
    */
-  public async process(job: Job<WorkflowJobPayload>): Promise<WorkflowState> {
+  public async process(job: Job<WorkflowJobPayload>, token?: string): Promise<WorkflowState> {
     const startTime = Date.now();
     const { repositoryId, repositoryPath, runId, executionMode = 'start', metadata } = job.data;
     const jobId = job.id ?? 'unknown';
@@ -54,6 +54,8 @@ export class WorkflowProcessor extends WorkerHost {
       metadata: { workerId: this.workerId, attempt, executionMode },
     });
 
+    const effectiveMode = job.attemptsMade > 0 && executionMode === 'start' ? 'resume' : executionMode;
+
     try {
       const input = {
         runId,
@@ -62,25 +64,7 @@ export class WorkflowProcessor extends WorkerHost {
         metadata: metadata ?? {},
       };
 
-      let finalState: WorkflowState;
-      switch (executionMode) {
-        case 'resume':
-          finalState = await (this.executorService as any).resume(input);
-          break;
-        case 'restart':
-          finalState = await (this.executorService as any).restart(input);
-          break;
-        case 'start':
-        default:
-          if (typeof (this.executorService as any).start === 'function') {
-            finalState = await (this.executorService as any).start(input);
-          } else if (typeof (this.executorService as any).run === 'function') {
-            finalState = await (this.executorService as any).run(input);
-          } else {
-            finalState = await (this.executorService as any).start(input);
-          }
-          break;
-      }
+      const finalState = await this.workflowService.run(input, effectiveMode);
 
       const durationMs = Date.now() - startTime;
       this.metricsService?.recordJobProcessed(durationMs);
@@ -152,8 +136,34 @@ export class WorkflowProcessor extends WorkerHost {
         throw new UnrecoverableError(error instanceof Error ? error.message : String(error));
       }
 
+      const delayMs = this.extractDelayMs(error);
+      if (delayMs !== null && delayMs > 0) {
+        this.logger.warn(
+          `[${runId}] Rate limit long retry requested (${delayMs}ms). Updating executionMode to 'resume' and moving job to delayed queue.`,
+        );
+        await job.updateData({ ...job.data, executionMode: 'resume' });
+        await job.moveToDelayed(Date.now() + delayMs, token ?? job.token);
+        this.metricsService?.recordJobRetry();
+        throw new DelayedError();
+      }
+
       this.metricsService?.recordJobRetry();
       throw error;
     }
   }
+
+  private extractDelayMs(error: unknown): number | null {
+    let curr: any = error;
+    while (curr) {
+      if (typeof curr.delayMs === 'number' && !isNaN(curr.delayMs) && curr.delayMs > 0) {
+        return curr.delayMs;
+      }
+      if (curr instanceof DelayedRetryWorkflowError && curr.delayMs) {
+        return curr.delayMs;
+      }
+      curr = curr.causeError ?? curr.cause ?? curr.workflowError;
+    }
+    return null;
+  }
 }
+

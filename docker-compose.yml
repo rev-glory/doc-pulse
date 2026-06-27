@@ -57,7 +57,7 @@ services:
       redis-server
       --requirepass ${REDIS_PASSWORD:-docpulse_dev_password}
       --maxmemory ${REDIS_MAX_MEMORY:-256mb}
-      --maxmemory-policy allkeys-lru
+      --maxmemory-policy noeviction
       --save 60 1
       --loglevel notice
     ports:

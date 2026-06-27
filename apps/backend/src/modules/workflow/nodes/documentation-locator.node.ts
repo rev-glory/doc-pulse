@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
-import { WorkflowAnnotation } from '../graph/state.annotation';
+import { WorkflowGraphState } from '../graph/graph.types';
 import { RepositoryAnalysisService } from '../../repository-analysis/services/repository-analysis.service';
 
 @Injectable()
 export class DocumentationLocatorNode {
   constructor(private readonly repositoryAnalysisService: RepositoryAnalysisService) {}
 
-  public async invoke(state: typeof WorkflowAnnotation.State): Promise<Partial<typeof WorkflowAnnotation.State>> {
-    const rootPath = state.repository?.rootPath || (state as any).workspacePath;
+  public async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
+    const rootPath = state.repository?.rootPath || state.workspacePath;
     if (!rootPath) {
       return {};
     }

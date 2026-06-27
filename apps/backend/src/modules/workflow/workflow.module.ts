@@ -45,6 +45,6 @@ import { GitHubModule } from '../github/github.module';
     PushBranchNode,
     CreatePullRequestNode,
   ],
-  exports: [WorkflowService, WorkflowExecutorService, WorkflowCheckpointRepository],
+  exports: [WorkflowService, WorkflowCheckpointRepository],
 })
 export class WorkflowModule {}

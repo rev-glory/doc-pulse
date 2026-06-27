@@ -50,19 +50,14 @@ export class GitHubWebhooksController {
     const body = req.body || {};
     const instId = body?.installation?.id;
     const repoId = body?.repository?.id;
-    const repoName = body?.repository?.name || body?.repository?.full_name || repoId;
 
     this.logger.log({
+      message: 'Received GitHub webhook',
       event,
       delivery: deliveryId,
       installationId: instId,
       repositoryId: repoId,
     });
-    this.logger.log('Received GitHub webhook');
-    this.logger.log('Received webhook');
-    if (event === 'push') {
-      this.logger.log('Push event received');
-    }
 
     // `rawBody` is available when the app is bootstrapped with rawBody: true.
     // We cast here — if it's missing, the signature check will fail and we
@@ -83,8 +78,11 @@ export class GitHubWebhooksController {
       throw new UnauthorizedException('Invalid webhook signature');
     }
 
-    this.logger.log('Validated signature');
-    this.logger.log('Webhook signature validated');
+    this.logger.log({
+      message: 'Webhook signature validated',
+      event,
+      delivery: deliveryId,
+    });
 
     // Process asynchronously — do not await so we return 200 immediately.
     // GitHub expects a fast acknowledgement; long processing happens in the
