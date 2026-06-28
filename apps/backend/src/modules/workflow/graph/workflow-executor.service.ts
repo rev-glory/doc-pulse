@@ -26,6 +26,7 @@ export class WorkflowExecutorService implements OnModuleInit {
   private readonly sequentialOrder: WorkflowNodeName[] = [
     WorkflowNodeName.RepositoryAnalyzer,
     WorkflowNodeName.DocumentationLocator,
+    WorkflowNodeName.CodebaseAnalyzer,
     WorkflowNodeName.TechnicalWriter,
     WorkflowNodeName.DocumentationCritic,
     WorkflowNodeName.GitCommit,
@@ -226,6 +227,7 @@ export class WorkflowExecutorService implements OnModuleInit {
       commitSha: (snapshot as any).commitSha ?? undefined,
       humanReviewFeedback: (snapshot as any).humanReviewFeedback ?? undefined,
       generationIteration: (snapshot as any).generationIteration ?? 1,
+      sourceCodeAnalysis: (snapshot as any).sourceCodeAnalysis ?? undefined,
       metadata: { ...(snapshot.executionMetadata ?? {}), hydratedAt: new Date().toISOString() },
     };
   }

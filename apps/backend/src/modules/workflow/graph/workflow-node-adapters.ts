@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RepositoryAnalyzerNode } from '../nodes/repository-analyzer.node';
 import { DocumentationLocatorNode } from '../nodes/documentation-locator.node';
+import { CodebaseAnalyzerNode } from '../nodes/codebase-analyzer.node';
 import { TechnicalWriterNode } from '../nodes/technical-writer.node';
 import { DocumentationCriticNode } from '../nodes/documentation-critic.node';
 import { HumanReviewNode } from '../nodes/human-review.node';
@@ -34,6 +35,7 @@ export class WorkflowNodeAdapters {
   private readonly sequentialOrder: WorkflowNodeName[] = [
     WorkflowNodeName.RepositoryAnalyzer,
     WorkflowNodeName.DocumentationLocator,
+    WorkflowNodeName.CodebaseAnalyzer,
     WorkflowNodeName.TechnicalWriter,
     WorkflowNodeName.DocumentationCritic,
     WorkflowNodeName.GitCommit,
@@ -44,6 +46,7 @@ export class WorkflowNodeAdapters {
   constructor(
     private readonly repositoryAnalyzer: RepositoryAnalyzerNode,
     private readonly documentationLocator: DocumentationLocatorNode,
+    private readonly codebaseAnalyzer: CodebaseAnalyzerNode,
     private readonly technicalWriter: TechnicalWriterNode,
     private readonly documentationCritic: DocumentationCriticNode,
     private readonly humanReview: HumanReviewNode,
@@ -111,6 +114,19 @@ export class WorkflowNodeAdapters {
     const ctx = this.getOrchestrationContext(state.runId);
     return this.wrapper.executeNode(nodeName, WorkflowStage.LOCATING_DOCUMENTATION, state, ctx, async (st) =>
       this.documentationLocator.invoke(st as any),
+    );
+  }
+
+  public async codebaseAnalyzerStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
+    const nodeName = WorkflowNodeName.CodebaseAnalyzer;
+    if (this.shouldSkip(state.runId, nodeName, state)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
+    }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.SOURCE_CODE_ANALYSIS, state, ctx, async (st) =>
+      this.codebaseAnalyzer.invoke(st as any),
     );
   }
 

@@ -84,4 +84,19 @@ describe('PromptBuilderService Unit Tests', () => {
     assert.ok(compiled.userPrompt.includes('Reviewer Feedback'));
     assert.ok(compiled.userPrompt.includes('Installation guide has typos.'));
   });
+
+  it('should append codebase static analysis context to the prompt if available', async () => {
+    const mockContext = {
+      repositoryName: 'test-repo',
+      formattedSummary: 'Repo: test-repo\nLangs: TS',
+      generationIteration: 1,
+      formattedSourceAnalysis: '### Discovered Codebase Structure & Architecture\n**Architectural Style**: NestJS Modular Architecture\n- Total Source Files: 3',
+    } as any;
+
+    const compiled = await promptBuilder.buildPrompt(GeneratedDocumentType.README, mockContext);
+
+    assert.ok(compiled.userPrompt.includes('## Discovered Source Code Implementation Context'));
+    assert.ok(compiled.userPrompt.includes('NestJS Modular Architecture'));
+    assert.ok(compiled.userPrompt.includes('Total Source Files: 3'));
+  });
 });

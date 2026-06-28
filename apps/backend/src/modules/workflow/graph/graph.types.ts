@@ -1,6 +1,7 @@
 import { Annotation } from '@langchain/langgraph';
 import { RepositorySummary } from '../../../domain/repository';
 import { DocumentationInventory } from '../../../domain/documentation';
+import { SourceCodeAnalysis } from '../../../domain/source-code-analysis/source-code-analysis';
 import {
   GeneratedDocument,
   CriticReview,
@@ -52,6 +53,7 @@ export const WorkflowGraphAnnotation = Annotation.Root({
     reducer: (curr, update) => update ?? curr,
     default: () => 1,
   }),
+  sourceCodeAnalysis: Annotation<SourceCodeAnalysis | undefined>(),
 
   // Orchestration lifecycle channels
   currentNode: Annotation<string>(),

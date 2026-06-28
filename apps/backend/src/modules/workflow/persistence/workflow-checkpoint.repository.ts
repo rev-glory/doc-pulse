@@ -39,6 +39,8 @@ export class WorkflowCheckpointRepository {
         return PrismaWorkflowStage.CLONING;
       case WorkflowStage.ANALYZING:
         return PrismaWorkflowStage.ANALYZING;
+      case WorkflowStage.SOURCE_CODE_ANALYSIS:
+        return PrismaWorkflowStage.ANALYZING;
       case WorkflowStage.LOCATING_DOCUMENTATION:
         return PrismaWorkflowStage.LOCATING_DOCUMENTATION;
       case WorkflowStage.WRITING:

@@ -7,6 +7,7 @@ describe('Documentation Workflow Graph Routing Unit Tests', () => {
   const mockAdapters = {
     repositoryAnalyzerStep: async (state: any) => ({ ...state, currentNode: WorkflowNodeName.RepositoryAnalyzer }),
     documentationLocatorStep: async (state: any) => ({ ...state, currentNode: WorkflowNodeName.DocumentationLocator }),
+    codebaseAnalyzerStep: async (state: any) => ({ ...state, currentNode: WorkflowNodeName.CodebaseAnalyzer }),
     technicalWriterStep: async (state: any) => {
       // Mirror TechnicalWriterNode: increments iteration on human rejection, clears human status & feedback
       if (state.metadata?.firstNodeToExecute === WorkflowNodeName.GitCommit) {

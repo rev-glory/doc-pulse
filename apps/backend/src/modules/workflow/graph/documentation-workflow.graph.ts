@@ -14,6 +14,7 @@ function compileDocumentationGraph(
   const workflow = new StateGraph(WorkflowGraphAnnotation)
     .addNode(WorkflowNodeName.RepositoryAnalyzer, (state: WorkflowGraphState) => adapters.repositoryAnalyzerStep(state))
     .addNode(WorkflowNodeName.DocumentationLocator, (state: WorkflowGraphState) => adapters.documentationLocatorStep(state))
+    .addNode(WorkflowNodeName.CodebaseAnalyzer, (state: WorkflowGraphState) => adapters.codebaseAnalyzerStep(state))
     .addNode(WorkflowNodeName.TechnicalWriter, (state: WorkflowGraphState) => adapters.technicalWriterStep(state))
     .addNode(WorkflowNodeName.DocumentationCritic, (state: WorkflowGraphState) => adapters.documentationCriticStep(state))
     .addNode(WorkflowNodeName.GitCommit, (state: WorkflowGraphState) => adapters.gitCommitStep(state))
@@ -21,7 +22,8 @@ function compileDocumentationGraph(
     .addNode(WorkflowNodeName.CreatePullRequest, (state: WorkflowGraphState) => adapters.createPullRequestStep(state))
     .addEdge(START, WorkflowNodeName.RepositoryAnalyzer)
     .addEdge(WorkflowNodeName.RepositoryAnalyzer, WorkflowNodeName.DocumentationLocator)
-    .addEdge(WorkflowNodeName.DocumentationLocator, WorkflowNodeName.TechnicalWriter)
+    .addEdge(WorkflowNodeName.DocumentationLocator, WorkflowNodeName.CodebaseAnalyzer)
+    .addEdge(WorkflowNodeName.CodebaseAnalyzer, WorkflowNodeName.TechnicalWriter)
     .addEdge(WorkflowNodeName.TechnicalWriter, WorkflowNodeName.DocumentationCritic)
 
     .addConditionalEdges(

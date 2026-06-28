@@ -7,6 +7,7 @@ import { RepositorySummary } from '../repository/repository-summary';
 export enum WorkflowNodeName {
   RepositoryAnalyzer = 'RepositoryAnalyzer',
   DocumentationLocator = 'DocumentationLocator',
+  CodebaseAnalyzer = 'CodebaseAnalyzer',
   TechnicalWriter = 'TechnicalWriter',
   DocumentationCritic = 'DocumentationCritic',
   HumanReview = 'HumanReview',
@@ -22,6 +23,7 @@ export enum WorkflowNodeName {
 export enum WorkflowStage {
   CLONING = 'CLONING',
   ANALYZING = 'ANALYZING',
+  SOURCE_CODE_ANALYSIS = 'SOURCE_CODE_ANALYSIS',
   LOCATING_DOCUMENTATION = 'LOCATING_DOCUMENTATION',
   WRITING = 'WRITING',
   REVIEWING = 'REVIEWING',

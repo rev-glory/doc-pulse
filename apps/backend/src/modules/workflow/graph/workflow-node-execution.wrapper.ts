@@ -70,6 +70,7 @@ export class WorkflowNodeExecutionWrapper {
       const SEQUENTIAL_NODES = [
         WorkflowNodeName.RepositoryAnalyzer,
         WorkflowNodeName.DocumentationLocator,
+        WorkflowNodeName.CodebaseAnalyzer,
         WorkflowNodeName.TechnicalWriter,
         WorkflowNodeName.DocumentationCritic,
         WorkflowNodeName.GitCommit,
@@ -216,6 +217,7 @@ export class WorkflowNodeExecutionWrapper {
       commitSha: state.commitSha ?? undefined,
       humanReviewFeedback: state.humanReviewFeedback ?? undefined,
       generationIteration: state.generationIteration ?? 1,
+      sourceCodeAnalysis: state.sourceCodeAnalysis ?? undefined,
     } as any;
   }
 }

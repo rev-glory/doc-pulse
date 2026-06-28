@@ -1,5 +1,6 @@
 import { RepositorySummary } from '../repository';
 import { DocumentationInventory } from '../documentation';
+import { SourceCodeAnalysis } from '../source-code-analysis/source-code-analysis';
 import { WorkflowStatus, GitOperationStatus } from './enums';
 import {
   GeneratedDocument as SharedGeneratedDocument,
@@ -93,6 +94,7 @@ export interface WorkflowState {
   pullRequestUrl?: string;
   gitOperationStatus?: GitOperationStatus;
   executionStatus?: WorkflowStatus;
+  sourceCodeAnalysis?: SourceCodeAnalysis;
   generation?: Record<string, unknown>;
   review?: Record<string, unknown>;
   metadata?: Record<string, unknown>;

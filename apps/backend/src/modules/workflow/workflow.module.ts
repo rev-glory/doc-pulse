@@ -9,6 +9,7 @@ import { WorkflowCheckpointRepository } from './persistence/workflow-checkpoint.
 import {
   RepositoryAnalyzerNode,
   DocumentationLocatorNode,
+  CodebaseAnalyzerNode,
   TechnicalWriterNode,
   DocumentationCriticNode,
   GitCommitNode,
@@ -21,6 +22,7 @@ import { DocumentGenerationModule } from '../document-generation/document-genera
 import { DocumentReviewModule } from '../document-review/document-review.module';
 import { GitOperationsModule } from '../git-operations/git-operations.module';
 import { GitHubModule } from '../github/github.module';
+import { SourceCodeAnalysisModule } from '../source-code-analysis/source-code-analysis.module';
 
 @Module({
   imports: [
@@ -31,6 +33,7 @@ import { GitHubModule } from '../github/github.module';
     DocumentReviewModule,
     GitOperationsModule,
     GitHubModule,
+    SourceCodeAnalysisModule,
   ],
   providers: [
     WorkflowCheckpointRepository,
@@ -40,6 +43,7 @@ import { GitHubModule } from '../github/github.module';
     WorkflowNodeAdapters,
     RepositoryAnalyzerNode,
     DocumentationLocatorNode,
+    CodebaseAnalyzerNode,
     TechnicalWriterNode,
     DocumentationCriticNode,
     GitCommitNode,

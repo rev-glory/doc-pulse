@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import type { WorkflowState } from '../../../domain/workflow';
+import { SourceCodeAnalysis } from '../../../domain/source-code-analysis/source-code-analysis';
 
 export interface CriticPromptContext {
   overallScore: number;
@@ -24,6 +25,8 @@ export interface RepositoryGenerationContext {
   criticFeedback?: CriticPromptContext;
   humanReviewFeedback?: string;
   generationIteration: number;
+  sourceCodeAnalysis?: SourceCodeAnalysis;
+  formattedSourceAnalysis?: string;
 }
 
 @Injectable()
@@ -97,6 +100,31 @@ export class RepositoryContextBuilderService {
 
     const humanReviewFeedback = (state as any).humanReviewFeedback ?? undefined;
     const generationIteration = (state as any).generationIteration ?? 1;
+    const sourceCodeAnalysis = (state as any).sourceCodeAnalysis ?? undefined;
+
+    let formattedSourceAnalysis = '';
+    if (sourceCodeAnalysis) {
+      const sc = sourceCodeAnalysis;
+      const techStr = (sc.technologies || [])
+        .map((t: any) => `${t.name} (${t.category}, ${(t.confidence * 100).toFixed(0)}% confidence)`)
+        .join(', ');
+
+      formattedSourceAnalysis = [
+        `### Discovered Codebase Structure & Architecture`,
+        `**Architectural Style**: ${sc.architecture?.style || 'Generic App'}`,
+        `**Architectural Patterns**: ${sc.architecture?.patterns?.join(', ') || 'None detected'}`,
+        `**Key Layers**: ${sc.architecture?.layers?.join(', ') || 'None detected'}`,
+        `**Modules & Package Structure**: ${sc.architecture?.moduleStructure?.join(', ') || 'None detected'}`,
+        `**Key Technologies**: ${techStr || 'None detected'}`,
+        `**Databases**: ${sc.database?.join(', ') || 'None detected'}`,
+        `**Entry Points**: ${sc.entryPoints?.join(', ') || 'None detected'}`,
+        `**Configuration Files**: ${sc.configurationFiles?.join(', ') || 'None'}`,
+        `**Directories Structure**:\n${sc.importantDirectories?.map((d: string) => `- ${d}`).join('\n') || 'None'}`,
+        `**Key Implementation Files**:\n${sc.importantFiles?.map((f: any) => `- ${f.path}: ${f.reason}`).join('\n') || 'None'}`,
+        `**Discovered API Endpoints**:\n${sc.apiEndpoints?.map((ep: any) => `- ${ep.method} ${ep.path}${ep.handler ? ` (${ep.handler})` : ''}`).join('\n') || 'None detected'}`,
+        `**Codebase Metrics**:\n- Total Source Files: ${sc.metrics?.totalSourceFiles ?? 0}\n- Controllers Count: ${sc.metrics?.controllerCount ?? 0}\n- Services Count: ${sc.metrics?.serviceCount ?? 0}\n- Modules Count: ${sc.metrics?.moduleCount ?? 0}\n- Interfaces Count: ${sc.metrics?.interfaceCount ?? 0}\n- Classes Count: ${sc.metrics?.classCount ?? 0}\n- Test Files: ${sc.metrics?.testCount ?? 0}`,
+      ].join('\n\n');
+    }
 
     return {
       repositoryName,
@@ -114,6 +142,8 @@ export class RepositoryContextBuilderService {
       criticFeedback,
       humanReviewFeedback,
       generationIteration,
+      sourceCodeAnalysis,
+      formattedSourceAnalysis,
     };
   }
 }

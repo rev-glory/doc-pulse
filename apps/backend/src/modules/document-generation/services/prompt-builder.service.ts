@@ -49,6 +49,12 @@ export class PromptBuilderService {
       documentGuidelines,
     });
 
+    if (context.formattedSourceAnalysis) {
+      userPrompt += `\n\n## Discovered Source Code Implementation Context\n` +
+        `This section contains key structural details extracted from static codebase analysis. Use this implementation context as the primary source of truth to ensure the generated documentation is technically accurate:\n\n` +
+        context.formattedSourceAnalysis;
+    }
+
     // Format iteration details
     const iterationText = `Generation Iteration: ${context.generationIteration}\n` +
       (context.generationIteration > 1
