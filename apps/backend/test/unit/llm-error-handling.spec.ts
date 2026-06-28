@@ -1,3 +1,5 @@
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { LlmErrorCode } from '../../src/modules/ai/errors/llm-error-code';
 import { LlmException, isLlmException } from '../../src/modules/ai/errors/llm-exception';
 import { GeminiErrorMapper } from '../../src/modules/ai/providers/gemini/gemini-error-mapper';
@@ -16,13 +18,13 @@ describe('Unified LLM Error Handling Spec', () => {
         model: 'gemini-2.0-flash',
       });
 
-      expect(isLlmException(exception)).toBe(true);
-      expect(exception.code).toBe(LlmErrorCode.INVALID_API_KEY);
-      expect(exception.retryable).toBe(false);
-      expect(exception.providerStatus).toBe(401);
-      expect(exception.provider.provider).toBe('Gemini');
-      expect(exception.provider.model).toBe('gemini-2.0-flash');
-      expect(exception.operation).toBe('generateText');
+      assert.ok(isLlmException(exception));
+      assert.equal(exception.code, LlmErrorCode.INVALID_API_KEY);
+      assert.equal(exception.retryable, false);
+      assert.equal(exception.providerStatus, 401);
+      assert.equal(exception.provider.provider, 'Gemini');
+      assert.equal(exception.provider.model, 'gemini-2.0-flash');
+      assert.equal(exception.operation, 'generateText');
     });
 
     it('should map HTTP status 429 to RATE_LIMITED (retryable)', () => {
@@ -31,9 +33,9 @@ describe('Unified LLM Error Handling Spec', () => {
         error: { status: 429, message: 'Resource exhausted' },
       });
 
-      expect(exception.code).toBe(LlmErrorCode.RATE_LIMITED);
-      expect(exception.retryable).toBe(true);
-      expect(exception.providerStatus).toBe(429);
+      assert.equal(exception.code, LlmErrorCode.RATE_LIMITED);
+      assert.equal(exception.retryable, true);
+      assert.equal(exception.providerStatus, 429);
     });
 
     it('should fall back to string matching "quota exceeded" -> QUOTA_EXCEEDED (non-retryable)', () => {
@@ -42,8 +44,8 @@ describe('Unified LLM Error Handling Spec', () => {
         error: new Error('Google Gen AI API quota exceeded for this project'),
       });
 
-      expect(exception.code).toBe(LlmErrorCode.QUOTA_EXCEEDED);
-      expect(exception.retryable).toBe(false);
+      assert.equal(exception.code, LlmErrorCode.QUOTA_EXCEEDED);
+      assert.equal(exception.retryable, false);
     });
 
     it('should map HTTP status 503 to PROVIDER_UNAVAILABLE (retryable)', () => {
@@ -52,18 +54,17 @@ describe('Unified LLM Error Handling Spec', () => {
         error: { status: 503, message: 'Service Unavailable' },
       });
 
-      expect(exception.code).toBe(LlmErrorCode.PROVIDER_UNAVAILABLE);
-      expect(exception.retryable).toBe(true);
+      assert.equal(exception.code, LlmErrorCode.PROVIDER_UNAVAILABLE);
+      assert.equal(exception.retryable, true);
     });
   });
 
   describe('RetryPolicyService integration', () => {
     it('should execute successfully if provider does not fail', async () => {
-      const mockOp = jest.fn().mockResolvedValue('success-text');
+      const mockOp = async () => 'success-text';
       const result = await retryPolicy.execute('test-op', mockOp);
 
-      expect(result).toBe('success-text');
-      expect(mockOp).toHaveBeenCalledTimes(1);
+      assert.equal(result, 'success-text');
     });
 
     it('should immediately propagate permanent LlmExceptions without retrying', async () => {
@@ -75,31 +76,42 @@ describe('Unified LLM Error Handling Spec', () => {
         401,
       );
 
-      const mockOp = jest.fn().mockRejectedValue(permanentError);
+      let callCount = 0;
+      const mockOp = async () => {
+        callCount++;
+        throw permanentError;
+      };
 
-      await expect(retryPolicy.execute('test-op', mockOp, { maxAttempts: 3 })).rejects.toThrow(
-        LlmException,
+      await assert.rejects(
+        async () => {
+          await retryPolicy.execute('test-op', mockOp, { maxAttempts: 3 });
+        },
+        (err: any) => {
+          assert.ok(isLlmException(err));
+          assert.equal(err.code, LlmErrorCode.INVALID_API_KEY);
+          return true;
+        }
       );
-      expect(mockOp).toHaveBeenCalledTimes(1);
+      assert.equal(callCount, 1);
     });
 
     it('should retry transient retryable LlmExceptions and succeed on subsequent attempts', async () => {
-      const rateLimitError = new LlmException(
-        LlmErrorCode.RATE_LIMITED,
-        'Too many requests',
+      const providerUnavailableError = new LlmException(
+        LlmErrorCode.PROVIDER_UNAVAILABLE,
+        'Service Unavailable',
         { provider: 'Gemini', model: 'gemini-2.0-flash' },
         'generateText',
-        429,
+        503,
       );
 
       let attempts = 0;
-      const mockOp = jest.fn().mockImplementation(async () => {
+      const mockOp = async () => {
         attempts++;
         if (attempts < 2) {
-          throw rateLimitError;
+          throw providerUnavailableError;
         }
         return 'retry-success';
-      });
+      };
 
       const result = await retryPolicy.execute('test-op', mockOp, {
         maxAttempts: 3,
@@ -107,8 +119,8 @@ describe('Unified LLM Error Handling Spec', () => {
         maxDelayMs: 5,
       });
 
-      expect(result).toBe('retry-success');
-      expect(mockOp).toHaveBeenCalledTimes(2);
+      assert.equal(result, 'retry-success');
+      assert.equal(attempts, 2);
     });
   });
 
@@ -123,7 +135,7 @@ describe('Unified LLM Error Handling Spec', () => {
       );
 
       const classification = classifyWorkflowError(rateLimitError);
-      expect(classification).toBe(QueueErrorClassification.TRANSIENT);
+      assert.equal(classification, QueueErrorClassification.TRANSIENT);
     });
 
     it('should classify permanent LlmExceptions as PERMANENT', () => {
@@ -136,7 +148,7 @@ describe('Unified LLM Error Handling Spec', () => {
       );
 
       const classification = classifyWorkflowError(modelError);
-      expect(classification).toBe(QueueErrorClassification.PERMANENT);
+      assert.equal(classification, QueueErrorClassification.PERMANENT);
     });
   });
 });

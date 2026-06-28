@@ -101,6 +101,9 @@ const envSchema = z.object({
   // ── Workflow Orchestration (LangGraph) ────────────────────────────────────
   WORKFLOW_MIN_DOC_SCORE: z.coerce.number().int().min(0).max(100).default(80),
 
+  // ── LLM Settings ──────────────────────────────────────────────────────────
+  DEFAULT_LLM_PROVIDER: z.string().default('gemini'),
+
   // ── Email / Notifications (optional in dev) ───────────────────────────────
   SMTP_HOST: optionalString,
   SMTP_PORT: z.coerce.number().int().min(1).max(65535).default(587),

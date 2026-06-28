@@ -10,7 +10,7 @@ import type { GeminiConfig } from '@/config';
 import { AIConfigurationException } from '../../exceptions/ai-configuration.exception';
 import { LlmException } from '../../errors/llm-exception';
 import { GeminiErrorMapper } from './gemini-error-mapper';
-import type { ILlmProvider } from '../../interfaces/llm-provider.interface';
+import type { ILlmProvider, LlmProviderDescriptor } from '../../interfaces/llm-provider.interface';
 import type {
   GenerationOptions,
   LlmResponse,
@@ -23,11 +23,19 @@ export class GeminiProvider implements ILlmProvider, OnModuleInit {
   private readonly logger = new Logger(GeminiProvider.name);
   private readonly mapper = new GeminiErrorMapper();
 
+  public readonly descriptor: LlmProviderDescriptor = {
+    id: 'gemini',
+    displayName: 'Gemini',
+    supportsStreaming: true,
+    supportsStructuredOutput: true,
+    supportsVision: false,
+  };
+
   /** Lazily initialised after config validation in onModuleInit. */
   private client!: GoogleGenAI;
 
   /** The model ID used for all generation calls (e.g. 'gemini-2.0-flash'). */
-  private model!: string;
+  public model!: string;
 
   constructor(private readonly configService: ConfigService) {}
 

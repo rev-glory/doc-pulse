@@ -1,7 +1,5 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
-import { LLM_PROVIDER } from '../constants/ai.constants';
-import type { ILlmProvider } from '../interfaces/llm-provider.interface';
 import type {
   GenerationOptions,
   LlmResponse,
@@ -11,14 +9,14 @@ import type {
 import { RetryPolicyService } from './retry-policy.service';
 import { LlmException, isLlmException } from '../errors/llm-exception';
 import { LlmErrorCode } from '../errors/llm-error-code';
+import { LlmProviderRegistry } from '../registry/llm-provider.registry';
 
 @Injectable()
 export class LlmService {
   private readonly logger = new Logger(LlmService.name);
 
   constructor(
-    @Inject(LLM_PROVIDER)
-    private readonly provider: ILlmProvider,
+    private readonly registry: LlmProviderRegistry,
     private readonly retryPolicy: RetryPolicyService,
   ) {}
 
@@ -26,9 +24,11 @@ export class LlmService {
    * Generate a plain-text response with provider resiliency.
    */
   async generateText(options: GenerationOptions): Promise<LlmResponse> {
+    const provider = this.registry.getDefault();
+    this.logger.log(`Provider: ${provider.descriptor.displayName}, Model: ${provider.model}, Operation: generateText`);
     this.logger.debug('Delegating generateText to provider via RetryPolicy');
     try {
-      return await this.retryPolicy.execute('generateText', () => this.provider.generateText(options), {
+      return await this.retryPolicy.execute('generateText', () => provider.generateText(options), {
         signal: options.signal,
       });
     } catch (error: unknown) {
@@ -51,11 +51,13 @@ export class LlmService {
    * Generate a structured JSON response conforming to the provided schema with provider resiliency.
    */
   async generateStructured(options: StructuredGenerationOptions): Promise<LlmResponse> {
+    const provider = this.registry.getDefault();
+    this.logger.log(`Provider: ${provider.descriptor.displayName}, Model: ${provider.model}, Operation: generateStructured`);
     this.logger.debug('Delegating generateStructured to provider via RetryPolicy');
     try {
       return await this.retryPolicy.execute(
         'generateStructured',
-        () => this.provider.generateStructured(options),
+        () => provider.generateStructured(options),
         { signal: options.signal },
       );
     } catch (error: unknown) {
@@ -78,9 +80,11 @@ export class LlmService {
    * Stream a text response as an async generator of incremental chunks.
    */
   async *streamText(options: StreamGenerationOptions): AsyncGenerator<LlmResponse> {
+    const provider = this.registry.getDefault();
+    this.logger.log(`Provider: ${provider.descriptor.displayName}, Model: ${provider.model}, Operation: streamText`);
     this.logger.debug('Delegating streamText to provider');
     try {
-      const generator = this.provider.streamText(options);
+      const generator = provider.streamText(options);
       for await (const chunk of generator) {
         yield chunk;
       }

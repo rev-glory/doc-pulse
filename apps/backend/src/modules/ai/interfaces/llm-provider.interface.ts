@@ -6,6 +6,14 @@ import type {
   StructuredGenerationOptions,
 } from '../types/llm.types';
 
+export interface LlmProviderDescriptor {
+  id: string;
+  displayName: string;
+  supportsStreaming: boolean;
+  supportsStructuredOutput: boolean;
+  supportsVision: boolean;
+}
+
 // ---------------------------------------------------------------------------
 // ILlmProvider
 //
@@ -22,6 +30,8 @@ import type {
 // ---------------------------------------------------------------------------
 
 export interface ILlmProvider {
+  readonly descriptor: LlmProviderDescriptor;
+  readonly model: string;
   /**
    * Generate a plain-text response for the given prompt.
    *

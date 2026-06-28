@@ -2,28 +2,16 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 
 import { geminiConfig } from '@/config';
-import { LLM_PROVIDER } from './constants/ai.constants';
 import { GeminiProvider } from './providers/gemini/gemini.provider';
+import { OpenAIProvider } from './providers/openai/openai-placeholder.provider';
+import { AnthropicProvider } from './providers/anthropic/anthropic-placeholder.provider';
+import { LlmProviderRegistry, LLM_PROVIDERS } from './registry/llm-provider.registry';
 import { LlmService } from './services/llm.service';
 
 // ---------------------------------------------------------------------------
 // AiModule
 //
 // Self-contained NestJS module that wires the AI infrastructure.
-//
-// Provider wiring:
-//   LLM_PROVIDER token → GeminiProvider
-//
-//   This is the only place where the concrete provider class appears.
-//   Swap GeminiProvider for any other ILlmProvider implementation here
-//   without changing a single line elsewhere.
-//
-// Exports:
-//   LlmService — the only symbol other modules should import.
-//
-// Usage:
-//   @Module({ imports: [AiModule] })
-//   export class YourFeatureModule {}
 // ---------------------------------------------------------------------------
 
 import { PromptTemplateService } from './services/prompt-template.service';
@@ -34,10 +22,19 @@ import { RetryPolicyService } from './services/retry-policy.service';
     ConfigModule.forFeature(geminiConfig),
   ],
   providers: [
+    GeminiProvider,
+    OpenAIProvider,
+    AnthropicProvider,
     {
-      provide: LLM_PROVIDER,
-      useClass: GeminiProvider,
+      provide: LLM_PROVIDERS,
+      useFactory: (gemini: GeminiProvider, openai: OpenAIProvider, anthropic: AnthropicProvider) => [
+        gemini,
+        openai,
+        anthropic,
+      ],
+      inject: [GeminiProvider, OpenAIProvider, AnthropicProvider],
     },
+    LlmProviderRegistry,
     RetryPolicyService,
     LlmService,
     PromptTemplateService,
@@ -46,6 +43,7 @@ import { RetryPolicyService } from './services/retry-policy.service';
     RetryPolicyService,
     LlmService,
     PromptTemplateService,
+    LlmProviderRegistry,
   ],
 })
 export class AiModule {}
