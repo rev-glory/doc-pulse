@@ -4,6 +4,8 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  Inject,
+  forwardRef,
 } from '@nestjs/common';
 import { plainToInstance, ClassTransformer } from 'class-transformer';
 
@@ -11,6 +13,7 @@ import { GitHubRepositoryService } from '@/modules/github/services/github-reposi
 import { InstallationsPersistence } from '@/modules/github/persistence/installations.persistence';
 import { PrismaService } from '@/database';
 import type { User, Repository } from '@/generated/prisma/client';
+import { WorkspaceLifecycleService } from '@/modules/git-operations/services/workspace-lifecycle.service';
 
 import { ConnectRepositoryDto } from '../dto/connect-repository.dto';
 import { UpdateRepositoryDto } from '../dto/update-repository.dto';
@@ -27,6 +30,8 @@ export class RepositoriesService {
     private readonly gitHubRepositoryService: GitHubRepositoryService,
     private readonly installationsPersistence: InstallationsPersistence,
     private readonly prisma: PrismaService,
+    @Inject(forwardRef(() => WorkspaceLifecycleService))
+    private readonly workspaceLifecycleService: WorkspaceLifecycleService,
   ) {}
 
   // --- Helper Methods ---
@@ -457,6 +462,12 @@ export class RepositoriesService {
     const repository = await this.findOwnedRepository(id, user.id);
 
     await this.repositoriesPersistence.delete(id);
+
+    try {
+      await this.workspaceLifecycleService.deleteWorkspace(id);
+    } catch (error) {
+      this.logger.error(`Failed to clean up workspace for deleted repository ${id}:`, error);
+    }
 
     this.logger.log(`Repository deleted: ${repository.fullName} (ID: ${repository.id})`);
   }

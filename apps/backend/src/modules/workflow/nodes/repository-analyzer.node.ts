@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { WorkflowGraphState } from '../graph/graph.types';
 import { RepositoryAnalysisService } from '../../repository-analysis/services/repository-analysis.service';
 import { RepositoryCloneService } from '../../git-operations/services/repository-clone.service';
-import { WorkspaceService } from '../../git-operations/services/workspace.service';
+import { WorkspaceLifecycleService } from '../../git-operations/services/workspace-lifecycle.service';
 import { PrismaService } from '@/database';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class RepositoryAnalyzerNode {
   constructor(
     private readonly repositoryAnalysisService: RepositoryAnalysisService,
     private readonly repositoryCloneService: RepositoryCloneService,
-    private readonly workspaceService: WorkspaceService,
+    private readonly workspaceLifecycleService: WorkspaceLifecycleService,
     private readonly prisma: PrismaService,
   ) {}
 
@@ -28,7 +28,7 @@ export class RepositoryAnalyzerNode {
       throw new Error(`Repository not found: ${repositoryId}`);
     }
 
-    const exists = await this.repositoryCloneService.repositoryExists(repositoryId);
+    const exists = await this.workspaceLifecycleService.workspaceExists(repositoryId);
     if (!exists) {
       await this.repositoryCloneService.cloneRepository({
         id: repoRecord.id,
@@ -37,7 +37,7 @@ export class RepositoryAnalyzerNode {
       });
     }
 
-    const workspacePath = this.workspaceService.getWorkspacePath(repositoryId);
+    const workspacePath = this.workspaceLifecycleService.getWorkspacePath(repositoryId);
 
     const repository = await this.repositoryAnalysisService.analyzeRepository(workspacePath);
 

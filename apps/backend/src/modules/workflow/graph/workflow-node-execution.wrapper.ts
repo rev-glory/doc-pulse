@@ -214,6 +214,8 @@ export class WorkflowNodeExecutionWrapper {
       criticReview: state.criticReview ?? undefined,
       branchName: state.branchName ?? undefined,
       commitSha: state.commitSha ?? undefined,
+      humanReviewFeedback: state.humanReviewFeedback ?? undefined,
+      generationIteration: state.generationIteration ?? 1,
     } as any;
   }
 }

@@ -8,6 +8,7 @@ export interface StorageConfig {
   workspaceDir: string;
   artifactsDir: string;
   gitTimeoutMs: number;
+  retentionPeriodMs: number;
 }
 
 export const storageConfig = registerAs('storage', (): StorageConfig => {
@@ -19,5 +20,6 @@ export const storageConfig = registerAs('storage', (): StorageConfig => {
     workspaceDir: env.WORKSPACE_DIR,
     artifactsDir: env.ARTIFACTS_DIR,
     gitTimeoutMs: 5 * 60 * 1000, // 5 minutes default
+    retentionPeriodMs: env.WORKSPACE_RETENTION_PERIOD_MS,
   };
 });

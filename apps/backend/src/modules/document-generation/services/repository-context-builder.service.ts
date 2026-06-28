@@ -1,6 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import type { WorkflowState } from '../../../domain/workflow';
 
+export interface CriticPromptContext {
+  overallScore: number;
+  strengths: string[];
+  weaknesses: string[];
+  suggestions: string[];
+}
+
 export interface RepositoryGenerationContext {
   repositoryName: string;
   rootPath: string;
@@ -14,6 +21,9 @@ export interface RepositoryGenerationContext {
   apiDocs: string[];
   gitDiff?: string;
   formattedSummary: string;
+  criticFeedback?: CriticPromptContext;
+  humanReviewFeedback?: string;
+  generationIteration: number;
 }
 
 @Injectable()
@@ -75,6 +85,19 @@ export class RepositoryContextBuilderService {
       gitDiff ? `Git Diff Available: Yes (${gitDiff.length} chars)` : `Git Diff Available: No`,
     ].join('\n');
 
+    let criticFeedback: CriticPromptContext | undefined = undefined;
+    if (state.criticReview) {
+      criticFeedback = {
+        overallScore: state.criticReview.score ?? 0,
+        strengths: [],
+        weaknesses: state.criticReview.issues ?? [],
+        suggestions: state.criticReview.suggestions ?? [],
+      };
+    }
+
+    const humanReviewFeedback = (state as any).humanReviewFeedback ?? undefined;
+    const generationIteration = (state as any).generationIteration ?? 1;
+
     return {
       repositoryName,
       rootPath,
@@ -88,6 +111,9 @@ export class RepositoryContextBuilderService {
       apiDocs,
       gitDiff,
       formattedSummary,
+      criticFeedback,
+      humanReviewFeedback,
+      generationIteration,
     };
   }
 }

@@ -138,4 +138,16 @@ export class WorkspaceService implements OnModuleInit {
       return false;
     }
   }
+
+  async getClonedRepositoryIds(): Promise<string[]> {
+    try {
+      await fs.access(this.resolvedClonesDir);
+      const entries = await fs.readdir(this.resolvedClonesDir, { withFileTypes: true });
+      return entries
+        .filter((entry) => entry.isDirectory())
+        .map((entry) => entry.name);
+    } catch {
+      return [];
+    }
+  }
 }

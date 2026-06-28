@@ -47,11 +47,16 @@ describe('RepositoriesService - Synchronization & Reconciliation', () => {
       }),
     };
 
+    const mockWorkspaceLifecycleService = {
+      deleteWorkspace: mock.fn(),
+    } as any;
+
     service = new RepositoriesService(
       mockRepositoriesPersistence,
       mockGitHubRepositoryService,
       mockInstallationsPersistence,
       mockPrisma,
+      mockWorkspaceLifecycleService,
     );
   });
 

@@ -116,6 +116,7 @@ const envSchema = z.object({
   CLONES_DIR: z.string().default('clones'),
   WORKSPACE_DIR: z.string().default('workspace'),
   ARTIFACTS_DIR: z.string().default('artifacts'),
+  WORKSPACE_RETENTION_PERIOD_MS: z.coerce.number().int().min(0).default(24 * 60 * 60 * 1000),
 
   // ── Logging ───────────────────────────────────────────────────────────────
   LOG_LEVEL: z

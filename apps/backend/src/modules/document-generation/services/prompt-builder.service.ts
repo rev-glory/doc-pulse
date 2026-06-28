@@ -42,12 +42,59 @@ export class PromptBuilderService {
 
     const documentGuidelines = DOCUMENT_TYPE_GUIDELINES[documentType] ?? '';
 
-    const userPrompt = await this.promptTemplateService.compile(TECHNICAL_WRITER_USER_PROMPT_TEMPLATE, {
+    let userPrompt = await this.promptTemplateService.compile(TECHNICAL_WRITER_USER_PROMPT_TEMPLATE, {
       documentType,
       repositoryName: context.repositoryName,
       repositoryContext: context.formattedSummary,
       documentGuidelines,
     });
+
+    // Format iteration details
+    const iterationText = `Generation Iteration: ${context.generationIteration}\n` +
+      (context.generationIteration > 1
+        ? `This documentation has been regenerated ${context.generationIteration - 1} time(s).\n`
+        : '');
+
+    // Append AI criticism / human feedback if present in context
+    const feedbackParts: string[] = [];
+
+    if (context.criticFeedback) {
+      // Filter issues/suggestions relevant to the current document type to make prompt highly specific
+      const relevantWeaknesses = (context.criticFeedback.weaknesses ?? [])
+        .filter((fb) => fb.includes(`[${documentType}]`))
+        .map((fb) => fb.replace(`[${documentType}]`, '').trim());
+
+      const relevantSuggestions = (context.criticFeedback.suggestions ?? [])
+        .filter((fb) => fb.includes(`[${documentType}]`))
+        .map((fb) => fb.replace(`[${documentType}]`, '').trim());
+
+      if (relevantWeaknesses.length > 0 || relevantSuggestions.length > 0) {
+        let aiReviewText = `Previous AI Review\n\nOverall Score: ${context.criticFeedback.overallScore}\n`;
+        if (relevantWeaknesses.length > 0) {
+          aiReviewText += `\nWeaknesses\n` + relevantWeaknesses.map((w) => `- ${w}`).join('\n');
+        }
+        if (relevantSuggestions.length > 0) {
+          aiReviewText += `\n\nSuggestions\n` + relevantSuggestions.map((s) => `- ${s}`).join('\n');
+        }
+        feedbackParts.push(aiReviewText);
+      }
+    }
+
+    if (context.humanReviewFeedback) {
+      feedbackParts.push(
+        `Reviewer Feedback\n"${context.humanReviewFeedback}"`
+      );
+    }
+
+    // Wrap the iteration and feedback instructions
+    let refinementContext = `\n\n## Refinement Context\n${iterationText}`;
+    if (feedbackParts.length > 0) {
+      refinementContext += `\nPlease improve the document using the following feedback from the previous iteration:\n\n` +
+        feedbackParts.join('\n\n');
+    }
+
+    // Append refinement context to user prompt if we have feedback or iteration meta
+    userPrompt += refinementContext;
 
     return {
       systemPrompt: TECHNICAL_WRITER_SYSTEM_PROMPT,

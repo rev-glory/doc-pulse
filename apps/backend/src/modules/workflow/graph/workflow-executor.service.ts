@@ -15,7 +15,8 @@ import { WorkflowEventService } from '../../realtime/services/workflow-event.ser
 import { PrismaService } from '@/database';
 import { RunStatus as PrismaRunStatus, WorkflowStage as PrismaWorkflowStage } from '@/generated/prisma/enums';
 import { RepositoryCloneService } from '../../git-operations/services/repository-clone.service';
-import { WorkspaceService } from '../../git-operations/services/workspace.service';
+import { WorkspaceLifecycleService } from '../../git-operations/services/workspace-lifecycle.service';
+import { classifyWorkflowError, QueueErrorClassification } from '../../queue/types/queue-errors';
 
 @Injectable()
 export class WorkflowExecutorService implements OnModuleInit {
@@ -38,7 +39,7 @@ export class WorkflowExecutorService implements OnModuleInit {
     private readonly checkpointRepository: WorkflowCheckpointRepository,
     private readonly prisma: PrismaService,
     private readonly repositoryCloneService: RepositoryCloneService,
-    private readonly workspaceService: WorkspaceService,
+    private readonly workspaceLifecycleService: WorkspaceLifecycleService,
     @Optional() private readonly eventService?: WorkflowEventService,
   ) {}
 
@@ -92,8 +93,8 @@ export class WorkflowExecutorService implements OnModuleInit {
     }
 
     // 1. Re-clone if workspace directory is missing on disk
-    const workspacePath = this.workspaceService.getWorkspacePath(input.repositoryId);
-    if (!require('fs').existsSync(workspacePath)) {
+    const workspaceExists = await this.workspaceLifecycleService.workspaceExists(input.repositoryId);
+    if (!workspaceExists) {
       this.logger.log(`[${input.runId}] Local workspace directory missing. Re-cloning repository...`);
       const repoRecord = await this.prisma.repository.findUnique({
         where: { id: runRecord.repositoryId },
@@ -144,6 +145,16 @@ export class WorkflowExecutorService implements OnModuleInit {
 
     const hydratedState = this.hydrateStateFromSnapshot(input, snapshot);
 
+    let humanReviewFeedback: string | undefined = undefined;
+    if (activeReview && activeReview.comment) {
+      try {
+        const parsed = JSON.parse(activeReview.comment);
+        humanReviewFeedback = parsed.text || parsed.comment || activeReview.comment;
+      } catch {
+        humanReviewFeedback = activeReview.comment;
+      }
+    }
+
     return this.orchestrateGraphInvocation({
       input,
       expectedVersion: runRecord.version,
@@ -153,6 +164,7 @@ export class WorkflowExecutorService implements OnModuleInit {
       initialStateOverride: {
         ...hydratedState,
         humanReviewStatus: activeReview ? activeReview.status : undefined,
+        humanReviewFeedback,
       },
     });
   }
@@ -200,7 +212,7 @@ export class WorkflowExecutorService implements OnModuleInit {
   ): Partial<WorkflowGraphState> | undefined {
     if (!snapshot) return undefined;
 
-    const workspacePath = this.workspaceService.getWorkspacePath(input.repositoryId);
+    const workspacePath = this.workspaceLifecycleService.getWorkspacePath(input.repositoryId);
 
     return {
       runId: input.runId,
@@ -212,6 +224,8 @@ export class WorkflowExecutorService implements OnModuleInit {
       criticReview: (snapshot as any).criticReview ?? undefined,
       branchName: (snapshot as any).branchName ?? undefined,
       commitSha: (snapshot as any).commitSha ?? undefined,
+      humanReviewFeedback: (snapshot as any).humanReviewFeedback ?? undefined,
+      generationIteration: (snapshot as any).generationIteration ?? 1,
       metadata: { ...(snapshot.executionMetadata ?? {}), hydratedAt: new Date().toISOString() },
     };
   }
@@ -249,6 +263,7 @@ export class WorkflowExecutorService implements OnModuleInit {
       metadata: { ...(input.metadata ?? {}), startedAt: new Date().toISOString() },
     };
 
+    let isExecutionTerminal = false;
     try {
       const finalState = (await this.compiledGraph.invoke(baselineState as WorkflowGraphState)) as any;
       const durationMs = Date.now() - startTime;
@@ -306,6 +321,8 @@ export class WorkflowExecutorService implements OnModuleInit {
       await this.checkpointRepository.markRunCompleted(input.runId);
       this.eventService?.publishCompletionEvent(input.runId, input.repositoryId, input.runId, finalState.metadata);
 
+      isExecutionTerminal = true;
+
       return {
         ...finalState,
         executionStatus: WorkflowStatus.Completed,
@@ -317,6 +334,11 @@ export class WorkflowExecutorService implements OnModuleInit {
       } as unknown as DomainWorkflowState;
     } catch (error: unknown) {
       const durationMs = Date.now() - startTime;
+
+      const isPermanent = classifyWorkflowError(error) === QueueErrorClassification.PERMANENT;
+      if (isPermanent) {
+        isExecutionTerminal = true;
+      }
 
       if (error instanceof WorkflowNodeExecutionException) {
         this.logger.error(
@@ -345,6 +367,18 @@ export class WorkflowExecutorService implements OnModuleInit {
       throw cause;
     } finally {
       this.adapters.clearExecutionContext(input.runId);
+      if (isExecutionTerminal) {
+        try {
+          if (await this.workspaceLifecycleService.shouldCleanup(input.repositoryId)) {
+            await this.workspaceLifecycleService.deleteWorkspace(input.repositoryId);
+          }
+        } catch (cleanupError) {
+          this.logger.error(
+            `[${input.runId}] Failed to clean up workspace for repository [${input.repositoryId}] during terminal execution cleanup:`,
+            cleanupError,
+          );
+        }
+      }
     }
   }
 }

@@ -29,10 +29,12 @@ function compileDocumentationGraph(
       (state: WorkflowGraphState) => {
         const status = state.humanReviewStatus;
         if (status === 'APPROVED') return 'approve';
+        if (status === 'REJECTED') return 'reject';
         return 'wait';
       },
       {
         approve: WorkflowNodeName.GitCommit,
+        reject: WorkflowNodeName.TechnicalWriter,
         wait: END,
       },
     )

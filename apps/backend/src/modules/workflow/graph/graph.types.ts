@@ -47,6 +47,11 @@ export const WorkflowGraphAnnotation = Annotation.Root({
   generation: Annotation<Record<string, unknown> | undefined>(),
   review: Annotation<Record<string, unknown> | undefined>(),
   humanReviewStatus: Annotation<string | undefined>(),
+  humanReviewFeedback: Annotation<string | undefined>(),
+  generationIteration: Annotation<number>({
+    reducer: (curr, update) => update ?? curr,
+    default: () => 1,
+  }),
 
   // Orchestration lifecycle channels
   currentNode: Annotation<string>(),

@@ -8,6 +8,7 @@ import {
   RepositoryLockService,
   DocumentationWriterService,
   GitOperationsService,
+  WorkspaceLifecycleService,
 } from './services';
 
 @Module({
@@ -21,7 +22,8 @@ import {
     RepositoryLockService,
     DocumentationWriterService,
     GitOperationsService,
+    WorkspaceLifecycleService,
   ],
-  exports: [RepositoryCloneService, WorkspaceService, DocumentationWriterService, GitOperationsService],
+  exports: [RepositoryCloneService, WorkspaceService, DocumentationWriterService, GitOperationsService, WorkspaceLifecycleService],
 })
 export class GitOperationsModule {}

@@ -11,10 +11,17 @@ export class TechnicalWriterNode {
       throw new BadRequestException('Repository summary or documentation inventory missing in state');
     }
 
+    const currentIteration = state.generationIteration ?? 1;
+    const isRegeneration = state.humanReviewStatus === 'REJECTED';
+    const nextIteration = isRegeneration ? currentIteration + 1 : currentIteration;
+
     const generatedDocuments = await this.documentGenerationService.generateDocuments(state);
 
     return {
       generatedDocuments,
+      humanReviewStatus: undefined,
+      humanReviewFeedback: undefined,
+      generationIteration: nextIteration,
     };
   }
 }
