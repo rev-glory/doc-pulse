@@ -3,7 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 
 import { geminiConfig } from '@/config';
 import { LLM_PROVIDER } from './constants/ai.constants';
-import { GeminiProvider } from './providers/gemini.provider';
+import { GeminiProvider } from './providers/gemini/gemini.provider';
 import { LlmService } from './services/llm.service';
 
 // ---------------------------------------------------------------------------

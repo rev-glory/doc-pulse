@@ -1,5 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AIProviderException } from '../exceptions/ai-provider.exception';
+import { LlmException, isLlmException } from '../errors/llm-exception';
+import { LlmErrorCode } from '../errors/llm-error-code';
+import { LlmErrorClassifier } from '../errors/llm-error-classifier';
 import { DelayedRetryWorkflowError } from '../../queue/types/queue-errors';
 
 export interface RetryPolicyOptions {
@@ -51,9 +53,19 @@ export class RetryPolicyService {
           throw new Error(`[${operationName}] Operation aborted: execution cancelled.`);
         }
 
+        const isLlm = isLlmException(error);
+        const codeStr = isLlm ? error.code : 'UNKNOWN';
+        const retryableFlag = isLlm ? error.retryable : false;
+        const providerName = isLlm ? error.provider.provider : 'UnknownProvider';
+        const modelName = isLlm ? error.provider.model : 'UnknownModel';
+        const statusVal = isLlm ? error.providerStatus : undefined;
+        const opName = isLlm ? error.operation : operationName;
+
         if (attempt >= maxAttempts || !this.isRetryableError(error)) {
           this.logger.error(
-            `[${operationName}] Failed permanently on attempt ${attempt}/${maxAttempts}: ${error instanceof Error ? error.message : String(error)}`,
+            `[${operationName}] Failed permanently on attempt ${attempt}/${maxAttempts}. ` +
+            `Provider: ${providerName}, Model: ${modelName}, Code: ${codeStr}, Status: ${statusVal ?? 'none'}, Retryable: ${retryableFlag}, Operation: ${opName}. ` +
+            `Message: ${error instanceof Error ? error.message : String(error)}`
           );
           throw error;
         }
@@ -65,7 +77,6 @@ export class RetryPolicyService {
         if (extractedDelay !== null && extractedDelay > 0) {
           totalDelay = extractedDelay;
         } else if (isRateLimit) {
-          // Treat unparseable rate limit errors (429) with a much longer fallback delay (60s)
           totalDelay = 60000;
         } else {
           const backoffDelay = Math.min(baseDelayMs * Math.pow(2, attempt - 1), maxDelayMs);
@@ -75,17 +86,20 @@ export class RetryPolicyService {
 
         if (isRateLimit && totalDelay >= 5000) {
           this.logger.warn(
-            `[${operationName}] Rate limit HTTP 429 encountered with retryDelay=${Math.round(totalDelay)}ms. Delegating long retry to BullMQ.`,
+            `[${operationName}] Rate limit encountered (HTTP ${statusVal ?? 429}) with retryDelay=${Math.round(totalDelay)}ms. ` +
+            `Provider: ${providerName}, Model: ${modelName}. Delegating long retry to BullMQ.`,
           );
           throw new DelayedRetryWorkflowError(
-            'Rate limit exceeded (HTTP 429). Delegating retry to BullMQ.',
+            `Rate limit exceeded (Code: ${codeStr}). Delegating retry to BullMQ.`,
             Math.round(totalDelay),
-            { operationName, attempt, cause: error instanceof Error ? error.message : String(error) },
+            { operationName, attempt, provider: providerName, model: modelName, code: codeStr, status: statusVal },
           );
         }
 
         this.logger.warn(
-          `[${operationName}] Encountered retryable failure on attempt ${attempt}/${maxAttempts}. Retrying in ${Math.round(totalDelay)}ms... Cause: ${error instanceof Error ? error.message : String(error)}`,
+          `[${operationName}] Encountered retryable failure on attempt ${attempt}/${maxAttempts}. Retrying in ${Math.round(totalDelay)}ms... ` +
+          `Provider: ${providerName}, Model: ${modelName}, Code: ${codeStr}, Status: ${statusVal ?? 'none'}. ` +
+          `Cause: ${error instanceof Error ? error.message : String(error)}`,
         );
 
         await this.sleep(totalDelay, signal);
@@ -95,49 +109,11 @@ export class RetryPolicyService {
   }
 
   private isRetryableError(error: unknown): boolean {
-    const errorStr = error instanceof Error ? `${error.message} ${error.stack || ''}` : String(error);
-    const causeStr =
-      error instanceof AIProviderException && error.cause
-        ? `${error.cause instanceof Error ? error.cause.message : String(error.cause)}`
-        : '';
-
-    const combinedStr = `${errorStr} ${causeStr}`.toLowerCase();
-
-    // Check HTTP status codes or typical error substrings
-    if (
-      combinedStr.includes('429') ||
-      combinedStr.includes('resource_exhausted') ||
-      combinedStr.includes('quota') ||
-      combinedStr.includes('rate limit') ||
-      combinedStr.includes('500') ||
-      combinedStr.includes('502') ||
-      combinedStr.includes('503') ||
-      combinedStr.includes('504') ||
-      combinedStr.includes('overloaded') ||
-      combinedStr.includes('timeout') ||
-      combinedStr.includes('etimedout') ||
-      combinedStr.includes('econnreset') ||
-      combinedStr.includes('socket hang up')
-    ) {
-      return true;
-    }
-
-    return false;
+    return isLlmException(error) && error.retryable;
   }
 
   private isRateLimitError(error: unknown): boolean {
-    const errorStr = error instanceof Error ? `${error.message} ${error.stack || ''}` : String(error);
-    const causeStr =
-      error instanceof AIProviderException && error.cause
-        ? `${error.cause instanceof Error ? error.cause.message : String(error.cause)}`
-        : '';
-    const combinedStr = `${errorStr} ${causeStr}`.toLowerCase();
-    return (
-      combinedStr.includes('429') ||
-      combinedStr.includes('resource_exhausted') ||
-      combinedStr.includes('quota') ||
-      combinedStr.includes('rate limit')
-    );
+    return isLlmException(error) && error.code === LlmErrorCode.RATE_LIMITED;
   }
 
   private extractRetryDelayMs(error: unknown): number | null {
@@ -145,7 +121,7 @@ export class RetryPolicyService {
     let current: any = error;
     while (current) {
       queue.push(current);
-      current = current.cause ?? current.causeError ?? current.error;
+      current = current.originalCause ?? current.cause ?? current.causeError ?? current.error;
     }
 
     for (const item of queue) {

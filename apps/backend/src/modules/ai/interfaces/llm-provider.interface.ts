@@ -1,3 +1,4 @@
+import { LlmException } from '../errors/llm-exception';
 import type {
   GenerationOptions,
   LlmResponse,
@@ -26,7 +27,7 @@ export interface ILlmProvider {
    *
    * @param options - Generation parameters including the prompt text.
    * @returns Normalised LLM response containing the generated text and usage.
-   * @throws {AIProviderException} When the underlying SDK call fails.
+   * @throws {LlmException} When the underlying SDK call fails.
    */
   generateText(options: GenerationOptions): Promise<LlmResponse>;
 
@@ -39,7 +40,7 @@ export interface ILlmProvider {
    *
    * @param options - Generation parameters including the response schema.
    * @returns Normalised LLM response where `text` is a JSON string.
-   * @throws {AIProviderException} When the underlying SDK call fails.
+   * @throws {LlmException} When the underlying SDK call fails.
    */
   generateStructured(options: StructuredGenerationOptions): Promise<LlmResponse>;
 
@@ -52,7 +53,7 @@ export interface ILlmProvider {
    *
    * @param options - Generation parameters including the prompt text.
    * @returns Async generator yielding incremental response chunks.
-   * @throws {AIProviderException} When the underlying SDK call fails.
+   * @throws {LlmException} When the underlying SDK call fails.
    */
   streamText(options: StreamGenerationOptions): AsyncGenerator<LlmResponse>;
 }

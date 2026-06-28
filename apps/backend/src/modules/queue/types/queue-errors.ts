@@ -1,3 +1,5 @@
+import { isLlmException } from '../../ai/errors/llm-exception';
+
 export enum QueueErrorClassification {
   TRANSIENT = 'TRANSIENT',
   PERMANENT = 'PERMANENT',
@@ -50,6 +52,10 @@ function isAuthOrPermissionError(message: string): boolean {
  * Permanent failures bypass retry loops and are sent directly to DLQ.
  */
 export function classifyWorkflowError(error: unknown): QueueErrorClassification {
+  if (isLlmException(error)) {
+    return error.retryable ? QueueErrorClassification.TRANSIENT : QueueErrorClassification.PERMANENT;
+  }
+
   if (error && typeof error === 'object' && 'classification' in error) {
     if ((error as any).classification === QueueErrorClassification.PERMANENT) {
       return QueueErrorClassification.PERMANENT;
