@@ -1,4 +1,5 @@
 import { isLlmException } from '../../ai/errors/llm-exception';
+import { isGitException } from '../../git-operations/errors/git-exception';
 
 export enum QueueErrorClassification {
   TRANSIENT = 'TRANSIENT',
@@ -48,14 +49,51 @@ function isAuthOrPermissionError(message: string): boolean {
 }
 
 /**
- * Classifies unknown exceptions into Transient or Permanent failures.
- * Permanent failures bypass retry loops and are sent directly to DLQ.
+ * Recursively traverses the cause chain of an error, checking known cause property keys.
+ * Returns the first LlmException or GitException found anywhere in the chain, or null.
  */
-export function classifyWorkflowError(error: unknown): QueueErrorClassification {
-  if (isLlmException(error)) {
-    return error.retryable ? QueueErrorClassification.TRANSIENT : QueueErrorClassification.PERMANENT;
+function findDomainExceptionInCauseChain(
+  error: unknown,
+  visited = new Set<unknown>(),
+): { retryable: boolean } | null {
+  if (!error || typeof error !== 'object') return null;
+  if (visited.has(error)) return null;
+  visited.add(error);
+
+  // Check directly
+  if (isLlmException(error)) return { retryable: error.retryable };
+  if (isGitException(error)) return { retryable: error.retryable };
+
+  // Recurse into known cause properties
+  for (const key of ['cause', 'originalCause', 'inner']) {
+    const nested = (error as Record<string, unknown>)[key];
+    if (nested) {
+      const found = findDomainExceptionInCauseChain(nested, visited);
+      if (found) return found;
+    }
   }
 
+  return null;
+}
+
+/**
+ * Classifies unknown exceptions into Transient or Permanent failures.
+ * Permanent failures bypass retry loops and are sent directly to DLQ.
+ *
+ * Recursively unwraps cause chains so that a GitException or LlmException
+ * nested inside a domain wrapper (e.g. CloneFailedException -> GitException)
+ * still drives the classification decision.
+ */
+export function classifyWorkflowError(error: unknown): QueueErrorClassification {
+  // 1. Walk the full cause chain first — domain exceptions take priority
+  const domainException = findDomainExceptionInCauseChain(error);
+  if (domainException !== null) {
+    return domainException.retryable
+      ? QueueErrorClassification.TRANSIENT
+      : QueueErrorClassification.PERMANENT;
+  }
+
+  // 2. Explicit workflow classification marker
   if (error && typeof error === 'object' && 'classification' in error) {
     if ((error as any).classification === QueueErrorClassification.PERMANENT) {
       return QueueErrorClassification.PERMANENT;
@@ -65,7 +103,7 @@ export function classifyWorkflowError(error: unknown): QueueErrorClassification 
 
   const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
 
-  // Permanent failure signatures
+  // 3. Permanent failure signatures
   if (
     message.includes('not found') ||
     message.includes('cannot resume non-existent') ||
@@ -79,6 +117,6 @@ export function classifyWorkflowError(error: unknown): QueueErrorClassification 
     return QueueErrorClassification.PERMANENT;
   }
 
-  // Transient failure signatures (Redis timeouts, GitHub rate limits, Gemini timeout, network glitches, optimistic lock contention)
+  // 4. Default: treat as transient (Redis timeouts, network glitches, lock contention, etc.)
   return QueueErrorClassification.TRANSIENT;
 }

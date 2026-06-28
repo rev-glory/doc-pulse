@@ -48,7 +48,7 @@ export class RepositoryCloneService {
         this.logger.log(`Successfully cloned repository ${repository.id} (${duration}ms)`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        throw new CloneFailedException(repository.id, message);
+        throw new CloneFailedException(repository.id, message, error);
       }
     } finally {
       releaseLock();
@@ -73,7 +73,7 @@ export class RepositoryCloneService {
         this.logger.log(`Successfully pulled repository ${repository.id} (${duration}ms)`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        throw new PullFailedException(repository.id, message);
+        throw new PullFailedException(repository.id, message, error);
       }
     } finally {
       releaseLock();
@@ -98,7 +98,7 @@ export class RepositoryCloneService {
         this.logger.log(`Successfully checked out ${ref} for repository ${repository.id} (${duration}ms)`);
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);
-        throw new CheckoutFailedException(repository.id, ref, message);
+        throw new CheckoutFailedException(repository.id, ref, message, error);
       }
     } finally {
       releaseLock();

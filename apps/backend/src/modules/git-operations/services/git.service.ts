@@ -1,143 +1,92 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as path from 'path';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs/promises';
-import simpleGit, { SimpleGit, SimpleGitOptions } from 'simple-git';
 
-import type { StorageConfig } from '@/config';
+import { GIT_PROVIDER, IGitProvider } from '../interfaces/git-provider.interface';
+import { GitStatus } from '../types/git-types';
 
 @Injectable()
 export class GitService {
   private readonly logger = new Logger(GitService.name);
-  private readonly gitTimeoutMs: number;
 
-  constructor(private readonly configService: ConfigService) {
-    const storageConfig = this.configService.getOrThrow<StorageConfig>('storage');
-    this.gitTimeoutMs = storageConfig.gitTimeoutMs;
-  }
-
-  protected createGitClient(baseDir: string): SimpleGit {
-    const options: Partial<SimpleGitOptions> = {
-      baseDir,
-      binary: 'git',
-      maxConcurrentProcesses: 6,
-      timeout: {
-        block: this.gitTimeoutMs,
-      },
-    };
-    return simpleGit(options);
-  }
+  constructor(
+    @Inject(GIT_PROVIDER)
+    private readonly provider: IGitProvider,
+  ) {}
 
   async clone(repositoryUrl: string, destinationPath: string): Promise<void> {
-    const startTime = Date.now();
-    this.logger.debug(`Cloning repository from ${repositoryUrl} to ${destinationPath}`);
-    const git = this.createGitClient(path.dirname(destinationPath));
-    await git.clone(repositoryUrl, path.basename(destinationPath));
-    const duration = Date.now() - startTime;
-    this.logger.log(`Successfully cloned repository to ${destinationPath} (${duration}ms)`);
+    await this.provider.clone(repositoryUrl, destinationPath);
   }
 
   async fetch(repositoryPath: string): Promise<void> {
-    const startTime = Date.now();
-    this.logger.debug(`Fetching updates for repository at ${repositoryPath}`);
-    const git = this.createGitClient(repositoryPath);
-    await git.fetch();
-    const duration = Date.now() - startTime;
-    this.logger.debug(`Fetched updates for repository at ${repositoryPath} (${duration}ms)`);
+    await this.provider.fetch(repositoryPath);
   }
 
   async pull(repositoryPath: string): Promise<void> {
-    const startTime = Date.now();
-    this.logger.debug(`Pulling latest changes for repository at ${repositoryPath}`);
-    const git = this.createGitClient(repositoryPath);
-    await git.pull();
-    const duration = Date.now() - startTime;
-    this.logger.log(`Pulled latest changes for repository at ${repositoryPath} (${duration}ms)`);
+    await this.provider.pull(repositoryPath);
   }
 
   async checkout(repositoryPath: string, ref: string): Promise<void> {
-    const startTime = Date.now();
-    this.logger.debug(`Checking out ${ref} for repository at ${repositoryPath}`);
-    const git = this.createGitClient(repositoryPath);
-    await git.checkout(ref);
-    const duration = Date.now() - startTime;
-    this.logger.log(`Checked out ${ref} for repository at ${repositoryPath} (${duration}ms)`);
+    await this.provider.checkout(repositoryPath, ref);
   }
 
   async currentBranch(repositoryPath: string): Promise<string> {
-    const git = this.createGitClient(repositoryPath);
-    const branch = await git.branch();
-    return branch.current;
+    return this.provider.currentBranch(repositoryPath);
   }
 
   async currentCommit(repositoryPath: string): Promise<string> {
-    const git = this.createGitClient(repositoryPath);
-    return git.revparse('HEAD');
+    return this.provider.currentCommit(repositoryPath);
   }
 
   async resetHard(repositoryPath: string, ref?: string): Promise<void> {
-    const startTime = Date.now();
-    this.logger.debug(`Resetting repository at ${repositoryPath} hard to ${ref || 'HEAD'}`);
-    const git = this.createGitClient(repositoryPath);
-    await git.reset(['--hard', ref || 'HEAD']);
-    const duration = Date.now() - startTime;
-    this.logger.log(`Reset repository at ${repositoryPath} hard (${duration}ms)`);
+    await this.provider.resetHard(repositoryPath, ref);
   }
 
   async clean(repositoryPath: string): Promise<void> {
-    const startTime = Date.now();
-    this.logger.debug(`Cleaning untracked files in repository at ${repositoryPath}`);
-    const git = this.createGitClient(repositoryPath);
-    await git.clean('f', ['-d']);
-    const duration = Date.now() - startTime;
-    this.logger.log(`Cleaned untracked files in repository at ${repositoryPath} (${duration}ms)`);
+    await this.provider.clean(repositoryPath);
   }
 
-  async status(repositoryPath: string): Promise<ReturnType<SimpleGit['status']>> {
-    const git = this.createGitClient(repositoryPath);
-    return git.status();
+  async status(repositoryPath: string): Promise<GitStatus> {
+    return this.provider.status(repositoryPath);
   }
 
   async branchList(repositoryPath: string): Promise<string[]> {
-    const git = this.createGitClient(repositoryPath);
-    const summary = await git.branchLocal();
-    return summary.all;
-  }
-
-  async branchLocal(repositoryPath: string, branchName: string): Promise<void> {
-    const git = this.createGitClient(repositoryPath);
-    await git.branch([branchName]);
+    return this.provider.branchList(repositoryPath);
   }
 
   async checkoutLocalBranch(repositoryPath: string, branchName: string): Promise<void> {
-    const git = this.createGitClient(repositoryPath);
-    await git.checkoutLocalBranch(branchName);
+    await this.provider.checkoutLocalBranch(repositoryPath, branchName);
   }
 
   async deleteLocalBranch(repositoryPath: string, branchName: string, force = false): Promise<void> {
-    const git = this.createGitClient(repositoryPath);
-    await git.deleteLocalBranch(branchName, force);
+    await this.provider.deleteLocalBranch(repositoryPath, branchName, force);
   }
 
   async add(repositoryPath: string, files: string | string[]): Promise<void> {
-    const git = this.createGitClient(repositoryPath);
-    await git.add(files);
+    await this.provider.add(repositoryPath, files);
   }
 
   async commit(repositoryPath: string, message: string): Promise<string> {
-    const git = this.createGitClient(repositoryPath);
-    const result = await git.commit(message);
-    return result.commit || '';
+    return this.provider.commit(repositoryPath, message);
   }
 
   async push(repositoryPath: string, remote: string, branch: string, options: string[] = []): Promise<void> {
-    const git = this.createGitClient(repositoryPath);
-    await git.push(remote, branch, options);
+    await this.provider.push(repositoryPath, remote, branch, options);
   }
 
   async diff(repositoryPath: string, options: string[] = []): Promise<string> {
-    const git = this.createGitClient(repositoryPath);
-    return git.diff(options);
+    return this.provider.diff(repositoryPath, options);
+  }
+
+  async getRepositoryRoot(repositoryPath: string): Promise<string> {
+    return this.provider.getRepositoryRoot(repositoryPath);
+  }
+
+  async getRemoteUrl(repositoryPath: string, remoteName: string): Promise<string> {
+    return this.provider.getRemoteUrl(repositoryPath, remoteName);
+  }
+
+  async setRemoteUrl(repositoryPath: string, remoteName: string, url: string): Promise<void> {
+    await this.provider.setRemoteUrl(repositoryPath, remoteName, url);
   }
 
   async delete(repositoryPath: string): Promise<void> {

@@ -106,7 +106,10 @@ describe('Human Review, Checkpoint & PR Persistence Unit Tests', () => {
 
   describe('Git Safety Checks inside GitOperationsService', () => {
     it('should throw error when target branch is a protected branch name', async () => {
-      const mockGitService = {} as any;
+      const mockGitService = {
+        getRepositoryRoot: async () => '/repo',
+        getRemoteUrl: async () => 'https://github.com/org/repo.git',
+      } as any;
       const service = new GitOperationsService(mockGitService);
 
       await assert.rejects(
@@ -124,6 +127,8 @@ describe('Human Review, Checkpoint & PR Persistence Unit Tests', () => {
           not_added: [],
           staged: [],
         }),
+        getRepositoryRoot: async () => '/repo',
+        getRemoteUrl: async () => 'https://github.com/org/repo.git',
       } as any;
       const service = new GitOperationsService(mockGitService);
 
@@ -142,6 +147,8 @@ describe('Human Review, Checkpoint & PR Persistence Unit Tests', () => {
           not_added: [],
           staged: [],
         }),
+        getRepositoryRoot: async () => '/repo',
+        getRemoteUrl: async () => 'https://github.com/org/repo.git',
       } as any;
       const service = new GitOperationsService(mockGitService);
 
@@ -160,6 +167,8 @@ describe('Human Review, Checkpoint & PR Persistence Unit Tests', () => {
           not_added: [],
           staged: [],
         }),
+        getRepositoryRoot: async () => '/repo',
+        getRemoteUrl: async () => 'https://github.com/org/repo.git',
       } as any;
       const service = new GitOperationsService(mockGitService);
 

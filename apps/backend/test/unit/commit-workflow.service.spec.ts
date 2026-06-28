@@ -11,6 +11,8 @@ describe('Commit 6 – Git Operations & Pull Request Automation Unit Tests', () 
     it('should generate sanitized branch name and handle fallback on collision', async () => {
       const mockGitService = {
         branchList: async () => ['docpulse/docs-update/run-123'],
+        getRepositoryRoot: async () => '/repo',
+        getRemoteUrl: async () => 'https://github.com/org/repo.git',
       } as any;
 
       const service = new GitOperationsService(mockGitService);
@@ -24,8 +26,10 @@ describe('Commit 6 – Git Operations & Pull Request Automation Unit Tests', () 
       const mockGitService = {
         branchList: async () => [],
         checkoutLocalBranch: async () => {},
-        status: async () => ({ modified: [], not_added: [], created: [], staged: [] }),
+        status: async () => ({ modified: [], not_added: [], created: [], staged: [], conflicted: [] }),
         currentCommit: async () => 'sha-baseline',
+        getRepositoryRoot: async () => '/repo',
+        getRemoteUrl: async () => 'https://github.com/org/repo.git',
       } as any;
 
       const service = new GitOperationsService(mockGitService);
@@ -41,11 +45,16 @@ describe('Commit 6 – Git Operations & Pull Request Automation Unit Tests', () 
       const mockGitService = {
         branchList: async () => [],
         checkoutLocalBranch: async () => {},
-        status: async () => ({ modified: ['file.md'], not_added: [], created: [], staged: ['file.md'] }),
+        status: async () => ({ modified: ['file.md'], not_added: [], created: [], staged: ['file.md'], conflicted: [] }),
         add: async () => {},
         commit: async () => { throw new Error('commit error'); },
         resetHard: async () => { rolledBack = true; },
         clean: async () => {},
+        currentBranch: async () => 'docpulse/docs-update/run-fail',
+        checkout: async () => {},
+        deleteLocalBranch: async () => {},
+        getRepositoryRoot: async () => '/repo',
+        getRemoteUrl: async () => 'https://github.com/org/repo.git',
       } as any;
 
       const service = new GitOperationsService(mockGitService);

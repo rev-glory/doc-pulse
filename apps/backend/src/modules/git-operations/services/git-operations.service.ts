@@ -2,6 +2,7 @@ import { Injectable, Logger, Inject, forwardRef, Optional } from '@nestjs/common
 import { GitService } from './git.service';
 import * as path from 'path';
 import { GitHubAuthService } from '@/modules/github/services/github-auth.service';
+import { isGitException } from '../errors/git-exception';
 
 export interface CommitResult {
   branchName: string;
@@ -40,19 +41,18 @@ export class GitOperationsService {
 
   private async logGitDiagnostics(repositoryPath: string, branchName: string): Promise<void> {
     try {
-      const git = (this.gitService as any).createGitClient(repositoryPath);
       const cwd = process.cwd();
       let gitRoot = 'unknown';
       try {
-        gitRoot = await git.revparse(['--show-toplevel']);
+        gitRoot = await this.gitService.getRepositoryRoot(repositoryPath);
       } catch (e) {
         gitRoot = `Error: ${(e as Error).message}`;
       }
-      
+
       let owner = 'unknown';
       let repo = 'unknown';
       try {
-        const remoteUrl = await git.remote(['get-url', 'origin']) as string;
+        const remoteUrl = await this.gitService.getRemoteUrl(repositoryPath, 'origin');
         if (remoteUrl) {
           const match = remoteUrl.trim().match(/github\.com[/:]([^/]+)\/([^.]+)/);
           if (match) {
@@ -164,7 +164,17 @@ Git root:             ${gitRoot}
         emptyCommit: false,
       };
     } catch (error) {
-      this.logger.error(`Git commit flow failed for run [${runId}]. Initiating rollback...`, (error as Error).stack);
+      const isGit = isGitException(error);
+      const codeStr = isGit ? error.code : 'UNKNOWN';
+      const retryableFlag = isGit ? error.retryable : false;
+      const providerName = isGit ? error.provider.provider : 'UnknownProvider';
+      const opName = isGit ? error.operation : 'commitChanges';
+
+      this.logger.error(
+        `Git commit flow failed for run [${runId}]. Initiating rollback... ` +
+        `Provider: ${providerName}, Operation: ${opName}, Code: ${codeStr}, Retryable: ${retryableFlag}. ` +
+        `Error: ${error instanceof Error ? error.message : String(error)}`
+      );
       await this.rollback(repositoryPath, branchName);
       throw error;
     }
@@ -178,12 +188,10 @@ Git root:             ${gitRoot}
     await this.logGitDiagnostics(repositoryPath, branchName);
     this.logger.debug(`Pushing branch [${branchName}] to remote origin...`);
 
-    const git = (this.gitService as any).createGitClient(repositoryPath);
-
     // 1. Get current origin remote URL
     let originalRemoteUrl: string | undefined;
     try {
-      originalRemoteUrl = await git.remote(['get-url', 'origin']) as string;
+      originalRemoteUrl = await this.gitService.getRemoteUrl(repositoryPath, 'origin');
       if (originalRemoteUrl) {
         originalRemoteUrl = originalRemoteUrl.trim();
       }
@@ -233,7 +241,7 @@ Git root:             ${gitRoot}
 
       if (authenticatedUrl) {
         this.logger.debug(`Temporarily setting origin URL to authenticated URL.`);
-        await git.remote(['set-url', 'origin', authenticatedUrl]);
+        await this.gitService.setRemoteUrl(repositoryPath, 'origin', authenticatedUrl);
       }
 
       await this.gitService.push(repositoryPath, 'origin', branchName, ['-u']);
@@ -244,54 +252,25 @@ Git root:             ${gitRoot}
         durationMs,
       });
     } catch (error) {
-      let finalError: Error;
-      if (token) {
-        // Construct regex to mask any token in string representations
-        const tokenRegex = new RegExp(token.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g');
-        const originalMessage = error instanceof Error ? error.message : String(error);
-        const safeMessage = originalMessage.replace(tokenRegex, '***TOKEN***');
-        const safeStack = error instanceof Error && error.stack ? error.stack.replace(tokenRegex, '***TOKEN***') : undefined;
+      const isGit = isGitException(error);
+      const codeStr = isGit ? error.code : 'UNKNOWN';
+      const retryableFlag = isGit ? error.retryable : false;
+      const providerName = isGit ? error.provider.provider : 'UnknownProvider';
+      const opName = isGit ? error.operation : 'pushBranch';
 
-        finalError = new Error(safeMessage);
-        if (safeStack) {
-          finalError.stack = safeStack;
-        }
-
-        // Mask custom properties (enumerable and non-enumerable)
-        if (error && typeof error === 'object') {
-          const propNames = Object.getOwnPropertyNames(error);
-          for (const key of propNames) {
-            if (key === 'message' || key === 'stack') continue;
-            try {
-              const val = (error as any)[key];
-              if (typeof val === 'string') {
-                (finalError as any)[key] = val.replace(tokenRegex, '***TOKEN***');
-              } else if (val instanceof Buffer) {
-                const sanitizedStr = val.toString('utf8').replace(tokenRegex, '***TOKEN***');
-                (finalError as any)[key] = Buffer.from(sanitizedStr, 'utf8');
-              } else if (val && typeof val === 'object') {
-                (finalError as any)[key] = JSON.parse(JSON.stringify(val).replace(tokenRegex, '***TOKEN***'));
-              } else {
-                (finalError as any)[key] = val;
-              }
-            } catch (propErr) {
-              // Ignore property assignment issues
-            }
-          }
-        }
-      } else {
-        finalError = error instanceof Error ? error : new Error(String(error));
-      }
-
-      this.logger.error(`Push rejected for branch [${branchName}]. Initiating rollback...`, finalError.stack || finalError.message);
+      this.logger.error(
+        `Push rejected for branch [${branchName}]. Initiating rollback... ` +
+        `Provider: ${providerName}, Operation: ${opName}, Code: ${codeStr}, Retryable: ${retryableFlag}. ` +
+        `Error: ${error instanceof Error ? error.message : String(error)}`
+      );
       await this.rollback(repositoryPath, branchName);
-      throw finalError;
+      throw error;
     } finally {
       if (authenticatedUrl) {
         // Restore the original remote URL
         try {
           this.logger.debug(`Restoring original origin URL.`);
-          await git.remote(['set-url', 'origin', originalRemoteUrl]);
+          await this.gitService.setRemoteUrl(repositoryPath, 'origin', originalRemoteUrl);
         } catch (restoreErr) {
           this.logger.error(`Failed to restore original remote URL for [${repositoryPath}]: ${(restoreErr as Error).message}`);
         }
