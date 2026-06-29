@@ -211,6 +211,19 @@ export default function RunLiveExecutionPage(): React.JSX.Element {
                   </Link>
                 </div>
               )}
+
+              {data.pullRequestUrl && data.gitOperationStatus !== 'NoPullRequestRequired' && (
+                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-850">
+                  <a
+                    href={data.pullRequestUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full text-center block px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition-all"
+                  >
+                    🚀 View Pull Request
+                  </a>
+                </div>
+              )}
             </div>
           </SectionCard>
 

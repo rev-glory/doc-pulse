@@ -103,6 +103,8 @@ model WorkflowRun {
   commitSha         String         @map("commit_sha")
   branch            String
   targetBranch      String?        @map("target_branch")
+  pullRequestUrl    String?        @map("pull_request_url")
+  gitOperationStatus String?       @map("git_operation_status")
   commitMessage     String?        @map("commit_message")
   startedAt         DateTime?      @map("started_at")
   completedAt       DateTime?      @map("completed_at")

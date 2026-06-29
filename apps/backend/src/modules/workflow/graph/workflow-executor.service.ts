@@ -228,6 +228,8 @@ export class WorkflowExecutorService implements OnModuleInit {
       humanReviewFeedback: (snapshot as any).humanReviewFeedback ?? undefined,
       generationIteration: (snapshot as any).generationIteration ?? 1,
       sourceCodeAnalysis: (snapshot as any).sourceCodeAnalysis ?? undefined,
+      pullRequestUrl: snapshot.pullRequestUrl ?? undefined,
+      gitOperationStatus: (snapshot.gitOperationStatus as any) ?? undefined,
       metadata: { ...(snapshot.executionMetadata ?? {}), hydratedAt: new Date().toISOString() },
     };
   }

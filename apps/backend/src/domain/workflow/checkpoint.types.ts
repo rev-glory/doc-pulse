@@ -69,6 +69,8 @@ export interface WorkflowCheckpointSnapshot {
   generatedDocumentReferences?: GeneratedDocumentReference[];
   criticReviewReference?: CriticReviewReference;
   pullRequestReference?: { url: string; number: number };
+  pullRequestUrl?: string;
+  gitOperationStatus?: string;
   executionMetadata: Record<string, unknown>;
   lastUpdatedTimestamp: string;
 }

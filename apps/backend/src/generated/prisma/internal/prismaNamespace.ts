@@ -1111,6 +1111,8 @@ export const WorkflowRunScalarFieldEnum = {
   commitSha: 'commitSha',
   branch: 'branch',
   targetBranch: 'targetBranch',
+  pullRequestUrl: 'pullRequestUrl',
+  gitOperationStatus: 'gitOperationStatus',
   commitMessage: 'commitMessage',
   startedAt: 'startedAt',
   completedAt: 'completedAt',

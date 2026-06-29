@@ -150,6 +150,8 @@ export class WorkflowCheckpointRepository {
       const nextVersion = expectedVersion + 1;
       const now = new Date();
       const targetBranch = (snapshot as any)?.targetBranch ?? null;
+      const pullRequestUrl = snapshot.pullRequestUrl ?? null;
+      const gitOperationStatus = snapshot.gitOperationStatus ?? null;
 
       await tx.workflowRun.update({
         where: { id: runId },
@@ -165,6 +167,8 @@ export class WorkflowCheckpointRepository {
           executionMetadata: JSON.parse(JSON.stringify(mergedMetadata)) as any,
           updatedAt: now,
           targetBranch,
+          pullRequestUrl,
+          gitOperationStatus,
           ...(status === 'COMPLETED' ? { completedAt: now } : {}),
         },
       });

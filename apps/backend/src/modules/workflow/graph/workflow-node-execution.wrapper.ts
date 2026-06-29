@@ -207,6 +207,8 @@ export class WorkflowNodeExecutionWrapper {
       generatedDocumentReferences: generatedRefs,
       criticReviewReference: criticRef,
       pullRequestReference: state.pullRequest ? { url: state.pullRequest.url, number: state.pullRequest.number } : undefined,
+      pullRequestUrl: state.pullRequestUrl ?? undefined,
+      gitOperationStatus: state.gitOperationStatus ?? undefined,
       executionMetadata: state.metadata ?? {},
       lastUpdatedTimestamp: new Date().toISOString(),
       // Complete state details persisted for recovery:

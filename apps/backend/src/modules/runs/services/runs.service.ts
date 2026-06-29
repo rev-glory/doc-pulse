@@ -44,6 +44,8 @@ export class RunsService {
       repositoryOwner: r.repository.repositoryOwner,
       errorMessage: r.errorMessage,
       completedNodes: (r.checkpointSnapshot as any)?.completedNodes || [],
+      pullRequestUrl: r.pullRequestUrl ?? undefined,
+      gitOperationStatus: r.gitOperationStatus ?? undefined,
     }));
   }
 
@@ -91,6 +93,8 @@ export class RunsService {
       generatedDocuments,
       criticReview,
       completedNodes,
+      pullRequestUrl: run.pullRequestUrl ?? undefined,
+      gitOperationStatus: run.gitOperationStatus ?? undefined,
     };
   }
 }

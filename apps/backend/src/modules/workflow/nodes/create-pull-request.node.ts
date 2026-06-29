@@ -21,6 +21,7 @@ export class CreatePullRequestNode {
       this.logger.log(`[${runId}] Bypassing Pull Request creation because branch strategy is CURRENT_BRANCH.`);
       return {
         gitOperationStatus: GitOperationStatus.NoPullRequestRequired,
+        pullRequestUrl: undefined,
       };
     }
 

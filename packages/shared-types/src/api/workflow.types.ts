@@ -31,4 +31,6 @@ export interface WorkflowRunSummary {
   generatedDocuments?: GeneratedDocument[];
   criticReview?: CriticReview | null;
   completedNodes?: string[];
+  pullRequestUrl?: string;
+  gitOperationStatus?: string;
 }
