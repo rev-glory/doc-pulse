@@ -223,4 +223,30 @@ export class SimpleGitProvider implements IGitProvider {
       throw this.wrapError('setRemoteUrl', error, repositoryPath);
     }
   }
+
+  async getModifiedFiles(repositoryPath: string, commitSha: string): Promise<string[]> {
+    try {
+      const git = this.createGitClient(repositoryPath);
+      const res = await git.show(['--name-only', '--pretty=format:', commitSha]);
+      if (typeof res === 'string') {
+        return res
+          .split('\n')
+          .map((l) => l.trim())
+          .filter((l) => l.length > 0);
+      }
+      return [];
+    } catch (error) {
+      throw this.wrapError('getModifiedFiles', error, repositoryPath);
+    }
+  }
+
+  async getCommitMessage(repositoryPath: string, commitSha: string): Promise<string> {
+    try {
+      const git = this.createGitClient(repositoryPath);
+      const res = await git.show(['--format=%B', '-s', commitSha]);
+      return typeof res === 'string' ? res.trim() : '';
+    } catch (error) {
+      throw this.wrapError('getCommitMessage', error, repositoryPath);
+    }
+  }
 }

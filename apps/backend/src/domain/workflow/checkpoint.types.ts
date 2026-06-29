@@ -5,6 +5,7 @@ import { RepositorySummary } from '../repository/repository-summary';
  * Used across orchestration, graph compilation, checkpoint snapshots, and retry tracking.
  */
 export enum WorkflowNodeName {
+  EarlySkip = 'EarlySkip',
   RepositoryAnalyzer = 'RepositoryAnalyzer',
   DocumentationLocator = 'DocumentationLocator',
   CodebaseAnalyzer = 'CodebaseAnalyzer',
@@ -22,6 +23,7 @@ export enum WorkflowNodeName {
  */
 export enum WorkflowStage {
   CLONING = 'CLONING',
+  EARLY_SKIP = 'EARLY_SKIP',
   ANALYZING = 'ANALYZING',
   SOURCE_CODE_ANALYSIS = 'SOURCE_CODE_ANALYSIS',
   LOCATING_DOCUMENTATION = 'LOCATING_DOCUMENTATION',
@@ -71,6 +73,10 @@ export interface WorkflowCheckpointSnapshot {
   pullRequestReference?: { url: string; number: number };
   pullRequestUrl?: string;
   gitOperationStatus?: string;
+  changedFiles?: string[];
+  commitMessage?: string;
+  shouldSkip?: boolean;
+  skipReason?: string;
   executionMetadata: Record<string, unknown>;
   lastUpdatedTimestamp: string;
 }

@@ -33,6 +33,10 @@ export const WorkflowStatusBadge: React.FC<WorkflowStatusBadgeProps> = ({ status
       label = 'Review Pending';
       color = '#8b5cf6';
       break;
+    case 'skipped':
+      label = 'Skipped';
+      color = '#f97316';
+      break;
     default:
       label = 'Pending';
       color = 'gray';

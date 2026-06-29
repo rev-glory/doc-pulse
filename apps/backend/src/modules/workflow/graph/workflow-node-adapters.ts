@@ -1,5 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { RepositoryAnalyzerNode } from '../nodes/repository-analyzer.node';
+import { EarlySkipNode } from '../nodes/early-skip.node';
 import { DocumentationLocatorNode } from '../nodes/documentation-locator.node';
 import { CodebaseAnalyzerNode } from '../nodes/codebase-analyzer.node';
 import { TechnicalWriterNode } from '../nodes/technical-writer.node';
@@ -35,6 +36,7 @@ export class WorkflowNodeAdapters {
   private readonly activeContexts = new Map<string, ActiveRunOrchestrationContext>();
 
   private readonly sequentialOrder: WorkflowNodeName[] = [
+    WorkflowNodeName.EarlySkip,
     WorkflowNodeName.RepositoryAnalyzer,
     WorkflowNodeName.DocumentationLocator,
     WorkflowNodeName.CodebaseAnalyzer,
@@ -47,6 +49,7 @@ export class WorkflowNodeAdapters {
 
   constructor(
     private readonly repositoryAnalyzer: RepositoryAnalyzerNode,
+    private readonly earlySkip: EarlySkipNode,
     private readonly documentationLocator: DocumentationLocatorNode,
     private readonly codebaseAnalyzer: CodebaseAnalyzerNode,
     private readonly technicalWriter: TechnicalWriterNode,
@@ -91,6 +94,19 @@ export class WorkflowNodeAdapters {
       throw new Error(`Orchestration context missing for run [${runId}]`);
     }
     return ctx;
+  }
+
+  public async earlySkipStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {
+    const nodeName = WorkflowNodeName.EarlySkip;
+    if (this.shouldSkip(state.runId, nodeName, state)) {
+      this.logger.debug(`[${state.runId}] Skipping node [${nodeName}] (recovery mode)`);
+      return { currentNode: nodeName, executionStatus: WorkflowStatus.Running };
+    }
+
+    const ctx = this.getOrchestrationContext(state.runId);
+    return this.wrapper.executeNode(nodeName, WorkflowStage.EARLY_SKIP, state, ctx, async (st) =>
+      this.earlySkip.invoke(st as any),
+    );
   }
 
   public async repositoryAnalyzerStep(state: WorkflowGraphState): Promise<WorkflowGraphUpdate> {

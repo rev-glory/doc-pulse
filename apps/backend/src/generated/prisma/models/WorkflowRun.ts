@@ -48,6 +48,8 @@ export type WorkflowRunMinAggregateOutputType = {
   pullRequestUrl: string | null
   gitOperationStatus: string | null
   commitMessage: string | null
+  skipReason: string | null
+  completionReason: string | null
   startedAt: Date | null
   completedAt: Date | null
   errorMessage: string | null
@@ -72,6 +74,8 @@ export type WorkflowRunMaxAggregateOutputType = {
   pullRequestUrl: string | null
   gitOperationStatus: string | null
   commitMessage: string | null
+  skipReason: string | null
+  completionReason: string | null
   startedAt: Date | null
   completedAt: Date | null
   errorMessage: string | null
@@ -96,6 +100,8 @@ export type WorkflowRunCountAggregateOutputType = {
   pullRequestUrl: number
   gitOperationStatus: number
   commitMessage: number
+  skipReason: number
+  completionReason: number
   startedAt: number
   completedAt: number
   errorMessage: number
@@ -134,6 +140,8 @@ export type WorkflowRunMinAggregateInputType = {
   pullRequestUrl?: true
   gitOperationStatus?: true
   commitMessage?: true
+  skipReason?: true
+  completionReason?: true
   startedAt?: true
   completedAt?: true
   errorMessage?: true
@@ -158,6 +166,8 @@ export type WorkflowRunMaxAggregateInputType = {
   pullRequestUrl?: true
   gitOperationStatus?: true
   commitMessage?: true
+  skipReason?: true
+  completionReason?: true
   startedAt?: true
   completedAt?: true
   errorMessage?: true
@@ -182,6 +192,8 @@ export type WorkflowRunCountAggregateInputType = {
   pullRequestUrl?: true
   gitOperationStatus?: true
   commitMessage?: true
+  skipReason?: true
+  completionReason?: true
   startedAt?: true
   completedAt?: true
   errorMessage?: true
@@ -297,6 +309,8 @@ export type WorkflowRunGroupByOutputType = {
   pullRequestUrl: string | null
   gitOperationStatus: string | null
   commitMessage: string | null
+  skipReason: string | null
+  completionReason: string | null
   startedAt: Date | null
   completedAt: Date | null
   errorMessage: string | null
@@ -348,6 +362,8 @@ export type WorkflowRunWhereInput = {
   pullRequestUrl?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   gitOperationStatus?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   commitMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  skipReason?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  completionReason?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
   errorMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
@@ -382,6 +398,8 @@ export type WorkflowRunOrderByWithRelationInput = {
   pullRequestUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   gitOperationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   commitMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  skipReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  completionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -419,6 +437,8 @@ export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
   pullRequestUrl?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   gitOperationStatus?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   commitMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  skipReason?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  completionReason?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
   errorMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
@@ -453,6 +473,8 @@ export type WorkflowRunOrderByWithAggregationInput = {
   pullRequestUrl?: Prisma.SortOrderInput | Prisma.SortOrder
   gitOperationStatus?: Prisma.SortOrderInput | Prisma.SortOrder
   commitMessage?: Prisma.SortOrderInput | Prisma.SortOrder
+  skipReason?: Prisma.SortOrderInput | Prisma.SortOrder
+  completionReason?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   errorMessage?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -489,6 +511,8 @@ export type WorkflowRunScalarWhereWithAggregatesInput = {
   pullRequestUrl?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
   gitOperationStatus?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
   commitMessage?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
+  skipReason?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
+  completionReason?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"WorkflowRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"WorkflowRun"> | Date | string | null
   errorMessage?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
@@ -517,6 +541,8 @@ export type WorkflowRunCreateInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -548,6 +574,8 @@ export type WorkflowRunUncheckedCreateInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -579,6 +607,8 @@ export type WorkflowRunUpdateInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -610,6 +640,8 @@ export type WorkflowRunUncheckedUpdateInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -641,6 +673,8 @@ export type WorkflowRunCreateManyInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -669,6 +703,8 @@ export type WorkflowRunUpdateManyMutationInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -694,6 +730,8 @@ export type WorkflowRunUncheckedUpdateManyInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -732,6 +770,8 @@ export type WorkflowRunCountOrderByAggregateInput = {
   pullRequestUrl?: Prisma.SortOrder
   gitOperationStatus?: Prisma.SortOrder
   commitMessage?: Prisma.SortOrder
+  skipReason?: Prisma.SortOrder
+  completionReason?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
@@ -764,6 +804,8 @@ export type WorkflowRunMaxOrderByAggregateInput = {
   pullRequestUrl?: Prisma.SortOrder
   gitOperationStatus?: Prisma.SortOrder
   commitMessage?: Prisma.SortOrder
+  skipReason?: Prisma.SortOrder
+  completionReason?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
@@ -788,6 +830,8 @@ export type WorkflowRunMinOrderByAggregateInput = {
   pullRequestUrl?: Prisma.SortOrder
   gitOperationStatus?: Prisma.SortOrder
   commitMessage?: Prisma.SortOrder
+  skipReason?: Prisma.SortOrder
+  completionReason?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
   errorMessage?: Prisma.SortOrder
@@ -1004,6 +1048,8 @@ export type WorkflowRunCreateWithoutTriggeredByInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1034,6 +1080,8 @@ export type WorkflowRunUncheckedCreateWithoutTriggeredByInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1093,6 +1141,8 @@ export type WorkflowRunScalarWhereInput = {
   pullRequestUrl?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   gitOperationStatus?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   commitMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  skipReason?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
+  completionReason?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
   errorMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
@@ -1121,6 +1171,8 @@ export type WorkflowRunCreateWithoutRepositoryInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1151,6 +1203,8 @@ export type WorkflowRunUncheckedCreateWithoutRepositoryInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1207,6 +1261,8 @@ export type WorkflowRunCreateWithoutReviewsInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1237,6 +1293,8 @@ export type WorkflowRunUncheckedCreateWithoutReviewsInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1272,6 +1330,8 @@ export type WorkflowRunCreateWithoutCurrentReviewInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1302,6 +1362,8 @@ export type WorkflowRunUncheckedCreateWithoutCurrentReviewInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1353,6 +1415,8 @@ export type WorkflowRunUpdateWithoutReviewsInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1383,6 +1447,8 @@ export type WorkflowRunUncheckedUpdateWithoutReviewsInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1429,6 +1495,8 @@ export type WorkflowRunCreateWithoutPullRequestInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1459,6 +1527,8 @@ export type WorkflowRunUncheckedCreateWithoutPullRequestInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1505,6 +1575,8 @@ export type WorkflowRunUpdateWithoutPullRequestInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1535,6 +1607,8 @@ export type WorkflowRunUncheckedUpdateWithoutPullRequestInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1565,6 +1639,8 @@ export type WorkflowRunCreateWithoutNotificationsInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1595,6 +1671,8 @@ export type WorkflowRunUncheckedCreateWithoutNotificationsInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1641,6 +1719,8 @@ export type WorkflowRunUpdateWithoutNotificationsInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1671,6 +1751,8 @@ export type WorkflowRunUncheckedUpdateWithoutNotificationsInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1701,6 +1783,8 @@ export type WorkflowRunCreateManyTriggeredByInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1728,6 +1812,8 @@ export type WorkflowRunUpdateWithoutTriggeredByInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1758,6 +1844,8 @@ export type WorkflowRunUncheckedUpdateWithoutTriggeredByInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1788,6 +1876,8 @@ export type WorkflowRunUncheckedUpdateManyWithoutTriggeredByInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1815,6 +1905,8 @@ export type WorkflowRunCreateManyRepositoryInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1842,6 +1934,8 @@ export type WorkflowRunUpdateWithoutRepositoryInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1872,6 +1966,8 @@ export type WorkflowRunUncheckedUpdateWithoutRepositoryInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1902,6 +1998,8 @@ export type WorkflowRunUncheckedUpdateManyWithoutRepositoryInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1929,6 +2027,8 @@ export type WorkflowRunCreateManyCurrentReviewInput = {
   pullRequestUrl?: string | null
   gitOperationStatus?: string | null
   commitMessage?: string | null
+  skipReason?: string | null
+  completionReason?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
   errorMessage?: string | null
@@ -1956,6 +2056,8 @@ export type WorkflowRunUpdateWithoutCurrentReviewInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1986,6 +2088,8 @@ export type WorkflowRunUncheckedUpdateWithoutCurrentReviewInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2016,6 +2120,8 @@ export type WorkflowRunUncheckedUpdateManyWithoutCurrentReviewInput = {
   pullRequestUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   gitOperationStatus?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  skipReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  completionReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -2083,6 +2189,8 @@ export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   pullRequestUrl?: boolean
   gitOperationStatus?: boolean
   commitMessage?: boolean
+  skipReason?: boolean
+  completionReason?: boolean
   startedAt?: boolean
   completedAt?: boolean
   errorMessage?: boolean
@@ -2118,6 +2226,8 @@ export type WorkflowRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   pullRequestUrl?: boolean
   gitOperationStatus?: boolean
   commitMessage?: boolean
+  skipReason?: boolean
+  completionReason?: boolean
   startedAt?: boolean
   completedAt?: boolean
   errorMessage?: boolean
@@ -2149,6 +2259,8 @@ export type WorkflowRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   pullRequestUrl?: boolean
   gitOperationStatus?: boolean
   commitMessage?: boolean
+  skipReason?: boolean
+  completionReason?: boolean
   startedAt?: boolean
   completedAt?: boolean
   errorMessage?: boolean
@@ -2180,6 +2292,8 @@ export type WorkflowRunSelectScalar = {
   pullRequestUrl?: boolean
   gitOperationStatus?: boolean
   commitMessage?: boolean
+  skipReason?: boolean
+  completionReason?: boolean
   startedAt?: boolean
   completedAt?: boolean
   errorMessage?: boolean
@@ -2195,7 +2309,7 @@ export type WorkflowRunSelectScalar = {
   currentReviewId?: boolean
 }
 
-export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "correlationId" | "webhookDeliveryId" | "commitSha" | "branch" | "targetBranch" | "pullRequestUrl" | "gitOperationStatus" | "commitMessage" | "startedAt" | "completedAt" | "errorMessage" | "repositoryId" | "triggeredById" | "version" | "currentNode" | "currentStage" | "checkpointSnapshot" | "nodeRetries" | "lastError" | "executionMetadata" | "currentReviewId", ExtArgs["result"]["workflowRun"]>
+export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "correlationId" | "webhookDeliveryId" | "commitSha" | "branch" | "targetBranch" | "pullRequestUrl" | "gitOperationStatus" | "commitMessage" | "skipReason" | "completionReason" | "startedAt" | "completedAt" | "errorMessage" | "repositoryId" | "triggeredById" | "version" | "currentNode" | "currentStage" | "checkpointSnapshot" | "nodeRetries" | "lastError" | "executionMetadata" | "currentReviewId", ExtArgs["result"]["workflowRun"]>
 export type WorkflowRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   notifications?: boolean | Prisma.WorkflowRun$notificationsArgs<ExtArgs>
   pullRequest?: boolean | Prisma.WorkflowRun$pullRequestArgs<ExtArgs>
@@ -2239,6 +2353,8 @@ export type $WorkflowRunPayload<ExtArgs extends runtime.Types.Extensions.Interna
     pullRequestUrl: string | null
     gitOperationStatus: string | null
     commitMessage: string | null
+    skipReason: string | null
+    completionReason: string | null
     startedAt: Date | null
     completedAt: Date | null
     errorMessage: string | null
@@ -2693,6 +2809,8 @@ export interface WorkflowRunFieldRefs {
   readonly pullRequestUrl: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly gitOperationStatus: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly commitMessage: Prisma.FieldRef<"WorkflowRun", 'String'>
+  readonly skipReason: Prisma.FieldRef<"WorkflowRun", 'String'>
+  readonly completionReason: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly startedAt: Prisma.FieldRef<"WorkflowRun", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"WorkflowRun", 'DateTime'>
   readonly errorMessage: Prisma.FieldRef<"WorkflowRun", 'String'>

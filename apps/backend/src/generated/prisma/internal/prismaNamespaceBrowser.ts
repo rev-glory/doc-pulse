@@ -149,6 +149,8 @@ export const WorkflowRunScalarFieldEnum = {
   pullRequestUrl: 'pullRequestUrl',
   gitOperationStatus: 'gitOperationStatus',
   commitMessage: 'commitMessage',
+  skipReason: 'skipReason',
+  completionReason: 'completionReason',
   startedAt: 'startedAt',
   completedAt: 'completedAt',
   errorMessage: 'errorMessage',

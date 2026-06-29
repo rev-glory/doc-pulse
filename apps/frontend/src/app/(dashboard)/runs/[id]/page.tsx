@@ -54,8 +54,10 @@ export default function RunLiveExecutionPage(): React.JSX.Element {
 
   // LangGraph sequential pipeline nodes mapping
   const SEQUENTIAL_NODES = [
+    'EarlySkip',
     'RepositoryAnalyzer',
     'DocumentationLocator',
+    'CodebaseAnalyzer',
     'TechnicalWriter',
     'DocumentationCritic',
     'HumanReview',
@@ -96,7 +98,11 @@ export default function RunLiveExecutionPage(): React.JSX.Element {
             <span className={`px-2.5 py-1 rounded-full text-xs font-mono font-bold ${isConnected ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-300' : 'bg-zinc-200 text-zinc-600'}`}>
               ● {isConnected ? 'Live Stream Active' : 'Static Snapshot'}
             </span>
-            <WorkflowStatusBadge status={currentStatus} />
+            {data.completionReason === 'SKIPPED' ? (
+              <WorkflowStatusBadge status="skipped" />
+            ) : (
+              <WorkflowStatusBadge status={currentStatus} />
+            )}
           </div>
         }
       />
@@ -229,6 +235,11 @@ export default function RunLiveExecutionPage(): React.JSX.Element {
 
           <SectionCard title="BullMQ Execution Queue">
             <QueueStatus status={queueStatus || currentStatus} position={queuePosition} progress={currentProgress} />
+            {data.completionReason === 'SKIPPED' && (
+              <div className="mt-4 p-3.5 bg-orange-50 border border-orange-200 dark:bg-orange-950/20 dark:border-orange-900/40 text-orange-850 dark:text-orange-300 rounded-lg text-xs leading-relaxed">
+                <strong>Skipped: </strong> {data.skipReason || 'Documentation-only changes detected.'}
+              </div>
+            )}
             {data.errorMessage && (
               <div className="mt-4 p-3.5 bg-red-50 border border-red-200 dark:bg-red-950/20 dark:border-red-900/40 text-red-800 dark:text-red-300 rounded-lg text-xs leading-relaxed">
                 <strong>Failure Reason: </strong> {data.errorMessage}

@@ -22,4 +22,6 @@ export interface IGitProvider {
   getRepositoryRoot(repositoryPath: string): Promise<string>;
   getRemoteUrl(repositoryPath: string, remoteName: string): Promise<string>;
   setRemoteUrl(repositoryPath: string, remoteName: string, url: string): Promise<void>;
+  getModifiedFiles(repositoryPath: string, commitSha: string): Promise<string[]>;
+  getCommitMessage(repositoryPath: string, commitSha: string): Promise<string>;
 }

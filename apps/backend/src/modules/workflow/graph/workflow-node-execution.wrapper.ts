@@ -221,6 +221,10 @@ export class WorkflowNodeExecutionWrapper {
       pullRequestReference: state.pullRequest ? { url: state.pullRequest.url, number: state.pullRequest.number } : undefined,
       pullRequestUrl: state.pullRequestUrl ?? undefined,
       gitOperationStatus: state.gitOperationStatus ?? undefined,
+      changedFiles: state.changedFiles ?? undefined,
+      commitMessage: state.commitMessage ?? undefined,
+      shouldSkip: state.shouldSkip ?? undefined,
+      skipReason: state.skipReason ?? undefined,
       executionMetadata: state.metadata ?? {},
       lastUpdatedTimestamp: new Date().toISOString(),
       // Complete state details persisted for recovery:

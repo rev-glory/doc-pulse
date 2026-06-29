@@ -32,6 +32,7 @@ export type RunStatus = (typeof RunStatus)[keyof typeof RunStatus]
 
 export const WorkflowStage = {
   CLONING: 'CLONING',
+  EARLY_SKIP: 'EARLY_SKIP',
   ANALYZING: 'ANALYZING',
   LOCATING_DOCUMENTATION: 'LOCATING_DOCUMENTATION',
   WRITING: 'WRITING',

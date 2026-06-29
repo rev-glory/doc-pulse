@@ -46,6 +46,8 @@ export class RunsService {
       completedNodes: (r.checkpointSnapshot as any)?.completedNodes || [],
       pullRequestUrl: r.pullRequestUrl ?? undefined,
       gitOperationStatus: r.gitOperationStatus ?? undefined,
+      skipReason: r.skipReason ?? undefined,
+      completionReason: r.completionReason ?? undefined,
     }));
   }
 
@@ -95,6 +97,8 @@ export class RunsService {
       completedNodes,
       pullRequestUrl: run.pullRequestUrl ?? undefined,
       gitOperationStatus: run.gitOperationStatus ?? undefined,
+      skipReason: run.skipReason ?? undefined,
+      completionReason: run.completionReason ?? undefined,
     };
   }
 }

@@ -17,6 +17,14 @@ import {
   CreatePullRequestNode,
   HumanReviewNode,
 } from './nodes';
+import { EarlySkipNode } from './nodes/early-skip.node';
+import {
+  SKIP_RULES,
+  DisabledRepositoryRule,
+  CommitMessageSkipRule,
+  DocumentationOnlyRule,
+  DependencyOnlyRule,
+} from './nodes/early-skip-rules';
 import { RepositoryAnalysisModule } from '../repository-analysis/repository-analysis.module';
 import { DocumentGenerationModule } from '../document-generation/document-generation.module';
 import { DocumentReviewModule } from '../document-review/document-review.module';
@@ -42,6 +50,7 @@ import { SourceCodeAnalysisModule } from '../source-code-analysis/source-code-an
     WorkflowExecutorService,
     WorkflowNodeAdapters,
     RepositoryAnalyzerNode,
+    EarlySkipNode,
     DocumentationLocatorNode,
     CodebaseAnalyzerNode,
     TechnicalWriterNode,
@@ -50,6 +59,15 @@ import { SourceCodeAnalysisModule } from '../source-code-analysis/source-code-an
     PushBranchNode,
     CreatePullRequestNode,
     HumanReviewNode,
+    DisabledRepositoryRule,
+    CommitMessageSkipRule,
+    DocumentationOnlyRule,
+    DependencyOnlyRule,
+    {
+      provide: SKIP_RULES,
+      useFactory: (r1, r2, r3, r4) => [r1, r2, r3, r4],
+      inject: [DisabledRepositoryRule, CommitMessageSkipRule, DocumentationOnlyRule, DependencyOnlyRule],
+    },
   ],
   exports: [WorkflowService, WorkflowCheckpointRepository],
 })

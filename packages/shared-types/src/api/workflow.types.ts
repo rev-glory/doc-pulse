@@ -33,4 +33,6 @@ export interface WorkflowRunSummary {
   completedNodes?: string[];
   pullRequestUrl?: string;
   gitOperationStatus?: string;
+  skipReason?: string;
+  completionReason?: string;
 }

@@ -24,6 +24,7 @@ export class WorkflowExecutorService implements OnModuleInit {
   private compiledGraph!: CompiledDocumentationGraph;
 
   private readonly sequentialOrder: WorkflowNodeName[] = [
+    WorkflowNodeName.EarlySkip,
     WorkflowNodeName.RepositoryAnalyzer,
     WorkflowNodeName.DocumentationLocator,
     WorkflowNodeName.CodebaseAnalyzer,
@@ -190,7 +191,7 @@ export class WorkflowExecutorService implements OnModuleInit {
   }
 
   private determineNextNode(lastCompletedNode?: WorkflowNodeName): WorkflowNodeName {
-    if (!lastCompletedNode) return WorkflowNodeName.RepositoryAnalyzer;
+    if (!lastCompletedNode) return WorkflowNodeName.EarlySkip;
 
     // Legacy checkpoint compatibility (Invariant 7)
     if (lastCompletedNode === ('HumanReview' as any)) {
@@ -231,6 +232,10 @@ export class WorkflowExecutorService implements OnModuleInit {
       sourceCodeAnalysis: (snapshot as any).sourceCodeAnalysis ?? undefined,
       pullRequestUrl: snapshot.pullRequestUrl ?? undefined,
       gitOperationStatus: (snapshot.gitOperationStatus as any) ?? undefined,
+      changedFiles: (snapshot as any).changedFiles ?? undefined,
+      commitMessage: (snapshot as any).commitMessage ?? undefined,
+      shouldSkip: (snapshot as any).shouldSkip ?? undefined,
+      skipReason: (snapshot as any).skipReason ?? undefined,
       metadata: { ...(snapshot.executionMetadata ?? {}), hydratedAt: new Date().toISOString() },
     };
   }
@@ -334,7 +339,12 @@ export class WorkflowExecutorService implements OnModuleInit {
 
       this.logger.log(`[${input.runId}] Workflow execution completed successfully in ${durationMs}ms.`);
 
-      await this.checkpointRepository.markRunCompleted(input.runId);
+      if (finalState.shouldSkip === true) {
+        await this.checkpointRepository.markRunCompleted(input.runId, 'SKIPPED', finalState.skipReason);
+      } else {
+        await this.checkpointRepository.markRunCompleted(input.runId, 'SUCCESS');
+      }
+
       this.eventService?.publishCompletionEvent(input.runId, input.repositoryId, input.runId, finalState.metadata);
 
       isExecutionTerminal = true;

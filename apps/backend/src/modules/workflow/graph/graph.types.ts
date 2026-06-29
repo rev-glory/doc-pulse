@@ -61,6 +61,10 @@ export const WorkflowGraphAnnotation = Annotation.Root({
     default: () => 1,
   }),
   sourceCodeAnalysis: Annotation<SourceCodeAnalysis | undefined>(),
+  changedFiles: Annotation<string[] | undefined>(),
+  commitMessage: Annotation<string | undefined>(),
+  shouldSkip: Annotation<boolean | undefined>(),
+  skipReason: Annotation<string | undefined>(),
 
   // Orchestration lifecycle channels
   currentNode: Annotation<string>(),

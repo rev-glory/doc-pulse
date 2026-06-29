@@ -37,6 +37,8 @@ export class WorkflowCheckpointRepository {
     switch (stage) {
       case WorkflowStage.CLONING:
         return PrismaWorkflowStage.CLONING;
+      case WorkflowStage.EARLY_SKIP:
+        return PrismaWorkflowStage.EARLY_SKIP;
       case WorkflowStage.ANALYZING:
         return PrismaWorkflowStage.ANALYZING;
       case WorkflowStage.SOURCE_CODE_ANALYSIS:
@@ -227,17 +229,19 @@ export class WorkflowCheckpointRepository {
   /**
    * Marks a WorkflowRun as completed in the database.
    */
-  public async markRunCompleted(runId: string): Promise<void> {
+  public async markRunCompleted(runId: string, completionReason?: string, skipReason?: string): Promise<void> {
     const now = new Date();
     await this.prisma.workflowRun.update({
       where: { id: runId },
       data: {
         status: PrismaRunStatus.COMPLETED,
+        completionReason: completionReason ?? null,
+        skipReason: skipReason ?? null,
         completedAt: now,
         updatedAt: now,
       },
     });
-    this.logger.log(`WorkflowRun [${runId}] marked as COMPLETED.`);
+    this.logger.log(`WorkflowRun [${runId}] marked as COMPLETED. Reason: ${completionReason || 'SUCCESS'}`);
   }
 
   /**

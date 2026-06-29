@@ -89,6 +89,14 @@ export class GitService {
     await this.provider.setRemoteUrl(repositoryPath, remoteName, url);
   }
 
+  async getModifiedFiles(repositoryPath: string, commitSha: string): Promise<string[]> {
+    return this.provider.getModifiedFiles(repositoryPath, commitSha);
+  }
+
+  async getCommitMessage(repositoryPath: string, commitSha: string): Promise<string> {
+    return this.provider.getCommitMessage(repositoryPath, commitSha);
+  }
+
   async delete(repositoryPath: string): Promise<void> {
     this.logger.debug(`Deleting repository at ${repositoryPath}`);
     await fs.rm(repositoryPath, { recursive: true, force: true });

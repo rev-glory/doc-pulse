@@ -5,6 +5,7 @@ import { WorkflowNodeName } from '../../src/domain/workflow';
 
 describe('Documentation Workflow Graph Routing Unit Tests', () => {
   const mockAdapters = {
+    earlySkipStep: async (state: any) => ({ ...state, currentNode: WorkflowNodeName.EarlySkip, shouldSkip: false }),
     repositoryAnalyzerStep: async (state: any) => ({ ...state, currentNode: WorkflowNodeName.RepositoryAnalyzer }),
     documentationLocatorStep: async (state: any) => ({ ...state, currentNode: WorkflowNodeName.DocumentationLocator }),
     codebaseAnalyzerStep: async (state: any) => ({ ...state, currentNode: WorkflowNodeName.CodebaseAnalyzer }),

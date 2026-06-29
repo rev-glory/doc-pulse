@@ -12,6 +12,7 @@ function compileDocumentationGraph(
   _minDocScore: number,
 ) {
   const workflow = new StateGraph(WorkflowGraphAnnotation)
+    .addNode(WorkflowNodeName.EarlySkip, (state: WorkflowGraphState) => adapters.earlySkipStep(state))
     .addNode(WorkflowNodeName.RepositoryAnalyzer, (state: WorkflowGraphState) => adapters.repositoryAnalyzerStep(state))
     .addNode(WorkflowNodeName.DocumentationLocator, (state: WorkflowGraphState) => adapters.documentationLocatorStep(state))
     .addNode(WorkflowNodeName.CodebaseAnalyzer, (state: WorkflowGraphState) => adapters.codebaseAnalyzerStep(state))
@@ -20,7 +21,18 @@ function compileDocumentationGraph(
     .addNode(WorkflowNodeName.GitCommit, (state: WorkflowGraphState) => adapters.gitCommitStep(state))
     .addNode(WorkflowNodeName.PushBranch, (state: WorkflowGraphState) => adapters.pushBranchStep(state))
     .addNode(WorkflowNodeName.CreatePullRequest, (state: WorkflowGraphState) => adapters.createPullRequestStep(state))
-    .addEdge(START, WorkflowNodeName.RepositoryAnalyzer)
+    .addEdge(START, WorkflowNodeName.EarlySkip)
+    .addConditionalEdges(
+      WorkflowNodeName.EarlySkip,
+      (state: WorkflowGraphState) => {
+        if (state.shouldSkip === true) return 'skip';
+        return 'continue';
+      },
+      {
+        skip: END,
+        continue: WorkflowNodeName.RepositoryAnalyzer,
+      },
+    )
     .addEdge(WorkflowNodeName.RepositoryAnalyzer, WorkflowNodeName.DocumentationLocator)
     .addEdge(WorkflowNodeName.DocumentationLocator, WorkflowNodeName.CodebaseAnalyzer)
     .addEdge(WorkflowNodeName.CodebaseAnalyzer, WorkflowNodeName.TechnicalWriter)
