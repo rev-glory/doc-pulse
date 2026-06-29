@@ -61,6 +61,9 @@ export class RepositoryResponseDto {
   @Expose()
   documentationBranchName!: string | null;
 
+  @Expose()
+  documentationDirectory!: string;
+
   // Don't expose ownerId to API responses
   // ownerId!: string;
 

@@ -66,6 +66,7 @@ model Repository {
   defaultBranch    String        @default("main") @map("default_branch")
   branchStrategy   BranchStrategy @default(DOCUMENTATION_BRANCH) @map("branch_strategy")
   documentationBranchName String? @map("documentation_branch_name")
+  documentationDirectory String @default("docs") @map("documentation_directory")
   private          Boolean       @default(false) @map("private")
   description      String?       @map("description")
   language         String?       @map("language")

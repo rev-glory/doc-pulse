@@ -104,7 +104,7 @@ export class RepositoryAnalysisService {
     };
   }
 
-  public async analyzeDocumentation(rootPath: string): Promise<DocumentationInventory> {
+  public async analyzeDocumentation(rootPath: string, documentationDirectory?: string): Promise<DocumentationInventory> {
     this.logger.debug(`Starting documentation analysis for repository at: ${rootPath}`);
 
     // Verify root path exists
@@ -117,7 +117,7 @@ export class RepositoryAnalysisService {
       throw new Error(`Invalid repository root path: ${rootPath}`);
     }
 
-    return buildDocumentationInventory(rootPath);
+    return buildDocumentationInventory(rootPath, documentationDirectory);
   }
 
   private async calculatePackageCount(rootPath: string, workspaceFolders: string[]): Promise<number> {

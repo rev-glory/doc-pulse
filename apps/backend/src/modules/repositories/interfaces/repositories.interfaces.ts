@@ -35,6 +35,7 @@ export interface IRepositoriesRepository {
     ownerId: string;
     branchStrategy?: BranchStrategy;
     documentationBranchName?: string | null;
+    documentationDirectory?: string;
   }): Promise<Repository>;
 
   syncUpsert(data: SyncUpsertRepositoryData, tx?: unknown): Promise<Repository>;
@@ -46,6 +47,7 @@ export interface IRepositoriesRepository {
       docPaths: string[];
       branchStrategy: BranchStrategy;
       documentationBranchName: string | null;
+      documentationDirectory: string;
     }>,
   ): Promise<Repository>;
 

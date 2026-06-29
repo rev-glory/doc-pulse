@@ -25,6 +25,7 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
     ownerId: string;
     branchStrategy?: BranchStrategy;
     documentationBranchName?: string | null;
+    documentationDirectory?: string;
   }): Promise<Repository> {
     return this.prisma.repository.create({
       data,
@@ -70,6 +71,7 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
         lastSyncedAt: now,
         branchStrategy: 'DOCUMENTATION_BRANCH',
         documentationBranchName: 'docpulse/docs',
+        documentationDirectory: 'docs',
       },
       update: {
         // Refresh all GitHub-sourced metadata that can change over time.
@@ -99,6 +101,7 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
       docPaths: string[];
       branchStrategy: BranchStrategy;
       documentationBranchName: string | null;
+      documentationDirectory: string;
     }>,
   ): Promise<Repository> {
     return this.prisma.repository.update({

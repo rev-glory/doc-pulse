@@ -260,6 +260,7 @@ export class WorkflowExecutorService implements OnModuleInit {
       nodeRetries,
       branchStrategy: repoRecord.branchStrategy,
       documentationBranchName: repoRecord.documentationBranchName,
+      documentationDirectory: repoRecord.documentationDirectory,
     };
 
     this.adapters.registerExecutionContext(input.runId, orchestrationContext);

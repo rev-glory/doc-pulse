@@ -3,6 +3,7 @@ import * as fs from 'fs/promises';
 import * as path from 'path';
 
 import type { GeneratedDocument } from '@/domain/workflow';
+import { normalizeDocumentationDirectory } from '../../repositories/validators/documentation-directory.validator';
 
 @Injectable()
 export class DocumentationWriterService {
@@ -17,6 +18,7 @@ export class DocumentationWriterService {
     workspacePath: string,
     runId: string,
     documents: GeneratedDocument[],
+    documentationDirectory: string = 'docs',
   ): Promise<{ writtenFiles: string[]; durationMs: number }> {
     const startTime = Date.now();
     const tmpDirName = `.docpulse_tmp_${runId.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
@@ -30,13 +32,15 @@ export class DocumentationWriterService {
       await fs.mkdir(stagingDir, { recursive: true });
 
       const stagedRelPaths: string[] = [];
+      const cleanDir = normalizeDocumentationDirectory(documentationDirectory);
 
       // 2. Write all generated docs to staging dir
       for (const doc of documents) {
         const canonicalContent = doc.markdown ?? doc.content ?? '';
         if (!doc.path) continue;
 
-        const cleanRelPath = doc.path.replace(/^(\.\/|\/)+/, ''); // sanitize relative path
+        const cleanDocPath = doc.path.replace(/^(\.\/|\/)+/, ''); // sanitize relative path
+        const cleanRelPath = cleanDir === '.' ? cleanDocPath : path.join(cleanDir, cleanDocPath);
         const targetStagingPath = path.join(stagingDir, cleanRelPath);
 
         await fs.mkdir(path.dirname(targetStagingPath), { recursive: true });

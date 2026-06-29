@@ -115,7 +115,7 @@ export class WorkflowNodeAdapters {
 
     const ctx = this.getOrchestrationContext(state.runId);
     return this.wrapper.executeNode(nodeName, WorkflowStage.LOCATING_DOCUMENTATION, state, ctx, async (st) =>
-      this.documentationLocator.invoke(st as any),
+      this.documentationLocator.invoke(st as any, ctx),
     );
   }
 

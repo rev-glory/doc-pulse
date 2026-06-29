@@ -118,6 +118,7 @@ export const RepositoryScalarFieldEnum = {
   defaultBranch: 'defaultBranch',
   branchStrategy: 'branchStrategy',
   documentationBranchName: 'documentationBranchName',
+  documentationDirectory: 'documentationDirectory',
   private: 'private',
   description: 'description',
   language: 'language',

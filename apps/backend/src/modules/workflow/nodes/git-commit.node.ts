@@ -42,7 +42,7 @@ export class GitCommitNode {
     }
 
     // 1. Write docs transactionally
-    const writeResult = await this.writerService.writeDocuments(repoPath, runId, docs);
+    const writeResult = await this.writerService.writeDocuments(repoPath, runId, docs, ctx?.documentationDirectory);
 
     // 2. Commit changes
     const commitResult = await this.gitOpsService.commitChanges(repoPath, runId, writeResult.writtenFiles, targetBranch);

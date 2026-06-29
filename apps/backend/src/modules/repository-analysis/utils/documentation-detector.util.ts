@@ -3,6 +3,8 @@ import * as path from 'node:path';
 import { REPOSITORY_ANALYSIS_CONSTANTS } from '../constants/repository-analysis.constants';
 import { DocumentationInventory, DocumentationFile, DocumentationType } from '../../../domain/documentation';
 
+import { normalizeDocumentationDirectory } from '../../repositories/validators/documentation-directory.validator';
+
 export async function detectDocumentation(rootPath: string): Promise<string[]> {
   const docs: string[] = [];
   const entries = await fs.readdir(rootPath).catch(() => [] as string[]);
@@ -47,10 +49,16 @@ export async function detectApiSpecifications(rootPath: string): Promise<string[
   return specs;
 }
 
-export async function buildDocumentationInventory(rootPath: string): Promise<DocumentationInventory> {
+export async function buildDocumentationInventory(
+  rootPath: string,
+  documentationDirectory: string = 'docs',
+): Promise<DocumentationInventory> {
   const documentationFiles: DocumentationFile[] = [];
   const standardDocs = Object.values(DocumentationType).filter(type => type !== DocumentationType.Other);
   const foundTypes = new Set<DocumentationType>();
+
+  const cleanDir = normalizeDocumentationDirectory(documentationDirectory);
+  const targetDir = cleanDir === '.' ? rootPath : path.join(rootPath, cleanDir);
 
   // Helper to map filename to type
   const mapType = (filename: string): DocumentationType => {
@@ -71,11 +79,11 @@ export async function buildDocumentationInventory(rootPath: string): Promise<Doc
       if (entry.isFile()) {
         const type = mapType(entry.name);
         
-        // We only care if it's one of the standard docs, or if it's a known generic doc file in docs/
-        if (type !== DocumentationType.Other || dirPath.endsWith('docs') || dirPath.endsWith('docs/') || dirPath.endsWith('docs\\')) {
+        // We only care if it's one of the standard docs, or if it's a known generic doc file in targetDir
+        if (type !== DocumentationType.Other || dirPath.endsWith('docs') || dirPath.endsWith('docs/') || dirPath.endsWith('docs\\') || (cleanDir !== '.' && dirPath.endsWith(cleanDir))) {
            documentationFiles.push({
              fileName: entry.name,
-             path: path.join(dirPath, entry.name).replace(rootPath, '').replace(/^[\\/]/, ''),
+             path: path.join(dirPath, entry.name).replace(rootPath, '').replace(/^[\\/]/, '').replace(/\\/g, '/'),
              type,
              exists: true,
              qualityScore: type === DocumentationType.README ? 1.0 : 1.0, // deterministic score placeholder
@@ -86,18 +94,20 @@ export async function buildDocumentationInventory(rootPath: string): Promise<Doc
     }
   };
 
-  // Process root
-  await processDir(rootPath);
-  
-  // Also process common doc folders like docs/ if it exists
-  const docsPath = path.join(rootPath, 'docs');
+  // Verify the target directory exists and is a directory.
+  // If it does not exist, return an empty documentation inventory instead of throwing.
+  let directoryExists = false;
   try {
-    const stat = await fs.stat(docsPath);
+    const stat = await fs.stat(targetDir);
     if (stat.isDirectory()) {
-      await processDir(docsPath);
+      directoryExists = true;
     }
   } catch {
-    // Ignore if docs/ doesn't exist
+    // Ignore if directory doesn't exist
+  }
+
+  if (directoryExists) {
+    await processDir(targetDir);
   }
 
   const missingDocuments = standardDocs.filter(type => !foundTypes.has(type));

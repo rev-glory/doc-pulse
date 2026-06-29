@@ -14,6 +14,7 @@ import { BranchStrategy } from '@/generated/prisma/client';
 export interface WorkflowExecutionConfig {
   branchStrategy: BranchStrategy;
   documentationBranchName: string | null;
+  documentationDirectory: string;
 }
 
 export interface WorkflowError {

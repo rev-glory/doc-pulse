@@ -21,6 +21,7 @@ import { UpdateRepositoryDto } from '../dto/update-repository.dto';
 import { RepositoryResponseDto } from '../dto/repository-response.dto';
 import { RepositoriesPersistence } from '../persistence/repositories.persistence';
 import { isValidGitBranchName } from '../validators/branch-name.validator';
+import { isValidDocumentationDirectory, normalizeDocumentationDirectory } from '../validators/documentation-directory.validator';
 
 @Injectable()
 export class RepositoriesService {
@@ -413,6 +414,7 @@ export class RepositoriesService {
       ownerId: user.id,
       branchStrategy: 'DOCUMENTATION_BRANCH',
       documentationBranchName: 'docpulse/docs',
+      documentationDirectory: 'docs',
     });
 
     this.logger.log(
@@ -449,6 +451,18 @@ export class RepositoriesService {
       // Keep data model clean by setting configuration branch to null
       updateRepositoryDto.documentationBranchName = null;
     }
+
+    // Reconcile, validate, and normalize documentationDirectory
+    const rawDir = updateRepositoryDto.documentationDirectory !== undefined
+      ? updateRepositoryDto.documentationDirectory
+      : repository.documentationDirectory;
+
+    if (!isValidDocumentationDirectory(rawDir)) {
+      throw new BadRequestException('Invalid documentation directory path.');
+    }
+
+    const normalizedDir = normalizeDocumentationDirectory(rawDir);
+    updateRepositoryDto.documentationDirectory = normalizedDir;
 
     const updatedRepository = await this.repositoriesPersistence.update(id, updateRepositoryDto);
 
