@@ -16,15 +16,53 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   className = '',
 }) => {
   return (
-    <section className={`border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 p-6 shadow-sm ${className}`}>
-      <div className="flex items-center justify-between border-b border-zinc-100 dark:border-zinc-800/80 pb-4 mb-4">
+    <section
+      className={className}
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        overflow: 'hidden',
+        transition: 'border-color 0.2s ease',
+      }}
+      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
+      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+    >
+      {/* Card header */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '1.1rem 1.5rem',
+          borderBottom: '1px solid var(--border)',
+          background: 'rgba(255,255,255,0.02)',
+        }}
+      >
         <div>
-          <h2 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">{title}</h2>
-          {description && <p className="text-xs text-zinc-500 mt-0.5">{description}</p>}
+          <h2
+            style={{
+              fontSize: '0.9rem',
+              fontWeight: 600,
+              color: 'var(--text-primary)',
+              letterSpacing: '-0.01em',
+            }}
+          >
+            {title}
+          </h2>
+          {description && (
+            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+              {description}
+            </p>
+          )}
         </div>
         {actions && <div>{actions}</div>}
       </div>
-      <div>{children}</div>
+
+      {/* Card body */}
+      <div style={{ padding: '1.25rem 1.5rem' }}>
+        {children}
+      </div>
     </section>
   );
 };

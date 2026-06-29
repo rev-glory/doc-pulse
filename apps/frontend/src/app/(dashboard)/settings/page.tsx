@@ -4,13 +4,15 @@ import React, { useState } from 'react';
 import { useApiQuery } from '@/lib/query/use-api-query';
 import { DashboardApi } from '@/lib/api/services/dashboard.api';
 import { UsersApi } from '@/lib/api/services/users.api';
+import { GitHubApi } from '@/lib/api/services/github.api';
+import { RepositoryApi, type ConnectRepositoryDto } from '@/lib/api/services/repository.api';
 import { PageHeader } from '@/components/shared/page-header';
 import { SectionCard } from '@/components/shared/section-card';
 import { LoadingState } from '@/components/feedback/loading-state';
 import { ErrorState } from '@/components/feedback/error-state';
 
 export default function SystemSettingsPage(): React.JSX.Element {
-  const [activeTab, setActiveTab] = useState<'profile' | 'system'>('profile');
+  const [activeTab, setActiveTab] = useState<'profile' | 'system' | 'connect'>('profile');
 
   // Query 1: System configs
   const {
@@ -45,7 +47,16 @@ export default function SystemSettingsPage(): React.JSX.Element {
     queryFn: UsersApi.getUserSettings,
   });
 
-  // Form states
+  // Query 4: GitHub installations (for connect form)
+  const {
+    data: installations,
+    isLoading: isInstLoading,
+  } = useApiQuery({
+    queryKey: ['github', 'installations'],
+    queryFn: GitHubApi.getInstallations,
+  });
+
+  // Form states — Profile
   const [displayName, setDisplayName] = useState<string>('');
   const [theme, setTheme] = useState<'system' | 'light' | 'dark'>('system');
   const [emailAlerts, setEmailAlerts] = useState<boolean>(true);
@@ -68,6 +79,14 @@ export default function SystemSettingsPage(): React.JSX.Element {
     setEmailAlerts(userPrefs.notifications?.email ?? true);
     setPrefsInitialized(true);
   }
+
+  // Connect repository form state
+  const [connectInstallationId, setConnectInstallationId] = useState('');
+  const [connectOwner, setConnectOwner] = useState('');
+  const [connectRepoName, setConnectRepoName] = useState('');
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectError, setConnectError] = useState<string | null>(null);
+  const [connectSuccess, setConnectSuccess] = useState<string | null>(null);
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,6 +115,30 @@ export default function SystemSettingsPage(): React.JSX.Element {
       refetchPrefs();
     } catch (err: any) {
       setFormError(err?.message || 'Failed to update settings.');
+    }
+  };
+
+  const handleConnectRepository = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setConnectError(null);
+    setConnectSuccess(null);
+    setIsConnecting(true);
+
+    const dto: ConnectRepositoryDto = {
+      installationId: connectInstallationId,
+      owner: connectOwner.trim(),
+      repositoryName: connectRepoName.trim(),
+    };
+
+    try {
+      const result = await RepositoryApi.connectRepository(dto);
+      setConnectSuccess(`✓ Repository "${result.fullName}" connected successfully!`);
+      setConnectOwner('');
+      setConnectRepoName('');
+    } catch (err: any) {
+      setConnectError(err?.message || 'Failed to connect repository.');
+    } finally {
+      setIsConnecting(false);
     }
   };
 
@@ -135,26 +178,25 @@ export default function SystemSettingsPage(): React.JSX.Element {
 
       {/* Tabs */}
       <div className="flex border-b border-zinc-200 dark:border-zinc-800">
-        <button
-          onClick={() => setActiveTab('profile')}
-          className={`px-5 py-3 text-xs font-bold transition-all border-b-2 ${
-            activeTab === 'profile'
-              ? 'border-emerald-600 text-emerald-600'
-              : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-100'
-          }`}
-        >
-          Profile & Preferences
-        </button>
-        <button
-          onClick={() => setActiveTab('system')}
-          className={`px-5 py-3 text-xs font-bold transition-all border-b-2 ${
-            activeTab === 'system'
-              ? 'border-emerald-600 text-emerald-600'
-              : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-100'
-          }`}
-        >
-          System Configuration
-        </button>
+        {(
+          [
+            { key: 'profile', label: 'Profile & Preferences' },
+            { key: 'connect', label: 'Connect Repository' },
+            { key: 'system', label: 'System Configuration' },
+          ] as const
+        ).map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`px-5 py-3 text-xs font-bold transition-all border-b-2 ${
+              activeTab === tab.key
+                ? 'border-emerald-600 text-emerald-600'
+                : 'border-transparent text-zinc-500 hover:text-zinc-850 dark:hover:text-zinc-100'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {formError && (
@@ -163,7 +205,8 @@ export default function SystemSettingsPage(): React.JSX.Element {
         </div>
       )}
 
-      {activeTab === 'profile' ? (
+      {/* ── Profile Tab ── */}
+      {activeTab === 'profile' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl items-start">
           {/* User Profile Form */}
           <SectionCard title="User Profile" description="Your personal identity on DocPulse.">
@@ -184,6 +227,20 @@ export default function SystemSettingsPage(): React.JSX.Element {
                 />
               </div>
 
+              {profile?.githubAvatarUrl && (
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">GitHub Avatar</label>
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={profile.githubAvatarUrl}
+                      alt={profile.githubLogin}
+                      className="w-12 h-12 rounded-full border-2 border-zinc-200 dark:border-zinc-700"
+                    />
+                    <span className="text-xs text-zinc-500">Profile photo synced from GitHub</span>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Display Name</label>
                 <input
@@ -193,6 +250,22 @@ export default function SystemSettingsPage(): React.JSX.Element {
                   onChange={(e) => setDisplayName(e.target.value)}
                   className="w-full p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-zinc-900 dark:focus:border-zinc-100"
                 />
+              </div>
+
+              {profile?.email && (
+                <div className="space-y-1.5">
+                  <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Email</label>
+                  <input
+                    type="text"
+                    value={profile.email}
+                    disabled
+                    className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-400 font-mono"
+                  />
+                </div>
+              )}
+
+              <div className="space-y-1.5 text-xs text-zinc-400">
+                <span>Member since: {profile?.createdAt ? new Date(profile.createdAt).toLocaleDateString() : '—'}</span>
               </div>
 
               <button
@@ -232,7 +305,7 @@ export default function SystemSettingsPage(): React.JSX.Element {
                 <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Active AI Engine</label>
                 <input
                   type="text"
-                  value="Gemini (Current)"
+                  value={sysSettings?.models?.activeModel || 'Gemini (Current)'}
                   disabled
                   className="w-full p-2.5 bg-zinc-50 dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-500 font-bold"
                 />
@@ -260,6 +333,24 @@ export default function SystemSettingsPage(): React.JSX.Element {
                 </div>
               </div>
 
+              {/* Current preference summary */}
+              <div className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span className="text-zinc-500">Current Theme</span>
+                  <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300 uppercase">{userPrefs?.theme || 'system'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-500">Email Alerts</span>
+                  <span className={`font-bold ${userPrefs?.notifications?.email ? 'text-emerald-600' : 'text-zinc-400'}`}>
+                    {userPrefs?.notifications?.email ? 'Enabled' : 'Disabled'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-zinc-500">AI Provider</span>
+                  <span className="font-mono text-zinc-700 dark:text-zinc-300">{userPrefs?.ai?.provider || '—'}</span>
+                </div>
+              </div>
+
               <button
                 type="submit"
                 className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 font-bold text-xs rounded-lg shadow-sm transition-all"
@@ -269,7 +360,138 @@ export default function SystemSettingsPage(): React.JSX.Element {
             </form>
           </SectionCard>
         </div>
-      ) : (
+      )}
+
+      {/* ── Connect Repository Tab ── */}
+      {activeTab === 'connect' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl items-start">
+          <SectionCard title="Connect a Repository" description="Manually connect a specific GitHub repository to DocPulse using POST /repositories/connect.">
+            <form onSubmit={handleConnectRepository} className="space-y-5 text-xs">
+              {connectSuccess && (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 dark:bg-emerald-950/20 dark:border-emerald-900/50 dark:text-emerald-300 rounded font-bold">
+                  {connectSuccess}
+                </div>
+              )}
+              {connectError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 text-rose-700 dark:bg-rose-950/20 dark:border-rose-900/50 dark:text-rose-300 rounded">
+                  ⚠️ {connectError}
+                </div>
+              )}
+
+              {/* Installation select */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                  GitHub App Installation
+                </label>
+                {isInstLoading ? (
+                  <div className="p-2.5 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg text-zinc-400 animate-pulse">
+                    Loading installations…
+                  </div>
+                ) : (
+                  <select
+                    value={connectInstallationId}
+                    onChange={(e) => {
+                      setConnectInstallationId(e.target.value);
+                      // Auto-fill owner from selected installation
+                      const inst = installations?.find((i) => i.id === e.target.value);
+                      if (inst) setConnectOwner(inst.accountLogin);
+                    }}
+                    required
+                    className="w-full p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="">Select an installation…</option>
+                    {(installations || []).map((inst) => (
+                      <option key={inst.id} value={inst.id}>
+                        {inst.accountLogin} ({inst.accountType}) — ID: {inst.installationId}
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {(!installations || installations.length === 0) && !isInstLoading && (
+                  <p className="text-zinc-400 italic">
+                    No installations found.{' '}
+                    <a
+                      href="https://github.com/apps/docpulse-test-app/installations/new"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-indigo-600 hover:underline font-bold"
+                    >
+                      Install GitHub App →
+                    </a>
+                  </p>
+                )}
+              </div>
+
+              {/* Owner */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                  Repository Owner (GitHub username / org)
+                </label>
+                <input
+                  type="text"
+                  value={connectOwner}
+                  onChange={(e) => setConnectOwner(e.target.value)}
+                  placeholder="e.g. octocat"
+                  required
+                  className="w-full p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg font-mono text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+
+              {/* Repository name */}
+              <div className="space-y-1.5">
+                <label className="block text-[10px] font-bold text-zinc-400 uppercase tracking-wider">
+                  Repository Name
+                </label>
+                <input
+                  type="text"
+                  value={connectRepoName}
+                  onChange={(e) => setConnectRepoName(e.target.value)}
+                  placeholder="e.g. my-project"
+                  required
+                  className="w-full p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg font-mono text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500"
+                />
+                {connectOwner && connectRepoName && (
+                  <span className="text-zinc-400 text-[10px]">
+                    Will connect: <span className="font-mono font-bold text-zinc-700 dark:text-zinc-300">{connectOwner}/{connectRepoName}</span>
+                  </span>
+                )}
+              </div>
+
+              <button
+                type="submit"
+                disabled={isConnecting || !connectInstallationId}
+                className="w-full px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold rounded-lg shadow-sm transition-all"
+              >
+                {isConnecting ? 'Connecting…' : '→ Connect Repository'}
+              </button>
+            </form>
+          </SectionCard>
+
+          {/* Info sidebar */}
+          <SectionCard title="About Manual Connection" description="When to use this form.">
+            <div className="space-y-4 text-xs text-zinc-600 dark:text-zinc-400 leading-relaxed">
+              <p>
+                The automatic sync (<strong className="text-zinc-800 dark:text-zinc-200">Sync Repositories</strong> on the Repositories page) fetches
+                all repos accessible to a GitHub App installation in bulk.
+              </p>
+              <p>
+                Use this form to connect a <strong className="text-zinc-800 dark:text-zinc-200">single specific repository</strong> by name, useful when:
+              </p>
+              <ul className="list-disc pl-4 space-y-1">
+                <li>You only want to monitor one repo from a large org</li>
+                <li>The bulk sync missed a newly created repo</li>
+                <li>You want to re-connect a previously deleted repository</li>
+              </ul>
+              <div className="mt-3 p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded">
+                <span className="font-mono text-[10px] text-zinc-500">POST /api/repositories/connect</span>
+              </div>
+            </div>
+          </SectionCard>
+        </div>
+      )}
+
+      {/* ── System Config Tab ── */}
+      {activeTab === 'system' && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl">
           {/* General Configs */}
           <SectionCard title="General Workspace" description="Defaults for user session and interface.">

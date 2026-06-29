@@ -9,12 +9,34 @@ export const Breadcrumb: React.FC = () => {
   const parts = pathname.split('/').filter(Boolean);
 
   if (parts.length === 0 || (parts.length === 1 && parts[0] === 'dashboard')) {
-    return <span className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Dashboard</span>;
+    return (
+      <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+        Dashboard
+      </span>
+    );
   }
 
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center space-x-2 text-sm text-zinc-500">
-      <Link href="/dashboard" className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+    <nav
+      aria-label="Breadcrumb"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.35rem',
+        fontSize: '0.825rem',
+        color: 'var(--text-secondary)',
+      }}
+    >
+      <Link
+        href="/dashboard"
+        style={{
+          color: 'var(--text-muted)',
+          textDecoration: 'none',
+          transition: 'color 0.15s ease',
+        }}
+        onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; }}
+        onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+      >
         Dashboard
       </Link>
       {parts.map((part, index) => {
@@ -24,11 +46,16 @@ export const Breadcrumb: React.FC = () => {
 
         return (
           <React.Fragment key={href}>
-            <span className="text-zinc-400">/</span>
+            <span style={{ color: 'var(--border-hover)', fontSize: '0.75rem' }}>›</span>
             {isLast ? (
-              <span className="font-semibold text-zinc-900 dark:text-zinc-100">{formatted}</span>
+              <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{formatted}</span>
             ) : (
-              <Link href={href} className="hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors">
+              <Link
+                href={href}
+                style={{ color: 'var(--text-muted)', textDecoration: 'none', transition: 'color 0.15s ease' }}
+                onMouseEnter={(e) => { e.currentTarget.style.color = 'var(--text-primary)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.color = 'var(--text-muted)'; }}
+              >
                 {formatted}
               </Link>
             )}

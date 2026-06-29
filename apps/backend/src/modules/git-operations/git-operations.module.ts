@@ -35,6 +35,7 @@ import {
     WorkspaceCleanupService,
   ],
   exports: [
+    GitService,
     RepositoryCloneService,
     WorkspaceService,
     DocumentationWriterService,

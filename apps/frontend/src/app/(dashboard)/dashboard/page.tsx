@@ -38,7 +38,7 @@ export default function DashboardOverviewPage(): React.JSX.Element {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-slide-up">
       <PageHeader
         title="Command Center"
         description="Autonomous LangGraph documentation orchestration live telemetry."
@@ -46,7 +46,27 @@ export default function DashboardOverviewPage(): React.JSX.Element {
           <button
             type="button"
             onClick={refetch}
-            className="px-3.5 py-2 bg-zinc-900 hover:bg-zinc-800 dark:bg-zinc-100 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 text-xs font-bold rounded-md shadow transition-all"
+            style={{
+              padding: '0.45rem 1rem',
+              background: 'var(--accent)',
+              color: '#fff',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              borderRadius: 'var(--radius-md)',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'all 0.18s ease',
+              boxShadow: 'var(--shadow-accent)',
+              letterSpacing: '0.02em',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--accent-light)';
+              e.currentTarget.style.transform = 'translateY(-1px)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'var(--accent)';
+              e.currentTarget.style.transform = 'translateY(0)';
+            }}
           >
             ↻ Refresh Feed
           </button>

@@ -6,16 +6,89 @@ export interface ErrorStateProps {
   retry?: () => void;
 }
 
-export const ErrorState: React.FC<ErrorStateProps> = ({ title = 'Something went wrong', message, retry }) => {
+export const ErrorState: React.FC<ErrorStateProps> = ({
+  title = 'Something went wrong',
+  message,
+  retry,
+}) => {
   return (
-    <div className="flex flex-col items-center justify-center p-8 border border-red-200 dark:border-red-900 rounded-lg bg-red-50 dark:bg-red-950/30 text-center my-6">
-      <h3 className="text-base font-semibold text-red-800 dark:text-red-300">{title}</h3>
-      <p className="text-sm text-red-600 dark:text-red-400 mt-1 max-w-md">{message}</p>
+    <div
+      className="animate-fade-in"
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '2.5rem 2rem',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--danger-dim)',
+        border: '1px solid rgba(244,63,94,0.2)',
+        textAlign: 'center',
+        margin: '0.5rem 0',
+      }}
+    >
+      {/* Icon */}
+      <div
+        style={{
+          width: '44px',
+          height: '44px',
+          borderRadius: '50%',
+          background: 'rgba(244,63,94,0.15)',
+          border: '1px solid rgba(244,63,94,0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          marginBottom: '1rem',
+          flexShrink: 0,
+        }}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="var(--danger)"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+
+      <h3 style={{ fontSize: '0.95rem', fontWeight: 600, color: 'var(--danger)', marginBottom: '0.35rem' }}>
+        {title}
+      </h3>
+      <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', maxWidth: '380px', lineHeight: 1.6 }}>
+        {message}
+      </p>
+
       {retry && (
         <button
           type="button"
           onClick={retry}
-          className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded text-sm font-medium transition-colors"
+          style={{
+            marginTop: '1.25rem',
+            padding: '0.5rem 1.25rem',
+            borderRadius: 'var(--radius-md)',
+            background: 'var(--danger)',
+            color: '#fff',
+            fontSize: '0.8rem',
+            fontWeight: 600,
+            border: 'none',
+            cursor: 'pointer',
+            transition: 'all 0.18s ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.opacity = '0.85';
+            e.currentTarget.style.transform = 'translateY(-1px)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.opacity = '1';
+            e.currentTarget.style.transform = 'translateY(0)';
+          }}
         >
           Try Again
         </button>

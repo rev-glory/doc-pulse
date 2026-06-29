@@ -77,8 +77,8 @@ export class WorkflowNodeAdapters {
     const context = this.activeContexts.get(runId);
     if (!context) return false;
 
-    // Issue 4: If checkpoint state already contains commitSha and branchName, skip GitCommit node
-    if (nodeName === WorkflowNodeName.GitCommit && state?.commitSha && state?.branchName) {
+    // Issue 4: If checkpoint state already contains commitSha and targetBranch, skip GitCommit node
+    if (nodeName === WorkflowNodeName.GitCommit && state?.commitSha && state?.targetBranch) {
       return true;
     }
 

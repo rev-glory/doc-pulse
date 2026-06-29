@@ -6,7 +6,15 @@ export interface MetricCardProps {
   subtitle?: string;
   trend?: string;
   status?: 'default' | 'success' | 'warning' | 'danger';
+  icon?: React.ReactNode;
 }
+
+const statusConfig = {
+  default: { color: 'var(--text-primary)',   glow: 'transparent',      bg: 'transparent' },
+  success: { color: 'var(--success)',         glow: 'rgba(16,185,129,0.2)',  bg: 'var(--success-dim)' },
+  warning: { color: 'var(--warning)',         glow: 'rgba(245,158,11,0.2)', bg: 'var(--warning-dim)' },
+  danger:  { color: 'var(--danger)',          glow: 'rgba(244,63,94,0.2)',  bg: 'var(--danger-dim)' },
+};
 
 export const MetricCard: React.FC<MetricCardProps> = ({
   title,
@@ -15,21 +23,103 @@ export const MetricCard: React.FC<MetricCardProps> = ({
   trend,
   status = 'default',
 }) => {
-  const statusColors = {
-    default: 'text-zinc-900 dark:text-zinc-100',
-    success: 'text-emerald-600 dark:text-emerald-400',
-    warning: 'text-amber-600 dark:text-amber-400',
-    danger: 'text-red-600 dark:text-red-400',
-  };
+  const cfg = statusConfig[status];
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 p-5 shadow-sm flex flex-col justify-between">
-      <span className="text-xs font-medium text-zinc-500 uppercase tracking-wider">{title}</span>
-      <div className="mt-2 flex items-baseline gap-2">
-        <span className={`text-3xl font-extrabold tracking-tight ${statusColors[status]}`}>{value}</span>
-        {trend && <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">{trend}</span>}
+    <div
+      className="animate-slide-up"
+      style={{
+        background: 'var(--bg-surface)',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        padding: '1.25rem 1.5rem',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        gap: '0.75rem',
+        transition: 'border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease',
+        cursor: 'default',
+        position: 'relative',
+        overflow: 'hidden',
+      }}
+      onMouseEnter={(e) => {
+        const t = e.currentTarget;
+        t.style.borderColor = 'var(--border-hover)';
+        t.style.transform = 'translateY(-2px)';
+        t.style.boxShadow = `var(--shadow-md), 0 0 20px ${cfg.glow}`;
+      }}
+      onMouseLeave={(e) => {
+        const t = e.currentTarget;
+        t.style.borderColor = 'var(--border)';
+        t.style.transform = 'translateY(0)';
+        t.style.boxShadow = 'none';
+      }}
+    >
+      {/* Status accent top bar */}
+      {status !== 'default' && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            background: cfg.color,
+            opacity: 0.6,
+          }}
+        />
+      )}
+
+      {/* Title */}
+      <span
+        style={{
+          fontSize: '0.72rem',
+          fontWeight: 600,
+          textTransform: 'uppercase',
+          letterSpacing: '0.08em',
+          color: 'var(--text-muted)',
+        }}
+      >
+        {title}
+      </span>
+
+      {/* Value */}
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+        <span
+          style={{
+            fontSize: '2.25rem',
+            fontWeight: 800,
+            letterSpacing: '-0.04em',
+            lineHeight: 1,
+            color: cfg.color,
+            fontVariantNumeric: 'tabular-nums',
+          }}
+        >
+          {value}
+        </span>
+        {trend && (
+          <span
+            style={{
+              fontSize: '0.72rem',
+              fontWeight: 600,
+              padding: '0.15rem 0.5rem',
+              borderRadius: '999px',
+              background: 'var(--success-dim)',
+              color: 'var(--success)',
+              border: '1px solid rgba(16,185,129,0.2)',
+            }}
+          >
+            ↑ {trend}
+          </span>
+        )}
       </div>
-      {subtitle && <span className="text-xs text-zinc-400 dark:text-zinc-500 mt-2 block">{subtitle}</span>}
+
+      {/* Subtitle */}
+      {subtitle && (
+        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+          {subtitle}
+        </span>
+      )}
     </div>
   );
 };

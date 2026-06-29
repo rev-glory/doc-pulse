@@ -7,16 +7,25 @@ import { AuthProvider } from '@/features/auth/providers/auth-provider';
 const geistSans = Geist({
   variable: '--font-geist-sans',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 const geistMono = Geist_Mono({
   variable: '--font-geist-mono',
   subsets: ['latin'],
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'DocPulse',
-  description: 'DocPulse frontend application',
+  title: 'DocPulse — AI Documentation Automation',
+  description:
+    'DocPulse automatically generates and maintains documentation for your GitHub repositories using AI-powered LangGraph agents.',
+  keywords: ['documentation', 'AI', 'GitHub', 'automation', 'LangGraph'],
+  openGraph: {
+    title: 'DocPulse — AI Documentation Automation',
+    description: 'Autonomous AI documentation engine for engineering teams.',
+    type: 'website',
+  },
 };
 
 export default function RootLayout({

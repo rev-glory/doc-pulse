@@ -24,6 +24,49 @@ export interface SyncSummaryDto {
   updated: number;
 }
 
+/** Full repository config shape returned by the backend */
+export interface RepositoryConfig {
+  id: string;
+  githubRepositoryId: number;
+  installationId: string;
+  repositoryOwner: string;
+  name: string;
+  fullName: string;
+  defaultBranch: string;
+  private: boolean;
+  description: string | null;
+  language: string | null;
+  cloneUrl: string;
+  htmlUrl: string;
+  visibility: string;
+  isActive: boolean;
+  lastSyncedAt: string | null;
+  docPaths: string[];
+  webhookId: number | null;
+  isWebhookActive: boolean;
+  branchStrategy: 'DOCUMENTATION_BRANCH' | 'CURRENT_BRANCH';
+  documentationBranchName: string | null;
+  documentationDirectory: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** Payload for PATCH /repositories/:id */
+export interface UpdateRepositoryDto {
+  docPaths?: string[];
+  isActive?: boolean;
+  branchStrategy?: 'DOCUMENTATION_BRANCH' | 'CURRENT_BRANCH';
+  documentationBranchName?: string | null;
+  documentationDirectory?: string;
+}
+
+/** Payload for POST /repositories/connect */
+export interface ConnectRepositoryDto {
+  installationId: string;
+  owner: string;
+  repositoryName: string;
+}
+
 export const RepositoryApi = {
   listRepositories: async (): Promise<RepositorySummaryDto[]> => {
     const repos = await apiClient<any[]>('/repositories');
@@ -58,6 +101,27 @@ export const RepositoryApi = {
     };
   },
 
+  /** Get the raw full config DTO for a repository (all backend fields) */
+  getRepositoryConfig: async (id: string): Promise<RepositoryConfig> => {
+    return apiClient<RepositoryConfig>(`/repositories/${id}`);
+  },
+
+  /** PATCH /repositories/:id — update documentation strategy / paths */
+  updateRepository: async (id: string, dto: UpdateRepositoryDto): Promise<RepositoryConfig> => {
+    return apiClient<RepositoryConfig>(`/repositories/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(dto),
+    });
+  },
+
+  /** POST /repositories/connect — manually connect a specific GitHub repo */
+  connectRepository: async (dto: ConnectRepositoryDto): Promise<RepositoryConfig> => {
+    return apiClient<RepositoryConfig>('/repositories/connect', {
+      method: 'POST',
+      body: JSON.stringify(dto),
+    });
+  },
+
   syncInstallationRepositories: async (
     installationId: number,
   ): Promise<SyncSummaryDto> => {
@@ -67,12 +131,12 @@ export const RepositoryApi = {
     );
   },
 
-  activateRepository: async (id: string): Promise<any> => {
-    return apiClient<any>(`/repositories/${id}/activate`, { method: 'PATCH' });
+  activateRepository: async (id: string): Promise<RepositoryConfig> => {
+    return apiClient<RepositoryConfig>(`/repositories/${id}/activate`, { method: 'PATCH' });
   },
 
-  deactivateRepository: async (id: string): Promise<any> => {
-    return apiClient<any>(`/repositories/${id}/deactivate`, { method: 'PATCH' });
+  deactivateRepository: async (id: string): Promise<RepositoryConfig> => {
+    return apiClient<RepositoryConfig>(`/repositories/${id}/deactivate`, { method: 'PATCH' });
   },
 
   deleteRepository: async (id: string): Promise<void> => {

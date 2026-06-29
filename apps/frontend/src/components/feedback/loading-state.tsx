@@ -7,14 +7,49 @@ export interface LoadingStateProps {
 
 export const LoadingState: React.FC<LoadingStateProps> = ({ message = 'Loading...', rows = 3 }) => {
   return (
-    <div className="flex flex-col gap-4 p-8 border border-zinc-200 dark:border-zinc-800 rounded-lg animate-pulse my-4">
-      <div className="flex items-center gap-3">
-        <div className="w-5 h-5 rounded-full bg-zinc-300 dark:bg-zinc-700" />
-        <span className="text-sm font-medium text-zinc-600 dark:text-zinc-400">{message}</span>
+    <div
+      style={{
+        padding: '1.5rem',
+        border: '1px solid var(--border)',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--bg-surface)',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        margin: '0.5rem 0',
+      }}
+    >
+      {/* Message row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div
+          style={{
+            width: '16px',
+            height: '16px',
+            borderRadius: '50%',
+            border: '2px solid var(--border-hover)',
+            borderTopColor: 'var(--accent)',
+            flexShrink: 0,
+            animation: 'spin-slow 0.8s linear infinite',
+          }}
+        />
+        <span style={{ fontSize: '0.8rem', fontWeight: 500, color: 'var(--text-secondary)' }}>
+          {message}
+        </span>
       </div>
-      <div className="flex flex-col gap-2 mt-2">
+
+      {/* Shimmer rows */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
         {Array.from({ length: rows }).map((_, i) => (
-          <div key={i} className="h-8 bg-zinc-200 dark:bg-zinc-800 rounded w-full" />
+          <div
+            key={i}
+            className="shimmer"
+            style={{
+              height: '36px',
+              borderRadius: 'var(--radius-sm)',
+              width: i === rows - 1 ? '70%' : '100%',
+              opacity: 1 - i * 0.1,
+            }}
+          />
         ))}
       </div>
     </div>

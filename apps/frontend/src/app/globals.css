@@ -1,10 +1,59 @@
 @import 'tailwindcss';
 
+/* ─────────────────────────────────────────────
+   DocPulse — Premium SaaS Design System
+   Dark-first / Linear-inspired aesthetic
+   ───────────────────────────────────────────── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Backgrounds */
+  --bg-base:      #08080F;
+  --bg-surface:   #0E0E18;
+  --bg-elevated:  #14141F;
+  --bg-hover:     #1A1A28;
+
+  /* Borders */
+  --border:       rgba(255, 255, 255, 0.07);
+  --border-hover: rgba(255, 255, 255, 0.13);
+  --border-accent: rgba(99, 102, 241, 0.35);
+
+  /* Accent — Indigo/Violet */
+  --accent:       #6366F1;
+  --accent-light: #818CF8;
+  --accent-dim:   rgba(99, 102, 241, 0.15);
+  --accent-glow:  rgba(99, 102, 241, 0.3);
+
+  /* Text */
+  --text-primary:   #EEEEF3;
+  --text-secondary: #8B8B9E;
+  --text-muted:     #55556A;
+
+  /* Status */
+  --success:      #10B981;
+  --success-dim:  rgba(16, 185, 129, 0.15);
+  --warning:      #F59E0B;
+  --warning-dim:  rgba(245, 158, 11, 0.15);
+  --danger:       #F43F5E;
+  --danger-dim:   rgba(244, 63, 94, 0.15);
+
+  /* Shadows */
+  --shadow-sm:  0 1px 3px rgba(0,0,0,0.4);
+  --shadow-md:  0 4px 16px rgba(0,0,0,0.5);
+  --shadow-lg:  0 12px 40px rgba(0,0,0,0.6);
+  --shadow-accent: 0 0 24px rgba(99, 102, 241, 0.25);
+
+  /* Radii */
+  --radius-sm:  6px;
+  --radius-md:  10px;
+  --radius-lg:  14px;
+  --radius-xl:  20px;
+
+  /* Background for tailwind compat */
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
 }
 
+/* ── Tailwind theme bridge ─────────────────── */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -12,15 +61,204 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base reset ────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg-base);
+  color: var(--text-primary);
+  font-family: var(--font-sans, 'Inter', system-ui, sans-serif);
+  line-height: 1.6;
+  min-height: 100dvh;
+}
+
+/* ── Scrollbar ──────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.18);
+}
+
+/* ── Selection ──────────────────────────────── */
+::selection {
+  background: var(--accent-dim);
+  color: var(--accent-light);
+}
+
+/* ─────────────────────────────────────────────
+   KEYFRAME ANIMATIONS
+   ───────────────────────────────────────────── */
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideRight {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+@keyframes pulseGlow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50%       { box-shadow: 0 0 0 6px transparent; }
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+@keyframes orb-float {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50%       { transform: translateY(-24px) scale(1.04); }
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ─────────────────────────────────────────────
+   ANIMATION UTILITIES
+   ───────────────────────────────────────────── */
+
+.animate-fade-in  { animation: fadeIn  0.4s ease both; }
+.animate-slide-up { animation: slideUp 0.45s cubic-bezier(0.22,1,0.36,1) both; }
+.animate-slide-right { animation: slideRight 0.35s ease both; }
+
+.animate-stagger-1 { animation-delay: 0.05s; }
+.animate-stagger-2 { animation-delay: 0.10s; }
+.animate-stagger-3 { animation-delay: 0.15s; }
+.animate-stagger-4 { animation-delay: 0.20s; }
+
+/* ─────────────────────────────────────────────
+   SHIMMER SKELETON
+   ───────────────────────────────────────────── */
+
+.shimmer {
+  background: linear-gradient(
+    90deg,
+    var(--bg-elevated) 25%,
+    var(--bg-hover)    50%,
+    var(--bg-elevated) 75%
+  );
+  background-size: 800px 100%;
+  animation: shimmer 1.6s infinite linear;
+}
+
+/* ─────────────────────────────────────────────
+   GLASS MORPHISM
+   ───────────────────────────────────────────── */
+
+.glass {
+  background: rgba(14, 14, 24, 0.7);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid var(--border);
+}
+
+.glass-hover:hover {
+  background: rgba(20, 20, 32, 0.8);
+  border-color: var(--border-hover);
+}
+
+/* ─────────────────────────────────────────────
+   GRADIENT TEXT
+   ───────────────────────────────────────────── */
+
+.text-gradient {
+  background: linear-gradient(135deg, #A5B4FC 0%, #818CF8 40%, #6366F1 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.text-gradient-warm {
+  background: linear-gradient(135deg, #F1F1F3 0%, #C7C7D9 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ─────────────────────────────────────────────
+   GLOW EFFECTS
+   ───────────────────────────────────────────── */
+
+.glow-accent {
+  box-shadow: var(--shadow-accent);
+}
+
+.glow-accent-hover:hover {
+  box-shadow: 0 0 32px rgba(99, 102, 241, 0.4);
+}
+
+/* ─────────────────────────────────────────────
+   SURFACE CARD
+   ───────────────────────────────────────────── */
+
+.card-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-surface:hover {
+  border-color: var(--border-hover);
+}
+
+/* ─────────────────────────────────────────────
+   ACCENT BUTTON
+   ───────────────────────────────────────────── */
+
+.btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.btn-primary:hover {
+  background: var(--accent-light);
+  box-shadow: var(--shadow-accent);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ─────────────────────────────────────────────
+   NAV ACTIVE STATE
+   ───────────────────────────────────────────── */
+
+.nav-active {
+  background: var(--accent-dim);
+  color: var(--accent-light);
+  border: 1px solid var(--border-accent);
+  box-shadow: 0 0 12px rgba(99, 102, 241, 0.15);
 }
