@@ -1,0 +1,73 @@
+# syntax=docker/dockerfile:1
+# Stage 1: Build stage
+FROM node:22.12-alpine AS builder
+RUN apk add --no-cache libc6-compat git
+WORKDIR /app
+
+# Set build-time dummy DATABASE_URL to satisfy Prisma config loader validation
+ENV DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"
+
+# Copy root package.json to read pinned packageManager version
+COPY package.json ./
+
+# Enable corepack and prepare the package manager version deterministically
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+# Copy monorepo configuration
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy package manifests for backend and its dependencies (omit frontend)
+COPY apps/backend/package.json ./apps/backend/
+COPY packages/shared-config/package.json ./packages/shared-config/
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY packages/shared-utils/package.json ./packages/shared-utils/
+
+# Install dependencies using build cache mount for the pnpm store
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm config set store-dir /pnpm/store && \
+    pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Generate Prisma Client
+RUN pnpm --filter @docpulse/backend prisma:generate
+
+# Build backend and its workspace dependencies only
+RUN pnpm --filter @docpulse/backend... build
+
+# Use pnpm deploy to isolate the backend and its production dependencies
+RUN pnpm --filter @docpulse/backend --prod deploy /app/pruned-backend
+
+# Stage 2: Runtime runner stage
+FROM node:22.12-alpine AS runner
+RUN apk add --no-cache git dumb-init
+WORKDIR /app
+
+# Pre-create storage directory with ownership assigned to the node user
+RUN mkdir -p /app/storage && chown -R node:node /app/storage
+
+# Run as non-root user
+USER node
+
+# Copy pruned backend and compiled files from builder (Prisma client is inside dist/)
+COPY --from=builder --chown=node:node /app/pruned-backend ./
+COPY --from=builder --chown=node:node /app/apps/backend/dist ./dist
+
+# Define storage directory volume for clones, workspace, and artifacts
+VOLUME /app/storage
+
+EXPOSE 3001
+
+ENV PORT=3001
+ENV NODE_ENV=production
+
+# Health check using busybox wget included in alpine
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:3001/health || exit 1
+
+# OCI labels for professional metadata
+LABEL org.opencontainers.image.source="https://github.com/rev-glory/doc-pulse"
+LABEL org.opencontainers.image.description="DocPulse Backend Service"
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "dist/main.js"]

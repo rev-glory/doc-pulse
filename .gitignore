@@ -61,7 +61,8 @@ temp/
 # Runtime Storage
 # (cloned repos, diff artifacts, temp workspaces — keep under storage/)
 # ==========================================================
-storage/
+storage/*
+!storage/.gitkeep
 uploads/
 generated-docs/
 artifacts/

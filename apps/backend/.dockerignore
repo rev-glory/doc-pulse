@@ -1,0 +1,17 @@
+node_modules
+dist
+.next
+.git
+logs
+coverage
+test
+test-results
+*.log
+.env
+.env.*
+.vscode
+.idea
+*.tsbuildinfo
+docs
+screenshots
+README-assets

@@ -51,11 +51,11 @@
     "simple-git": "^3.36.0",
     "socket.io": "^4.8.3",
     "swagger-ui-express": "^5.0.1",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "@docpulse/shared-types": "workspace:*"
   },
   "devDependencies": {
     "@docpulse/shared-config": "workspace:*",
-    "@docpulse/shared-types": "workspace:*",
     "@docpulse/shared-utils": "workspace:*",
     "@nestjs/cli": "^11.0.23",
     "@nestjs/schematics": "^11.0.9",

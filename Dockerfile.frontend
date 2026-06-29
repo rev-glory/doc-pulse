@@ -1,0 +1,67 @@
+# syntax=docker/dockerfile:1
+# Stage 1: Build stage
+FROM node:22.12-alpine AS builder
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Copy root package.json to read pinned packageManager version
+COPY package.json ./
+
+# Enable corepack and prepare the package manager version deterministically
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+
+# Copy monorepo configuration
+COPY pnpm-lock.yaml pnpm-workspace.yaml ./
+# Copy package manifests for frontend and its dependencies (omit backend and shared-utils)
+COPY apps/frontend/package.json ./apps/frontend/
+COPY packages/shared-config/package.json ./packages/shared-config/
+COPY packages/shared-types/package.json ./packages/shared-types/
+
+# Install dependencies using build cache mount for the pnpm store
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store \
+    pnpm config set store-dir /pnpm/store && \
+    pnpm install --frozen-lockfile
+
+# Copy source code
+COPY . .
+
+# Build-time environment variables for Next.js public URLs
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_WS_URL
+
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
+ENV NODE_ENV=production
+
+# Build frontend and its workspace dependencies only
+RUN pnpm --filter @docpulse/frontend... build
+
+# Stage 2: Runtime runner stage
+FROM node:22.12-alpine AS runner
+RUN apk add --no-cache dumb-init
+WORKDIR /app
+
+# Run as non-root user
+USER node
+
+ENV PORT=3000
+ENV NODE_ENV=production
+ENV HOSTNAME="0.0.0.0"
+
+# Copy standalone output from builder
+COPY --from=builder --chown=node:node /app/apps/frontend/.next/standalone ./
+COPY --from=builder --chown=node:node /app/apps/frontend/public ./apps/frontend/public
+COPY --from=builder --chown=node:node /app/apps/frontend/.next/static ./apps/frontend/.next/static
+
+EXPOSE 3000
+
+# Health check using busybox wget included in alpine
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD wget -qO- http://127.0.0.1:3000/api/health || exit 1
+
+# OCI labels for professional metadata
+LABEL org.opencontainers.image.source="https://github.com/rev-glory/doc-pulse"
+LABEL org.opencontainers.image.description="DocPulse Frontend Service"
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "apps/frontend/server.js"]

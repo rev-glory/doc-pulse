@@ -1,57 +1,30 @@
-# =============================================================================
-# DocPulse — Local Development Infrastructure
-# =============================================================================
-#
-# Provides: PostgreSQL 16 + Redis 7
-#
-# Usage:
-#   docker compose up -d          Start all services
-#   docker compose down           Stop all services (data persists)
-#   docker compose down -v        Stop + delete all volumes (full reset)
-#   docker compose logs -f        Stream all logs
-#
-# See docker/README.md for full usage guide.
-# =============================================================================
-
 name: docpulse
 
 services:
   # ---------------------------------------------------------------------------
-  # PostgreSQL 16 — Primary relational data store
+  # PostgreSQL 16 — Relational Database
   # ---------------------------------------------------------------------------
   postgres:
     image: postgres:16-alpine
-    container_name: docpulse-postgres
     restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-docpulse}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-docpulse_dev_password}
-      POSTGRES_DB: ${POSTGRES_DB:-docpulse_dev}
-      # Locale settings for deterministic collation
-      POSTGRES_INITDB_ARGS: "--locale=en_US.UTF-8 --encoding=UTF8"
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+    env_file:
+      - .env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - docpulse_network
     healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-docpulse} -d ${POSTGRES_DB:-docpulse_dev}",
-        ]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER:-docpulse} -d $${POSTGRES_DB:-docpulse_dev}"]
+      interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 15s
+      start_period: 5s
 
   # ---------------------------------------------------------------------------
-  # Redis 7 — BullMQ job queues + LangGraph checkpoints
+  # Redis 7 — Queue Broker
   # ---------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
-    container_name: docpulse-redis
     restart: unless-stopped
     command: >
       redis-server
@@ -60,37 +33,105 @@ services:
       --maxmemory-policy noeviction
       --save 60 1
       --loglevel notice
-    ports:
-      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - redis_data:/data
     networks:
       - docpulse_network
     healthcheck:
-      test:
-        [
-          "CMD",
-          "redis-cli",
-          "-a",
-          "${REDIS_PASSWORD:-docpulse_dev_password}",
-          "ping",
-        ]
-      interval: 10s
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-docpulse_dev_password}", "ping"]
+      interval: 5s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 5s
+
+  # ---------------------------------------------------------------------------
+  # Prisma DB Migration Runner (Runs migrations then exits successfully)
+  # ---------------------------------------------------------------------------
+  db-migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: builder
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-docpulse}:${POSTGRES_PASSWORD:-docpulse_dev_password}@postgres:5432/${POSTGRES_DB:-docpulse_dev}?schema=public
+    depends_on:
+      postgres:
+        condition: service_healthy
+    command: pnpm --filter @docpulse/backend prisma:migrate:deploy
+    networks:
+      - docpulse_network
+
+  # ---------------------------------------------------------------------------
+  # NestJS Backend
+  # ---------------------------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    image: docpulse-backend:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-docpulse}:${POSTGRES_PASSWORD:-docpulse_dev_password}@postgres:5432/${POSTGRES_DB:-docpulse_dev}?schema=public
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-docpulse_dev_password}@redis:6379
+      - STORAGE_ROOT=/app/storage
+    ports:
+      - "${PORT:-3001}:3001"
+    volumes:
+      - backend_storage:/app/storage
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      db-migrate:
+        condition: service_completed_successfully
+    networks:
+      - docpulse_network
+
+  # ---------------------------------------------------------------------------
+  # Next.js Frontend
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3001}
+        - NEXT_PUBLIC_WS_URL=${NEXT_PUBLIC_WS_URL:-http://localhost:3001}
+    image: docpulse-frontend:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - docpulse_network
 
 # =============================================================================
-# Named Volumes — data survives `docker compose down`
+# Persistent Storage Volumes
 # =============================================================================
 volumes:
   postgres_data:
     name: docpulse_postgres_data
   redis_data:
     name: docpulse_redis_data
+  backend_storage:
+    name: docpulse_backend_storage
 
 # =============================================================================
-# Network — all services share one isolated bridge network
+# Isolated Bridge Network
 # =============================================================================
 networks:
   docpulse_network:

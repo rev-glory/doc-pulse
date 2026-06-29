@@ -202,47 +202,113 @@ The platform combines AI agents, workflow orchestration, GitHub Apps, and real-t
 
 ## Getting Started
 
-### Clone the Repository
+### 1. Clone the Repository
 
 ```bash
 git clone https://github.com/rev-glory/doc-pulse
 cd docpulse
 ```
 
+### 2. Environment Configuration
+
+Copy the example environment configuration file to `.env`:
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` in a text editor and fill in the values. The environment variables are categorized below:
+
+#### Required Build-time Variables (Frontend Only)
+* **`NEXT_PUBLIC_API_URL`**: Base URL of the backend API (default: `http://localhost:3001`). Baked into static assets at build time.
+* **`NEXT_PUBLIC_WS_URL`**: Base WebSocket URL of the backend (default: `http://localhost:3001`). Baked into static assets at build time.
+
+#### Required Runtime Variables (Backend Only)
+* **`DATABASE_URL`**: PostgreSQL connection string (defaults to container host inside Docker network).
+* **`REDIS_URL`**: Redis connection URL.
+* **`REDIS_PASSWORD`**: Redis authentication password.
+* **`JWT_ACCESS_SECRET` / `JWT_REFRESH_SECRET`**: Signature secrets for JWT tokens (must be at least 32 characters).
+* **`GITHUB_APP_ID` / `GITHUB_PRIVATE_KEY_BASE64` / `GITHUB_WEBHOOK_SECRET`**: Core credentials for GitHub App integration.
+* **`GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`**: Credentials for GitHub OAuth authentication.
+* **`GEMINI_API_KEY`**: Your Google Gemini API Key.
+
+#### Optional / Configuration Defaults
+* **`PORT`**: Port the backend NestJS server listens on (default: `3001`).
+* **`NODE_ENV`**: Execution context, set to `production` in container runs.
+* **`LOG_LEVEL`**: Backend log verbosity (default: `log`).
+* **`STORAGE_ROOT`**: Storage directory path for repository clones and cache assets (default: `./storage`).
+
+---
+
+## Running Locally
+
 ### Install Dependencies
+Ensure you have Node.js >= 20 and pnpm installed, then execute:
 
 ```bash
 pnpm install
 ```
 
-### Environment Configuration
+### Start Services (Dev Environment)
 
-Create the required environment files:
+1. Start local Postgres and Redis database instances:
+   ```bash
+   docker compose up postgres redis -d
+   ```
+2. Start the Backend API server (running in hot reload watch mode):
+   ```bash
+   pnpm --filter backend dev
+   ```
+3. Start the Frontend client dashboard:
+   ```bash
+   pnpm --filter frontend dev
+   ```
 
-```text
-/.env
-```
+---
 
-Configure the following services:
+## Running in Production Containers (Docker Compose)
 
-- PostgreSQL
-- Redis
-- GitHub App
-- LLM Provider(s)
+DocPulse is fully containerized for production deployment. The entire stack can be launched using a single Docker Compose command.
 
-### Run the Application
-
-Backend
+### 1. Build Containers
+Build the backend, database migrations, and frontend images using BuildKit caching optimizations:
 
 ```bash
-pnpm --filter backend dev
+docker compose build
 ```
 
-Frontend
+### 2. Start all Services
+Launch PostgreSQL, Redis, DB migrations, backend, and frontend services in detached background mode:
 
 ```bash
-pnpm --filter frontend dev
+docker compose up -d
 ```
+
+Compose automatically orchestrates service startups:
+1. `postgres` and `redis` start first.
+2. `db-migrate` applies schema migrations to `postgres` and exits.
+3. `backend` starts up and connects to `postgres` and `redis`.
+4. `frontend` starts up and connects to `backend`.
+
+### 3. Verify Health States
+Check if all containers are healthy and running:
+
+```bash
+docker compose ps
+```
+
+Confirm health endpoints respond with `"status": "ok"`:
+* **Backend**: `curl http://localhost:3001/health`
+* **Frontend**: `curl http://localhost:3000/api/health`
+
+### 4. Stop Services
+Stop all containers (retaining PostgreSQL and Redis volumes):
+
+```bash
+docker compose down
+```
+
+*For detailed instructions on PostgreSQL backups, database restores, volume cleaning, and container updates, please see the [DEPLOYMENT.md](file:///c:/Users/hp/Documents/Job-ready%20projects/doc-pulse/code/DEPLOYMENT.md) guide.*
 
 ---
 
