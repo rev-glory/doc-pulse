@@ -1,4 +1,5 @@
 import { RepositorySummary } from '../repository/repository-summary';
+import { DocumentationFile } from '../documentation/documentation-file';
 
 /**
  * Canonical shared enum representing LangGraph documentation graph nodes.
@@ -77,6 +78,8 @@ export interface WorkflowCheckpointSnapshot {
   commitMessage?: string;
   shouldSkip?: boolean;
   skipReason?: string;
+  /** Previously DocPulse-generated documentation files (marker already stripped). Persisted for workflow recovery. */
+  previousGeneratedDocumentation?: DocumentationFile[];
   executionMetadata: Record<string, unknown>;
   lastUpdatedTimestamp: string;
 }

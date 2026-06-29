@@ -236,6 +236,7 @@ export class WorkflowExecutorService implements OnModuleInit {
       commitMessage: (snapshot as any).commitMessage ?? undefined,
       shouldSkip: (snapshot as any).shouldSkip ?? undefined,
       skipReason: (snapshot as any).skipReason ?? undefined,
+      previousGeneratedDocumentation: (snapshot as any).previousGeneratedDocumentation ?? undefined,
       metadata: { ...(snapshot.executionMetadata ?? {}), hydratedAt: new Date().toISOString() },
     };
   }

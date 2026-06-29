@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import type { WorkflowState } from '../../../domain/workflow';
 import { SourceCodeAnalysis } from '../../../domain/source-code-analysis/source-code-analysis';
+import type { DocumentationFile } from '../../../domain/documentation';
 
 export interface CriticPromptContext {
   overallScore: number;
@@ -27,6 +28,10 @@ export interface RepositoryGenerationContext {
   generationIteration: number;
   sourceCodeAnalysis?: SourceCodeAnalysis;
   formattedSourceAnalysis?: string;
+  /** Previously DocPulse-generated documents (marker already stripped). */
+  previousGeneratedDocs: DocumentationFile[];
+  /** Pre-formatted string injected into the prompt's Previous DocPulse Documentation section. */
+  formattedPreviousGenDocs: string;
 }
 
 @Injectable()
@@ -102,6 +107,21 @@ export class RepositoryContextBuilderService {
     const generationIteration = (state as any).generationIteration ?? 1;
     const sourceCodeAnalysis = (state as any).sourceCodeAnalysis ?? undefined;
 
+    // Previously generated documentation — comes pre-classified and marker-stripped from
+    // DocumentationLocatorNode. Never contains the DOCPULSE_GENERATION_MARKER.
+    const previousGeneratedDocs: DocumentationFile[] =
+      (state as any).previousGeneratedDocumentation ?? [];
+
+    // Format each previous document as a named fenced block so the LLM receives
+    // structured context without raw marker text.
+    const formattedPreviousGenDocs = previousGeneratedDocs
+      .map((doc) => {
+        const heading = `### ${doc.path}`;
+        const body = doc.content?.trim() ?? '';
+        return body ? `${heading}\n\n${body}` : heading;
+      })
+      .join('\n\n---\n\n');
+
     let formattedSourceAnalysis = '';
     if (sourceCodeAnalysis) {
       const sc = sourceCodeAnalysis;
@@ -144,6 +164,8 @@ export class RepositoryContextBuilderService {
       generationIteration,
       sourceCodeAnalysis,
       formattedSourceAnalysis,
+      previousGeneratedDocs,
+      formattedPreviousGenDocs,
     };
   }
 }

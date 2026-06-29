@@ -8,6 +8,7 @@ import {
   TECHNICAL_WRITER_USER_PROMPT_TEMPLATE,
   DOCUMENT_TYPE_GUIDELINES,
   DOCUMENT_OUTPUT_SCHEMA,
+  PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION,
 } from '../prompts/technical-writer.prompt';
 import {
   DOCUMENTATION_CRITIC_PROMPT_VERSION,
@@ -53,6 +54,15 @@ export class PromptBuilderService {
       userPrompt += `\n\n## Discovered Source Code Implementation Context\n` +
         `This section contains key structural details extracted from static codebase analysis. Use this implementation context as the primary source of truth to ensure the generated documentation is technically accurate:\n\n` +
         context.formattedSourceAnalysis;
+    }
+
+    // Inject previous DocPulse documentation as reference context when it exists.
+    // The marker has already been stripped by the locator — it will never appear here.
+    if (context.formattedPreviousGenDocs) {
+      userPrompt += PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION.replace(
+        '{previousDocumentation}',
+        context.formattedPreviousGenDocs,
+      );
     }
 
     // Format iteration details

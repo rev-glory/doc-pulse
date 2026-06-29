@@ -1,6 +1,6 @@
 import { Annotation } from '@langchain/langgraph';
 import { RepositorySummary } from '../../../domain/repository';
-import { DocumentationInventory } from '../../../domain/documentation';
+import { DocumentationInventory, DocumentationFile } from '../../../domain/documentation';
 import { SourceCodeAnalysis } from '../../../domain/source-code-analysis/source-code-analysis';
 import {
   GeneratedDocument,
@@ -65,6 +65,7 @@ export const WorkflowGraphAnnotation = Annotation.Root({
   commitMessage: Annotation<string | undefined>(),
   shouldSkip: Annotation<boolean | undefined>(),
   skipReason: Annotation<string | undefined>(),
+  previousGeneratedDocumentation: Annotation<DocumentationFile[] | undefined>(),
 
   // Orchestration lifecycle channels
   currentNode: Annotation<string>(),

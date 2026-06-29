@@ -36,3 +36,29 @@ export const DOCUMENT_OUTPUT_SCHEMA: Record<string, unknown> = {
   },
   required: ['title', 'path', 'markdown', 'summary'],
 };
+
+/**
+ * Injected into the Technical Writer prompt when previousGeneratedDocumentation exists.
+ *
+ * Placement rules:
+ *   - Appended after the source code analysis section, before refinement context.
+ *   - Omitted entirely when there are no previously generated documents.
+ *   - The DOCPULSE_GENERATION_MARKER must never appear in this section (it is stripped by
+ *     the documentation locator before documents reach the prompt builder).
+ */
+export const PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION = `
+
+## Previous DocPulse Documentation
+
+The following documents were generated during a previous DocPulse run.
+
+Use them **only** as reference material to preserve consistency in terminology,
+document structure, and organization across generations.
+
+**The current source code is the authoritative source of truth.**
+If previous documentation conflicts with the source code, always follow the source code.
+Never copy outdated implementation details from this section.
+
+{previousDocumentation}
+`;
+

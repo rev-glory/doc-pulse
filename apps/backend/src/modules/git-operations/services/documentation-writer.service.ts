@@ -4,6 +4,7 @@ import * as path from 'path';
 
 import type { GeneratedDocument } from '@/domain/workflow';
 import { normalizeDocumentationDirectory } from '../../repositories/validators/documentation-directory.validator';
+import { DOCPULSE_GENERATION_MARKER } from '../../workflow/constants/docpulse-marker.constants';
 
 @Injectable()
 export class DocumentationWriterService {
@@ -43,8 +44,12 @@ export class DocumentationWriterService {
         const cleanRelPath = cleanDir === '.' ? cleanDocPath : path.join(cleanDir, cleanDocPath);
         const targetStagingPath = path.join(stagingDir, cleanRelPath);
 
+        // Prepend the generation marker so the locator can detect DocPulse-generated files
+        // on the next run without an extra filesystem scan.
+        const markedContent = `${DOCPULSE_GENERATION_MARKER}\n${canonicalContent}`;
+
         await fs.mkdir(path.dirname(targetStagingPath), { recursive: true });
-        await fs.writeFile(targetStagingPath, canonicalContent, 'utf8');
+        await fs.writeFile(targetStagingPath, markedContent, 'utf8');
         stagedRelPaths.push(cleanRelPath);
       }
 

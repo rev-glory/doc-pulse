@@ -13,10 +13,12 @@ export class DocumentationLocatorNode {
     }
 
     const documentation = await this.repositoryAnalysisService.analyzeDocumentation(rootPath, ctx?.documentationDirectory);
-    
+
     return {
       documentation,
+      // Store previously generated documentation as a separate channel so TechnicalWriterNode
+      // can supply it to the LLM as reference context without mixing it with developer docs.
+      previousGeneratedDocumentation: documentation.previousGeneratedDocumentation,
     };
   }
 }
-

@@ -2,19 +2,17 @@ import * as fs from 'node:fs/promises';
 import * as path from 'node:path';
 import { REPOSITORY_ANALYSIS_CONSTANTS } from '../constants/repository-analysis.constants';
 import { DocumentationInventory, DocumentationFile, DocumentationType } from '../../../domain/documentation';
-
 import { normalizeDocumentationDirectory } from '../../repositories/validators/documentation-directory.validator';
+import { DOCPULSE_GENERATION_MARKER } from '../../workflow/constants/docpulse-marker.constants';
 
 export async function detectDocumentation(rootPath: string): Promise<string[]> {
   const docs: string[] = [];
   const entries = await fs.readdir(rootPath).catch(() => [] as string[]);
 
-  // Check common docs patterns
   for (const entry of entries) {
     const isMatch = REPOSITORY_ANALYSIS_CONSTANTS.DOCUMENTATION_PATTERNS.some((pattern) => {
       return entry.toLowerCase().startsWith(pattern.toLowerCase());
     });
-
     if (isMatch) {
       docs.push(entry);
     }
@@ -49,18 +47,27 @@ export async function detectApiSpecifications(rootPath: string): Promise<string[
   return specs;
 }
 
+/**
+ * Builds a DocumentationInventory for the given repository root.
+ *
+ * Classification rules (single-pass — no extra filesystem scan):
+ *   - Files whose first line is DOCPULSE_GENERATION_MARKER → previousGeneratedDocumentation
+ *     The marker is stripped before the content is stored so it never reaches the LLM.
+ *   - All other files → documentationFiles (developer-authored)
+ */
 export async function buildDocumentationInventory(
   rootPath: string,
   documentationDirectory: string = 'docs',
 ): Promise<DocumentationInventory> {
   const documentationFiles: DocumentationFile[] = [];
+  const previousGeneratedDocumentation: DocumentationFile[] = [];
   const standardDocs = Object.values(DocumentationType).filter(type => type !== DocumentationType.Other);
   const foundTypes = new Set<DocumentationType>();
 
   const cleanDir = normalizeDocumentationDirectory(documentationDirectory);
   const targetDir = cleanDir === '.' ? rootPath : path.join(rootPath, cleanDir);
 
-  // Helper to map filename to type
+  // Map a filename to its canonical DocumentationType.
   const mapType = (filename: string): DocumentationType => {
     const lower = filename.toLowerCase();
     if (lower.includes('readme')) return DocumentationType.README;
@@ -76,26 +83,67 @@ export async function buildDocumentationInventory(
   const processDir = async (dirPath: string) => {
     const entries = await fs.readdir(dirPath, { withFileTypes: true }).catch(() => []);
     for (const entry of entries) {
-      if (entry.isFile()) {
-        const type = mapType(entry.name);
-        
-        // We only care if it's one of the standard docs, or if it's a known generic doc file in targetDir
-        if (type !== DocumentationType.Other || dirPath.endsWith('docs') || dirPath.endsWith('docs/') || dirPath.endsWith('docs\\') || (cleanDir !== '.' && dirPath.endsWith(cleanDir))) {
-           documentationFiles.push({
-             fileName: entry.name,
-             path: path.join(dirPath, entry.name).replace(rootPath, '').replace(/^[\\/]/, '').replace(/\\/g, '/'),
-             type,
-             exists: true,
-             qualityScore: type === DocumentationType.README ? 1.0 : 1.0, // deterministic score placeholder
-           });
-           foundTypes.add(type);
+      if (!entry.isFile()) continue;
+
+      const type = mapType(entry.name);
+
+      // Only process standard documentation types or files in the configured docs directory.
+      if (
+        type !== DocumentationType.Other ||
+        dirPath.endsWith('docs') ||
+        dirPath.endsWith('docs/') ||
+        dirPath.endsWith('docs\\') ||
+        (cleanDir !== '.' && dirPath.endsWith(cleanDir))
+      ) {
+        const filePath = path.join(dirPath, entry.name);
+        const relativePath = filePath
+          .replace(rootPath, '')
+          .replace(/^[\\\/]/, '')
+          .replace(/\\/g, '/');
+
+        // Read the full file content in one pass — used for both marker detection and LLM context.
+        // If the read fails, treat the file as developer-authored without content.
+        let rawContent: string | undefined;
+        try {
+          rawContent = await fs.readFile(filePath, 'utf8');
+        } catch {
+          rawContent = undefined;
         }
+
+        const isDocPulseGenerated =
+          rawContent !== undefined && rawContent.startsWith(DOCPULSE_GENERATION_MARKER);
+
+        if (isDocPulseGenerated) {
+          // Strip the marker line (and the newline that follows it) so it never appears downstream.
+          const afterMarker = rawContent!.startsWith(DOCPULSE_GENERATION_MARKER + '\n')
+            ? rawContent!.slice(DOCPULSE_GENERATION_MARKER.length + 1)
+            : rawContent!.slice(DOCPULSE_GENERATION_MARKER.length);
+
+          previousGeneratedDocumentation.push({
+            fileName: entry.name,
+            path: relativePath,
+            type,
+            exists: true,
+            qualityScore: 1.0,
+            isDocPulseGenerated: true,
+            content: afterMarker,
+          });
+        } else {
+          documentationFiles.push({
+            fileName: entry.name,
+            path: relativePath,
+            type,
+            exists: true,
+            qualityScore: 1.0,
+          });
+        }
+
+        foundTypes.add(type);
       }
     }
   };
 
-  // Verify the target directory exists and is a directory.
-  // If it does not exist, return an empty documentation inventory instead of throwing.
+  // Return an empty inventory when the target directory does not exist.
   let directoryExists = false;
   try {
     const stat = await fs.stat(targetDir);
@@ -103,7 +151,7 @@ export async function buildDocumentationInventory(
       directoryExists = true;
     }
   } catch {
-    // Ignore if directory doesn't exist
+    // directory absent — not an error
   }
 
   if (directoryExists) {
@@ -114,8 +162,8 @@ export async function buildDocumentationInventory(
 
   return {
     documentationFiles,
+    previousGeneratedDocumentation,
     missingDocuments,
-    outdatedDocuments: [], // TODO: Future commits will use metadata & LLM review to populate this
+    outdatedDocuments: [],
   };
 }
-

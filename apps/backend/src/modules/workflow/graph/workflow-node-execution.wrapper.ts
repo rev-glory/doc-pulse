@@ -225,6 +225,7 @@ export class WorkflowNodeExecutionWrapper {
       commitMessage: state.commitMessage ?? undefined,
       shouldSkip: state.shouldSkip ?? undefined,
       skipReason: state.skipReason ?? undefined,
+      previousGeneratedDocumentation: state.previousGeneratedDocumentation ?? undefined,
       executionMetadata: state.metadata ?? {},
       lastUpdatedTimestamp: new Date().toISOString(),
       // Complete state details persisted for recovery:
