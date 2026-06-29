@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 // ---------------------------------------------------------------------------
 // Database Configuration (PostgreSQL / Prisma)
@@ -16,7 +16,7 @@ export interface DatabaseConfig {
   url: string;
 }
 
-export const databaseConfig = registerAs('database', (): DatabaseConfig => {
+export const databaseConfig = registerAs("database", (): DatabaseConfig => {
   const env = process.env as unknown as Env;
 
   return {

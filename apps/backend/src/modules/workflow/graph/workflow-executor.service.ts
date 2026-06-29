@@ -1,22 +1,48 @@
-import { Injectable, Logger, OnModuleInit, BadRequestException, Optional, ConflictException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { RealtimeWorkflowStage, WorkflowEventType } from '@docpulse/shared-types';
-import { WorkflowNodeAdapters, WorkflowNodeExecutionException } from './workflow-node-adapters';
-import { buildDocumentationWorkflowGraph, CompiledDocumentationGraph } from './documentation-workflow.graph';
-import { WorkflowExecutionInput, WorkflowGraphState, WorkflowError } from './graph.types';
-import { WorkflowCheckpointRepository } from '../persistence/workflow-checkpoint.repository';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  BadRequestException,
+  Optional,
+  ConflictException,
+} from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import {
+  RealtimeWorkflowStage,
+  WorkflowEventType,
+} from "@docpulse/shared-types";
+import {
+  WorkflowNodeAdapters,
+  WorkflowNodeExecutionException,
+} from "./workflow-node-adapters";
+import {
+  buildDocumentationWorkflowGraph,
+  CompiledDocumentationGraph,
+} from "./documentation-workflow.graph";
+import {
+  WorkflowExecutionInput,
+  WorkflowGraphState,
+  WorkflowError,
+} from "./graph.types";
+import { WorkflowCheckpointRepository } from "../persistence/workflow-checkpoint.repository";
 import {
   WorkflowState as DomainWorkflowState,
   WorkflowStatus,
   WorkflowNodeName,
   WorkflowCheckpointSnapshot,
-} from '../../../domain/workflow';
-import { WorkflowEventService } from '../../realtime/services/workflow-event.service';
-import { PrismaService } from '@/database';
-import { RunStatus as PrismaRunStatus, WorkflowStage as PrismaWorkflowStage } from '@/generated/prisma/enums';
-import { RepositoryCloneService } from '../../git-operations/services/repository-clone.service';
-import { WorkspaceLifecycleService } from '../../git-operations/services/workspace-lifecycle.service';
-import { classifyWorkflowError, QueueErrorClassification } from '../../queue/types/queue-errors';
+} from "../../../domain/workflow";
+import { WorkflowEventService } from "../../realtime/services/workflow-event.service";
+import { PrismaService } from "@/database";
+import {
+  RunStatus as PrismaRunStatus,
+  WorkflowStage as PrismaWorkflowStage,
+} from "@/generated/prisma/enums";
+import { RepositoryCloneService } from "../../git-operations/services/repository-clone.service";
+import { WorkspaceLifecycleService } from "../../git-operations/services/workspace-lifecycle.service";
+import {
+  classifyWorkflowError,
+  QueueErrorClassification,
+} from "../../queue/types/queue-errors";
 
 @Injectable()
 export class WorkflowExecutorService implements OnModuleInit {
@@ -46,26 +72,38 @@ export class WorkflowExecutorService implements OnModuleInit {
   ) {}
 
   public onModuleInit(): void {
-    this.logger.debug('Initializing WorkflowExecutorService...');
-    const minDocScore = this.configService.get<number>('WORKFLOW_MIN_DOC_SCORE', 80);
+    this.logger.debug("Initializing WorkflowExecutorService...");
+    const minDocScore = this.configService.get<number>(
+      "WORKFLOW_MIN_DOC_SCORE",
+      80,
+    );
 
-    this.compiledGraph = buildDocumentationWorkflowGraph(this.adapters, { minDocScore });
-    this.logger.debug(`LangGraph orchestration engine compiled (minDocScore threshold: ${minDocScore}).`);
+    this.compiledGraph = buildDocumentationWorkflowGraph(this.adapters, {
+      minDocScore,
+    });
+    this.logger.debug(
+      `LangGraph orchestration engine compiled (minDocScore threshold: ${minDocScore}).`,
+    );
   }
 
   /**
    * Starts a brand new workflow run execution from START.
    */
-  public async start(input: WorkflowExecutionInput): Promise<DomainWorkflowState> {
-    this.logger.log(`[${input.runId}] Starting fresh workflow execution for repository [${input.repositoryId}]`);
+  public async start(
+    input: WorkflowExecutionInput,
+  ): Promise<DomainWorkflowState> {
+    this.logger.log(
+      `[${input.runId}] Starting fresh workflow execution for repository [${input.repositoryId}]`,
+    );
 
     const runRecord = await this.checkpointRepository.initializeRun({
       runId: input.runId,
       repositoryId: input.repositoryId,
       correlationId: (input.metadata?.correlationId as string) ?? input.runId,
-      webhookDeliveryId: (input.metadata?.webhookDeliveryId as string) ?? input.runId,
-      commitSha: (input.metadata?.commitSha as string) ?? 'unknown',
-      branch: (input.metadata?.branch as string) ?? 'main',
+      webhookDeliveryId:
+        (input.metadata?.webhookDeliveryId as string) ?? input.runId,
+      commitSha: (input.metadata?.commitSha as string) ?? "unknown",
+      branch: (input.metadata?.branch as string) ?? "main",
     });
 
     return this.orchestrateGraphInvocation({
@@ -81,29 +119,46 @@ export class WorkflowExecutorService implements OnModuleInit {
   /**
    * Resumes a crashed or paused workflow run execution from its latest checkpoint.
    */
-  public async resume(input: WorkflowExecutionInput): Promise<DomainWorkflowState> {
-    this.logger.log(`[${input.runId}] Resuming workflow execution for repository [${input.repositoryId}]`);
+  public async resume(
+    input: WorkflowExecutionInput,
+  ): Promise<DomainWorkflowState> {
+    this.logger.log(
+      `[${input.runId}] Resuming workflow execution for repository [${input.repositoryId}]`,
+    );
 
-    const runRecord = await this.checkpointRepository.loadRunRecord(input.runId);
+    const runRecord = await this.checkpointRepository.loadRunRecord(
+      input.runId,
+    );
     if (!runRecord) {
-      throw new BadRequestException(`Cannot resume non-existent WorkflowRun [${input.runId}]`);
+      throw new BadRequestException(
+        `Cannot resume non-existent WorkflowRun [${input.runId}]`,
+      );
     }
 
-    if (runRecord.status === 'COMPLETED') {
-      this.logger.warn(`[${input.runId}] WorkflowRun is already COMPLETED. Skipping resume.`);
-      return { runId: input.runId, repositoryId: input.repositoryId, executionStatus: WorkflowStatus.Completed } as any;
+    if (runRecord.status === "COMPLETED") {
+      this.logger.warn(
+        `[${input.runId}] WorkflowRun is already COMPLETED. Skipping resume.`,
+      );
+      return {
+        runId: input.runId,
+        repositoryId: input.repositoryId,
+        executionStatus: WorkflowStatus.Completed,
+      } as any;
     }
 
     // 1. Re-clone if workspace directory is missing on disk
-    const workspaceExists = await this.workspaceLifecycleService.workspaceExists(input.repositoryId);
+    const workspaceExists =
+      await this.workspaceLifecycleService.workspaceExists(input.repositoryId);
     if (!workspaceExists) {
-      this.logger.log(`[${input.runId}] Local workspace directory missing. Re-cloning repository...`);
+      this.logger.log(
+        `[${input.runId}] Local workspace directory missing. Re-cloning repository...`,
+      );
       const repoRecord = await this.prisma.repository.findUnique({
         where: { id: runRecord.repositoryId },
       });
       if (!repoRecord) {
         this.logger.error(`Repository access revoked.`);
-        throw new ConflictException('Repository access revoked.');
+        throw new ConflictException("Repository access revoked.");
       }
       await this.repositoryCloneService.cloneRepository({
         id: repoRecord.id,
@@ -112,7 +167,8 @@ export class WorkflowExecutorService implements OnModuleInit {
       });
     }
 
-    const snapshot = (runRecord.checkpointSnapshot ?? null) as WorkflowCheckpointSnapshot | null;
+    const snapshot = (runRecord.checkpointSnapshot ??
+      null) as WorkflowCheckpointSnapshot | null;
     const completedNodes = snapshot?.completedNodes ?? [];
     const lastNode = snapshot?.currentNode;
 
@@ -126,11 +182,11 @@ export class WorkflowExecutorService implements OnModuleInit {
       });
     }
 
-    if (lastNode === ('HumanReview' as any)) {
+    if (lastNode === ("HumanReview" as any)) {
       firstNodeToExecute = WorkflowNodeName.GitCommit;
-    } else if (activeReview && activeReview.status === 'REJECTED') {
+    } else if (activeReview && activeReview.status === "REJECTED") {
       firstNodeToExecute = WorkflowNodeName.TechnicalWriter;
-    } else if (activeReview && activeReview.status === 'APPROVED') {
+    } else if (activeReview && activeReview.status === "APPROVED") {
       firstNodeToExecute = WorkflowNodeName.GitCommit;
     } else {
       firstNodeToExecute = this.determineNextNode(lastNode);
@@ -139,12 +195,14 @@ export class WorkflowExecutorService implements OnModuleInit {
     // 3. Mark run status as RUNNING (accurate status lifecycle)
     await this.prisma.workflowRun.update({
       where: { id: input.runId },
-      data: { status: 'RUNNING' },
+      data: { status: "RUNNING" },
     });
 
-    const nodeRetries = (runRecord.nodeRetries && typeof runRecord.nodeRetries === 'object'
-      ? runRecord.nodeRetries
-      : {}) as Record<string, number>;
+    const nodeRetries = (
+      runRecord.nodeRetries && typeof runRecord.nodeRetries === "object"
+        ? runRecord.nodeRetries
+        : {}
+    ) as Record<string, number>;
 
     const hydratedState = this.hydrateStateFromSnapshot(input, snapshot);
 
@@ -152,7 +210,8 @@ export class WorkflowExecutorService implements OnModuleInit {
     if (activeReview && activeReview.comment) {
       try {
         const parsed = JSON.parse(activeReview.comment);
-        humanReviewFeedback = parsed.text || parsed.comment || activeReview.comment;
+        humanReviewFeedback =
+          parsed.text || parsed.comment || activeReview.comment;
       } catch {
         humanReviewFeedback = activeReview.comment;
       }
@@ -175,10 +234,16 @@ export class WorkflowExecutorService implements OnModuleInit {
   /**
    * Restarts an existing workflow run from START, wiping previous checkpoint state.
    */
-  public async restart(input: WorkflowExecutionInput): Promise<DomainWorkflowState> {
-    this.logger.log(`[${input.runId}] Restarting workflow execution for repository [${input.repositoryId}]`);
+  public async restart(
+    input: WorkflowExecutionInput,
+  ): Promise<DomainWorkflowState> {
+    this.logger.log(
+      `[${input.runId}] Restarting workflow execution for repository [${input.repositoryId}]`,
+    );
 
-    const nextVersion = await this.checkpointRepository.resetRunForRestart(input.runId);
+    const nextVersion = await this.checkpointRepository.resetRunForRestart(
+      input.runId,
+    );
 
     return this.orchestrateGraphInvocation({
       input,
@@ -190,11 +255,13 @@ export class WorkflowExecutorService implements OnModuleInit {
     });
   }
 
-  private determineNextNode(lastCompletedNode?: WorkflowNodeName): WorkflowNodeName {
+  private determineNextNode(
+    lastCompletedNode?: WorkflowNodeName,
+  ): WorkflowNodeName {
     if (!lastCompletedNode) return WorkflowNodeName.EarlySkip;
 
     // Legacy checkpoint compatibility (Invariant 7)
-    if (lastCompletedNode === ('HumanReview' as any)) {
+    if (lastCompletedNode === ("HumanReview" as any)) {
       return WorkflowNodeName.GitCommit;
     }
 
@@ -215,13 +282,17 @@ export class WorkflowExecutorService implements OnModuleInit {
   ): Partial<WorkflowGraphState> | undefined {
     if (!snapshot) return undefined;
 
-    const workspacePath = this.workspaceLifecycleService.getWorkspacePath(input.repositoryId);
+    const workspacePath = this.workspaceLifecycleService.getWorkspacePath(
+      input.repositoryId,
+    );
 
     return {
       runId: input.runId,
       repositoryId: input.repositoryId,
       workspacePath,
-      repository: snapshot.analysisReference ? snapshot.analysisReference : undefined,
+      repository: snapshot.analysisReference
+        ? snapshot.analysisReference
+        : undefined,
       documentation: (snapshot as any).documentation ?? undefined,
       generatedDocuments: (snapshot as any).generatedDocuments ?? undefined,
       criticReview: (snapshot as any).criticReview ?? undefined,
@@ -236,8 +307,12 @@ export class WorkflowExecutorService implements OnModuleInit {
       commitMessage: (snapshot as any).commitMessage ?? undefined,
       shouldSkip: (snapshot as any).shouldSkip ?? undefined,
       skipReason: (snapshot as any).skipReason ?? undefined,
-      previousGeneratedDocumentation: (snapshot as any).previousGeneratedDocumentation ?? undefined,
-      metadata: { ...(snapshot.executionMetadata ?? {}), hydratedAt: new Date().toISOString() },
+      previousGeneratedDocumentation:
+        (snapshot as any).previousGeneratedDocumentation ?? undefined,
+      metadata: {
+        ...(snapshot.executionMetadata ?? {}),
+        hydratedAt: new Date().toISOString(),
+      },
     };
   }
 
@@ -252,7 +327,14 @@ export class WorkflowExecutorService implements OnModuleInit {
     nodeRetries: Record<string, number>;
     initialStateOverride?: Partial<WorkflowGraphState>;
   }): Promise<DomainWorkflowState> {
-    const { input, expectedVersion, firstNodeToExecute, completedNodes, nodeRetries, initialStateOverride } = params;
+    const {
+      input,
+      expectedVersion,
+      firstNodeToExecute,
+      completedNodes,
+      nodeRetries,
+      initialStateOverride,
+    } = params;
     const startTime = Date.now();
 
     const repoRecord = await this.prisma.repository.findUnique({
@@ -260,7 +342,7 @@ export class WorkflowExecutorService implements OnModuleInit {
     });
     if (!repoRecord) {
       this.logger.error(`Repository access revoked.`);
-      throw new ConflictException('Repository access revoked.');
+      throw new ConflictException("Repository access revoked.");
     }
 
     const orchestrationContext = {
@@ -280,32 +362,41 @@ export class WorkflowExecutorService implements OnModuleInit {
       repositoryId: input.repositoryId,
       workspacePath: input.workspacePath,
       executionStatus: WorkflowStatus.Pending,
-      currentNode: 'START',
+      currentNode: "START",
       errors: [],
-      metadata: { ...(input.metadata ?? {}), startedAt: new Date().toISOString() },
+      metadata: {
+        ...(input.metadata ?? {}),
+        startedAt: new Date().toISOString(),
+      },
     };
 
     let isExecutionTerminal = false;
     try {
-      const finalState = (await this.compiledGraph.invoke(baselineState as WorkflowGraphState)) as any;
+      const finalState = (await this.compiledGraph.invoke(
+        baselineState as WorkflowGraphState,
+      )) as any;
       const durationMs = Date.now() - startTime;
 
       if (finalState.currentNode === WorkflowNodeName.DocumentationCritic) {
-        this.logger.log(`[${input.runId}] Workflow execution suspended at node [${finalState.currentNode}] for human review.`);
-        
+        this.logger.log(
+          `[${input.runId}] Workflow execution suspended at node [${finalState.currentNode}] for human review.`,
+        );
+
         // Atomic suspension transaction (Invariant 1, Invariant 6)
         await this.prisma.$transaction(async (tx) => {
           const existingPending = await tx.review.findFirst({
-            where: { workflowRunId: input.runId, status: 'PENDING' },
+            where: { workflowRunId: input.runId, status: "PENDING" },
           });
           if (existingPending) {
-            throw new Error(`Invariant Violation: Pending review already exists for WorkflowRun [${input.runId}].`);
+            throw new Error(
+              `Invariant Violation: Pending review already exists for WorkflowRun [${input.runId}].`,
+            );
           }
 
           const newReview = await tx.review.create({
             data: {
               workflowRunId: input.runId,
-              status: 'PENDING',
+              status: "PENDING",
               metrics: finalState.criticReview || {},
             },
           });
@@ -323,8 +414,10 @@ export class WorkflowExecutorService implements OnModuleInit {
             },
           });
         });
-        this.logger.log(`WorkflowRun [${input.runId}] suspended and marked as WAITING_FOR_REVIEW.`);
-        
+        this.logger.log(
+          `WorkflowRun [${input.runId}] suspended and marked as WAITING_FOR_REVIEW.`,
+        );
+
         this.eventService?.publishWaitingForReviewEvent(
           input.runId,
           input.repositoryId,
@@ -338,15 +431,29 @@ export class WorkflowExecutorService implements OnModuleInit {
         } as unknown as DomainWorkflowState;
       }
 
-      this.logger.log(`[${input.runId}] Workflow execution completed successfully in ${durationMs}ms.`);
+      this.logger.log(
+        `[${input.runId}] Workflow execution completed successfully in ${durationMs}ms.`,
+      );
 
       if (finalState.shouldSkip === true) {
-        await this.checkpointRepository.markRunCompleted(input.runId, 'SKIPPED', finalState.skipReason);
+        await this.checkpointRepository.markRunCompleted(
+          input.runId,
+          "SKIPPED",
+          finalState.skipReason,
+        );
       } else {
-        await this.checkpointRepository.markRunCompleted(input.runId, 'SUCCESS');
+        await this.checkpointRepository.markRunCompleted(
+          input.runId,
+          "SUCCESS",
+        );
       }
 
-      this.eventService?.publishCompletionEvent(input.runId, input.repositoryId, input.runId, finalState.metadata);
+      this.eventService?.publishCompletionEvent(
+        input.runId,
+        input.repositoryId,
+        input.runId,
+        finalState.metadata,
+      );
 
       isExecutionTerminal = true;
 
@@ -362,7 +469,8 @@ export class WorkflowExecutorService implements OnModuleInit {
     } catch (error: unknown) {
       const durationMs = Date.now() - startTime;
 
-      const isPermanent = classifyWorkflowError(error) === QueueErrorClassification.PERMANENT;
+      const isPermanent =
+        classifyWorkflowError(error) === QueueErrorClassification.PERMANENT;
       if (isPermanent) {
         isExecutionTerminal = true;
       }
@@ -371,7 +479,10 @@ export class WorkflowExecutorService implements OnModuleInit {
         this.logger.error(
           `[${input.runId}] Workflow terminated at node [${error.node}] after ${durationMs}ms: ${error.workflowError.message}`,
         );
-        await this.checkpointRepository.markRunFailed(input.runId, error.workflowError.message);
+        await this.checkpointRepository.markRunFailed(
+          input.runId,
+          error.workflowError.message,
+        );
         this.eventService?.publishFailureEvent(
           input.runId,
           input.repositoryId,
@@ -383,7 +494,10 @@ export class WorkflowExecutorService implements OnModuleInit {
       }
 
       const cause = error instanceof Error ? error : new Error(String(error));
-      this.logger.error(`[${input.runId}] Unexpected orchestration failure: ${cause.message}`, cause.stack);
+      this.logger.error(
+        `[${input.runId}] Unexpected orchestration failure: ${cause.message}`,
+        cause.stack,
+      );
       await this.checkpointRepository.markRunFailed(input.runId, cause.message);
       this.eventService?.publishFailureEvent(
         input.runId,
@@ -396,8 +510,14 @@ export class WorkflowExecutorService implements OnModuleInit {
       this.adapters.clearExecutionContext(input.runId);
       if (isExecutionTerminal) {
         try {
-          if (await this.workspaceLifecycleService.shouldCleanup(input.repositoryId)) {
-            await this.workspaceLifecycleService.deleteWorkspace(input.repositoryId);
+          if (
+            await this.workspaceLifecycleService.shouldCleanup(
+              input.repositoryId,
+            )
+          ) {
+            await this.workspaceLifecycleService.deleteWorkspace(
+              input.repositoryId,
+            );
           }
         } catch (cleanupError) {
           this.logger.error(

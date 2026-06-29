@@ -1,4 +1,4 @@
-import { GitException } from './git-exception';
+import { GitException } from "./git-exception";
 
 export interface MapGitErrorOptions {
   operation: string;

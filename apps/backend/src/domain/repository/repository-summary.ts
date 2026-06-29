@@ -1,6 +1,6 @@
-import { Dependency } from './dependency';
-import { Technology } from './technology';
-import { RepositoryMetrics } from './repository-metrics';
+import { Dependency } from "./dependency";
+import { Technology } from "./technology";
+import { RepositoryMetrics } from "./repository-metrics";
 
 export interface RepositorySummary {
   name: string;

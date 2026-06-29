@@ -1,21 +1,21 @@
-import { RepositorySummary } from '../repository';
-import { DocumentationInventory } from '../documentation';
-import { SourceCodeAnalysis } from '../source-code-analysis/source-code-analysis';
-import { WorkflowStatus, GitOperationStatus } from './enums';
+import { RepositorySummary } from "../repository";
+import { DocumentationInventory } from "../documentation";
+import { SourceCodeAnalysis } from "../source-code-analysis/source-code-analysis";
+import { WorkflowStatus, GitOperationStatus } from "./enums";
 import {
   GeneratedDocument as SharedGeneratedDocument,
   CriticReview as SharedCriticReview,
   DocumentationReview as SharedDocumentationReview,
   CriticIssue as SharedCriticIssue,
-} from '@docpulse/shared-types';
+} from "@docpulse/shared-types";
 
 export enum GeneratedDocumentType {
-  README = 'README',
-  INSTALLATION = 'INSTALLATION',
-  ARCHITECTURE = 'ARCHITECTURE',
-  API = 'API',
-  CONTRIBUTING = 'CONTRIBUTING',
-  DEPLOYMENT = 'DEPLOYMENT',
+  README = "README",
+  INSTALLATION = "INSTALLATION",
+  ARCHITECTURE = "ARCHITECTURE",
+  API = "API",
+  CONTRIBUTING = "CONTRIBUTING",
+  DEPLOYMENT = "DEPLOYMENT",
 }
 
 export interface GeneratedDocumentMetrics {
@@ -37,9 +37,11 @@ export type GeneratedDocument = SharedGeneratedDocument & {
  * Attaches non-enumerable getter for backward compatibility with 'content'
  * without duplicating markdown state in serialized checkpoint JSON.
  */
-export function createGeneratedDocument(data: Omit<GeneratedDocument, 'content'>): GeneratedDocument {
+export function createGeneratedDocument(
+  data: Omit<GeneratedDocument, "content">,
+): GeneratedDocument {
   const doc = { ...data } as GeneratedDocument;
-  Object.defineProperty(doc, 'content', {
+  Object.defineProperty(doc, "content", {
     get() {
       return (this as GeneratedDocument).markdown;
     },
@@ -61,13 +63,16 @@ export interface ReviewMetrics {
   reviewedAt: string;
 }
 
-export interface DocumentationReview extends Omit<SharedDocumentationReview, 'documentType' | 'issues'> {
+export interface DocumentationReview extends Omit<
+  SharedDocumentationReview,
+  "documentType" | "issues"
+> {
   documentType: GeneratedDocumentType;
   issues: ReviewIssue[];
   metrics?: ReviewMetrics;
 }
 
-export interface CriticReview extends Omit<SharedCriticReview, 'reviews'> {
+export interface CriticReview extends Omit<SharedCriticReview, "reviews"> {
   reviews?: DocumentationReview[];
 }
 

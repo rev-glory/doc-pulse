@@ -1,4 +1,4 @@
-import { GitErrorCode } from './git-error-code';
+import { GitErrorCode } from "./git-error-code";
 
 export class GitErrorClassifier {
   public static isRetryable(code: GitErrorCode): boolean {

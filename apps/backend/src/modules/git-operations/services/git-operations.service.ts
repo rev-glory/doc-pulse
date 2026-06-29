@@ -1,8 +1,14 @@
-import { Injectable, Logger, Inject, forwardRef, Optional } from '@nestjs/common';
-import { GitService } from './git.service';
-import * as path from 'path';
-import { GitHubAuthService } from '@/modules/github/services/github-auth.service';
-import { isGitException } from '../errors/git-exception';
+import {
+  Injectable,
+  Logger,
+  Inject,
+  forwardRef,
+  Optional,
+} from "@nestjs/common";
+import { GitService } from "./git.service";
+import * as path from "path";
+import { GitHubAuthService } from "@/modules/github/services/github-auth.service";
+import { isGitException } from "../errors/git-exception";
 
 export interface CommitResult {
   branchName: string;
@@ -17,15 +23,19 @@ export class GitOperationsService {
 
   constructor(
     private readonly gitService: GitService,
-    @Optional() @Inject(forwardRef(() => GitHubAuthService))
+    @Optional()
+    @Inject(forwardRef(() => GitHubAuthService))
     private readonly githubAuthService?: GitHubAuthService,
   ) {}
 
   /**
    * Generates a sanitized, unique branch name for the documentation update.
    */
-  async generateBranchName(repositoryPath: string, runId: string): Promise<string> {
-    const cleanId = runId.replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 40);
+  async generateBranchName(
+    repositoryPath: string,
+    runId: string,
+  ): Promise<string> {
+    const cleanId = runId.replace(/[^a-zA-Z0-9_-]/g, "-").slice(0, 40);
     const baseBranchName = `docpulse/docs-update/${cleanId}`;
 
     const existingBranches = await this.gitService.branchList(repositoryPath);
@@ -35,26 +45,36 @@ export class GitOperationsService {
 
     // Handle collision
     const collisionName = `${baseBranchName}-${Date.now().toString().slice(-6)}`;
-    this.logger.warn(`Branch collision detected for [${baseBranchName}]. Using fallback [${collisionName}]`);
+    this.logger.warn(
+      `Branch collision detected for [${baseBranchName}]. Using fallback [${collisionName}]`,
+    );
     return collisionName;
   }
 
-  private async logGitDiagnostics(repositoryPath: string, branchName: string): Promise<void> {
+  private async logGitDiagnostics(
+    repositoryPath: string,
+    branchName: string,
+  ): Promise<void> {
     try {
       const cwd = process.cwd();
-      let gitRoot = 'unknown';
+      let gitRoot = "unknown";
       try {
         gitRoot = await this.gitService.getRepositoryRoot(repositoryPath);
       } catch (e) {
         gitRoot = `Error: ${(e as Error).message}`;
       }
 
-      let owner = 'unknown';
-      let repo = 'unknown';
+      let owner = "unknown";
+      let repo = "unknown";
       try {
-        const remoteUrl = await this.gitService.getRemoteUrl(repositoryPath, 'origin');
+        const remoteUrl = await this.gitService.getRemoteUrl(
+          repositoryPath,
+          "origin",
+        );
         if (remoteUrl) {
-          const match = remoteUrl.trim().match(/github\.com[/:]([^/]+)\/([^.]+)/);
+          const match = remoteUrl
+            .trim()
+            .match(/github\.com[/:]([^/]+)\/([^.]+)/);
           if (match) {
             owner = match[1]!;
             repo = match[2]!;
@@ -75,7 +95,9 @@ Git root:             ${gitRoot}
 =================================================
       `);
     } catch (err) {
-      this.logger.error(`Failed to print Git diagnostics: ${(err as Error).message}`);
+      this.logger.error(
+        `Failed to print Git diagnostics: ${(err as Error).message}`,
+      );
     }
   }
 
@@ -89,7 +111,9 @@ Git root:             ${gitRoot}
     existingBranchName?: string,
   ): Promise<CommitResult> {
     const startTime = Date.now();
-    this.logger.debug(`Orchestrating Git commit for run [${runId}] in [${repositoryPath}]...`);
+    this.logger.debug(
+      `Orchestrating Git commit for run [${runId}] in [${repositoryPath}]...`,
+    );
     let branchName = existingBranchName;
 
     try {
@@ -101,21 +125,31 @@ Git root:             ${gitRoot}
 
       const localBranches = await this.gitService.branchList(repositoryPath);
       if (localBranches.includes(branchName)) {
-        this.logger.log(`Branch [${branchName}] exists locally. Checking out and pulling...`);
+        this.logger.log(
+          `Branch [${branchName}] exists locally. Checking out and pulling...`,
+        );
         await this.gitService.checkout(repositoryPath, branchName);
         try {
           await this.gitService.pull(repositoryPath);
         } catch (pullError: any) {
-          this.logger.warn(`Failed to pull branch [${branchName}] after local checkout: ${pullError.message}`);
+          this.logger.warn(
+            `Failed to pull branch [${branchName}] after local checkout: ${pullError.message}`,
+          );
         }
       } else {
         try {
-          this.logger.log(`Branch [${branchName}] not found locally. Attempting remote checkout...`);
+          this.logger.log(
+            `Branch [${branchName}] not found locally. Attempting remote checkout...`,
+          );
           await this.gitService.checkout(repositoryPath, branchName);
-          this.logger.log(`Remote branch checkout succeeded. Pulling latest...`);
+          this.logger.log(
+            `Remote branch checkout succeeded. Pulling latest...`,
+          );
           await this.gitService.pull(repositoryPath);
         } catch (checkoutError: any) {
-          this.logger.log(`Branch [${branchName}] does not exist on remote. Creating local branch...`);
+          this.logger.log(
+            `Branch [${branchName}] does not exist on remote. Creating local branch...`,
+          );
           await this.gitService.checkoutLocalBranch(repositoryPath, branchName);
         }
       }
@@ -125,10 +159,15 @@ Git root:             ${gitRoot}
 
       // 2. Validate dirty tree & detect changes
       const statusBefore = await this.gitService.status(repositoryPath);
-      const isDirty = statusBefore.modified.length > 0 || statusBefore.not_added.length > 0 || statusBefore.created.length > 0;
+      const isDirty =
+        statusBefore.modified.length > 0 ||
+        statusBefore.not_added.length > 0 ||
+        statusBefore.created.length > 0;
 
       if (!isDirty && filesToStage.length === 0) {
-        this.logger.log(`No working tree changes detected for run [${runId}]. Skipping commit.`);
+        this.logger.log(
+          `No working tree changes detected for run [${runId}]. Skipping commit.`,
+        );
         const currentSha = await this.gitService.currentCommit(repositoryPath);
         return {
           branchName,
@@ -139,7 +178,7 @@ Git root:             ${gitRoot}
       }
 
       // 3. Stage files
-      const targets = filesToStage.length > 0 ? filesToStage : '.';
+      const targets = filesToStage.length > 0 ? filesToStage : ".";
       await this.gitService.add(repositoryPath, targets);
 
       // 4. Verify status after staging
@@ -157,12 +196,16 @@ Git root:             ${gitRoot}
 
       // 5. Commit changes
       const commitMessage = `docs(docpulse): update automated documentation [${runId}]`;
-      const commitSha = await this.gitService.commit(repositoryPath, commitMessage);
-      const finalSha = commitSha || (await this.gitService.currentCommit(repositoryPath));
+      const commitSha = await this.gitService.commit(
+        repositoryPath,
+        commitMessage,
+      );
+      const finalSha =
+        commitSha || (await this.gitService.currentCommit(repositoryPath));
 
       const durationMs = Date.now() - startTime;
       this.logger.log({
-        event: 'git_commit_success',
+        event: "git_commit_success",
         runId,
         branchName,
         commitSha: finalSha,
@@ -177,15 +220,15 @@ Git root:             ${gitRoot}
       };
     } catch (error) {
       const isGit = isGitException(error);
-      const codeStr = isGit ? error.code : 'UNKNOWN';
+      const codeStr = isGit ? error.code : "UNKNOWN";
       const retryableFlag = isGit ? error.retryable : false;
-      const providerName = isGit ? error.provider.provider : 'UnknownProvider';
-      const opName = isGit ? error.operation : 'commitChanges';
+      const providerName = isGit ? error.provider.provider : "UnknownProvider";
+      const opName = isGit ? error.operation : "commitChanges";
 
       this.logger.error(
         `Git commit flow failed for run [${runId}]. Initiating rollback... ` +
-        `Provider: ${providerName}, Operation: ${opName}, Code: ${codeStr}, Retryable: ${retryableFlag}. ` +
-        `Error: ${error instanceof Error ? error.message : String(error)}`
+          `Provider: ${providerName}, Operation: ${opName}, Code: ${codeStr}, Retryable: ${retryableFlag}. ` +
+          `Error: ${error instanceof Error ? error.message : String(error)}`,
       );
       await this.rollback(repositoryPath, branchName);
       throw error;
@@ -195,7 +238,11 @@ Git root:             ${gitRoot}
   /**
    * Pushes the local branch to the remote origin.
    */
-  async pushBranch(repositoryPath: string, branchName: string, installationId?: number): Promise<void> {
+  async pushBranch(
+    repositoryPath: string,
+    branchName: string,
+    installationId?: number,
+  ): Promise<void> {
     const startTime = Date.now();
     await this.logGitDiagnostics(repositoryPath, branchName);
     this.logger.debug(`Pushing branch [${branchName}] to remote origin...`);
@@ -203,13 +250,20 @@ Git root:             ${gitRoot}
     // 1. Get current origin remote URL
     let originalRemoteUrl: string | undefined;
     try {
-      originalRemoteUrl = await this.gitService.getRemoteUrl(repositoryPath, 'origin');
+      originalRemoteUrl = await this.gitService.getRemoteUrl(
+        repositoryPath,
+        "origin",
+      );
       if (originalRemoteUrl) {
         originalRemoteUrl = originalRemoteUrl.trim();
       }
     } catch (err) {
-      this.logger.error(`Failed to get original remote URL for [${repositoryPath}]: ${(err as Error).message}`);
-      throw new Error(`Push failed: Could not determine original origin remote URL.`);
+      this.logger.error(
+        `Failed to get original remote URL for [${repositoryPath}]: ${(err as Error).message}`,
+      );
+      throw new Error(
+        `Push failed: Could not determine original origin remote URL.`,
+      );
     }
 
     if (!originalRemoteUrl) {
@@ -219,27 +273,38 @@ Git root:             ${gitRoot}
     // Extract owner and repo from original remote URL
     const match = originalRemoteUrl.match(/github\.com[/:]([^/]+)\/([^.]+)/);
     if (!match) {
-      throw new Error(`Push failed: Could not parse owner/repo from remote URL [${originalRemoteUrl}].`);
+      throw new Error(
+        `Push failed: Could not parse owner/repo from remote URL [${originalRemoteUrl}].`,
+      );
     }
     const owner = match[1]!;
-    const repo = match[2]!.replace(/\.git$/, '');
+    const repo = match[2]!.replace(/\.git$/, "");
 
     // If we couldn't get it, warn the user
     if (!installationId) {
-      this.logger.warn(`No GitHub App installation ID provided for pushing to [${owner}/${repo}]. Fallback authentication might fail.`);
+      this.logger.warn(
+        `No GitHub App installation ID provided for pushing to [${owner}/${repo}]. Fallback authentication might fail.`,
+      );
     }
 
     // 2. Get Installation Access Token
-    let token = '';
+    let token = "";
     if (installationId && this.githubAuthService) {
       try {
-        token = await this.githubAuthService.getInstallationAccessToken(installationId);
+        token =
+          await this.githubAuthService.getInstallationAccessToken(
+            installationId,
+          );
       } catch (authErr) {
-        this.logger.error(`Failed to get installation access token for installation [${installationId}]: ${(authErr as Error).message}`);
+        this.logger.error(
+          `Failed to get installation access token for installation [${installationId}]: ${(authErr as Error).message}`,
+        );
         throw authErr;
       }
     } else {
-      this.logger.warn(`Bypassing GitHub token authentication lookup because installationId or githubAuthService is not provided.`);
+      this.logger.warn(
+        `Bypassing GitHub token authentication lookup because installationId or githubAuthService is not provided.`,
+      );
     }
 
     // 3. Construct authenticated URL & execute push
@@ -252,28 +317,34 @@ Git root:             ${gitRoot}
       await this.runGitSafetyChecks(repositoryPath, branchName);
 
       if (authenticatedUrl) {
-        this.logger.debug(`Temporarily setting origin URL to authenticated URL.`);
-        await this.gitService.setRemoteUrl(repositoryPath, 'origin', authenticatedUrl);
+        this.logger.debug(
+          `Temporarily setting origin URL to authenticated URL.`,
+        );
+        await this.gitService.setRemoteUrl(
+          repositoryPath,
+          "origin",
+          authenticatedUrl,
+        );
       }
 
-      await this.gitService.push(repositoryPath, 'origin', branchName, ['-u']);
+      await this.gitService.push(repositoryPath, "origin", branchName, ["-u"]);
       const durationMs = Date.now() - startTime;
       this.logger.log({
-        event: 'git_push_success',
+        event: "git_push_success",
         branchName,
         durationMs,
       });
     } catch (error) {
       const isGit = isGitException(error);
-      const codeStr = isGit ? error.code : 'UNKNOWN';
+      const codeStr = isGit ? error.code : "UNKNOWN";
       const retryableFlag = isGit ? error.retryable : false;
-      const providerName = isGit ? error.provider.provider : 'UnknownProvider';
-      const opName = isGit ? error.operation : 'pushBranch';
+      const providerName = isGit ? error.provider.provider : "UnknownProvider";
+      const opName = isGit ? error.operation : "pushBranch";
 
       this.logger.error(
         `Push rejected for branch [${branchName}]. Initiating rollback... ` +
-        `Provider: ${providerName}, Operation: ${opName}, Code: ${codeStr}, Retryable: ${retryableFlag}. ` +
-        `Error: ${error instanceof Error ? error.message : String(error)}`
+          `Provider: ${providerName}, Operation: ${opName}, Code: ${codeStr}, Retryable: ${retryableFlag}. ` +
+          `Error: ${error instanceof Error ? error.message : String(error)}`,
       );
       await this.rollback(repositoryPath, branchName);
       throw error;
@@ -282,9 +353,15 @@ Git root:             ${gitRoot}
         // Restore the original remote URL
         try {
           this.logger.debug(`Restoring original origin URL.`);
-          await this.gitService.setRemoteUrl(repositoryPath, 'origin', originalRemoteUrl);
+          await this.gitService.setRemoteUrl(
+            repositoryPath,
+            "origin",
+            originalRemoteUrl,
+          );
         } catch (restoreErr) {
-          this.logger.error(`Failed to restore original remote URL for [${repositoryPath}]: ${(restoreErr as Error).message}`);
+          this.logger.error(
+            `Failed to restore original remote URL for [${repositoryPath}]: ${(restoreErr as Error).message}`,
+          );
         }
       }
     }
@@ -295,14 +372,23 @@ Git root:             ${gitRoot}
    * If branchName is specified, switches away from it and deletes it.
    */
   async rollback(repositoryPath: string, branchName?: string): Promise<void> {
-    this.logger.warn(`Executing Git rollback strategy for [${repositoryPath}]...`);
+    this.logger.warn(
+      `Executing Git rollback strategy for [${repositoryPath}]...`,
+    );
     try {
       if (branchName) {
         try {
           const current = await this.gitService.currentBranch(repositoryPath);
           if (current === branchName) {
-            const localBranches = await this.gitService.branchList(repositoryPath);
-            const commonBaselines = ['main', 'master', 'develop', 'trunk', 'release'];
+            const localBranches =
+              await this.gitService.branchList(repositoryPath);
+            const commonBaselines = [
+              "main",
+              "master",
+              "develop",
+              "trunk",
+              "release",
+            ];
             let safeBranch: string | undefined;
 
             for (const base of commonBaselines) {
@@ -313,18 +399,22 @@ Git root:             ${gitRoot}
             }
 
             if (!safeBranch && localBranches.length > 0) {
-              safeBranch = localBranches.find(b => b !== branchName);
+              safeBranch = localBranches.find((b) => b !== branchName);
             }
 
             if (!safeBranch) {
-              safeBranch = 'main';
+              safeBranch = "main";
             }
 
-            this.logger.log(`Switching away from temporary branch [${branchName}] to safe branch [${safeBranch}] before deletion.`);
+            this.logger.log(
+              `Switching away from temporary branch [${branchName}] to safe branch [${safeBranch}] before deletion.`,
+            );
             await this.gitService.checkout(repositoryPath, safeBranch);
           }
         } catch (checkoutErr) {
-          this.logger.error(`Failed to switch branches during rollback: ${(checkoutErr as Error).message}`);
+          this.logger.error(
+            `Failed to switch branches during rollback: ${(checkoutErr as Error).message}`,
+          );
         }
       }
 
@@ -333,39 +423,61 @@ Git root:             ${gitRoot}
 
       if (branchName) {
         try {
-          const localBranches = await this.gitService.branchList(repositoryPath);
+          const localBranches =
+            await this.gitService.branchList(repositoryPath);
           if (localBranches.includes(branchName)) {
-            this.logger.log(`Deleting local temporary branch [${branchName}]...`);
-            await this.gitService.deleteLocalBranch(repositoryPath, branchName, true);
+            this.logger.log(
+              `Deleting local temporary branch [${branchName}]...`,
+            );
+            await this.gitService.deleteLocalBranch(
+              repositoryPath,
+              branchName,
+              true,
+            );
           }
         } catch (deleteErr) {
-          this.logger.error(`Failed to delete branch [${branchName}] during rollback: ${(deleteErr as Error).message}`);
+          this.logger.error(
+            `Failed to delete branch [${branchName}] during rollback: ${(deleteErr as Error).message}`,
+          );
         }
       }
 
-      this.logger.log(`Rollback complete. Repository restored to clean baseline.`);
+      this.logger.log(
+        `Rollback complete. Repository restored to clean baseline.`,
+      );
     } catch (err) {
-      this.logger.error(`Rollback failed for [${repositoryPath}]: ${(err as Error).message}`);
+      this.logger.error(
+        `Rollback failed for [${repositoryPath}]: ${(err as Error).message}`,
+      );
     }
   }
 
   /**
    * Runs local safety and security checks on a branch and the current repository state before writing/pushing.
    */
-  async runGitSafetyChecks(repositoryPath: string, branchName: string): Promise<void> {
-    this.logger.debug(`Running Git safety checks in [${repositoryPath}] for branch [${branchName}]...`);
+  async runGitSafetyChecks(
+    repositoryPath: string,
+    branchName: string,
+  ): Promise<void> {
+    this.logger.debug(
+      `Running Git safety checks in [${repositoryPath}] for branch [${branchName}]...`,
+    );
 
     // 1. Protected Branch Detection
-    const protectedBranches = ['main', 'master', 'production', 'release'];
+    const protectedBranches = ["main", "master", "production", "release"];
     if (protectedBranches.includes(branchName)) {
-      throw new Error(`Git safety violation: Cannot commit or push directly to protected branch [${branchName}].`);
+      throw new Error(
+        `Git safety violation: Cannot commit or push directly to protected branch [${branchName}].`,
+      );
     }
 
     const status = await this.gitService.status(repositoryPath);
 
     // 2. Merge Conflict Detection
     if (status.conflicted && status.conflicted.length > 0) {
-      throw new Error(`Git safety violation: Merge conflicts detected in workspace: ${status.conflicted.join(', ')}.`);
+      throw new Error(
+        `Git safety violation: Merge conflicts detected in workspace: ${status.conflicted.join(", ")}.`,
+      );
     }
 
     // 3. Sensitive File Detection
@@ -378,7 +490,7 @@ Git root:             ${gitRoot}
       /passwd/i,
       /shadow/i,
       /credentials/i,
-      /secret/i
+      /secret/i,
     ];
 
     const allChangedFiles = [
@@ -390,11 +502,15 @@ Git root:             ${gitRoot}
 
     for (const file of allChangedFiles) {
       const filename = path.basename(file);
-      if (sensitivePatterns.some(pattern => pattern.test(filename))) {
-        throw new Error(`Git safety violation: Sensitive file detected in changes: [${file}]. Committing/pushing is aborted.`);
+      if (sensitivePatterns.some((pattern) => pattern.test(filename))) {
+        throw new Error(
+          `Git safety violation: Sensitive file detected in changes: [${file}]. Committing/pushing is aborted.`,
+        );
       }
     }
 
-    this.logger.log(`All Git safety checks passed successfully for branch [${branchName}].`);
+    this.logger.log(
+      `All Git safety checks passed successfully for branch [${branchName}].`,
+    );
   }
 }

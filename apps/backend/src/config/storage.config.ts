@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 export interface StorageConfig {
   root: string;
@@ -11,7 +11,7 @@ export interface StorageConfig {
   retentionPeriodMs: number;
 }
 
-export const storageConfig = registerAs('storage', (): StorageConfig => {
+export const storageConfig = registerAs("storage", (): StorageConfig => {
   const env = process.env as unknown as Env;
 
   return {

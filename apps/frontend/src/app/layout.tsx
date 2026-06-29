@@ -1,30 +1,30 @@
-import type { Metadata } from 'next';
-import { Geist, Geist_Mono } from 'next/font/google';
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 
-import './globals.css';
-import { AuthProvider } from '@/features/auth/providers/auth-provider';
+import "./globals.css";
+import { AuthProvider } from "@/features/auth/providers/auth-provider";
 
 const geistSans = Geist({
-  variable: '--font-geist-sans',
-  subsets: ['latin'],
-  display: 'swap',
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 const geistMono = Geist_Mono({
-  variable: '--font-geist-mono',
-  subsets: ['latin'],
-  display: 'swap',
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: 'DocPulse — AI Documentation Automation',
+  title: "DocPulse — AI Documentation Automation",
   description:
-    'DocPulse automatically generates and maintains documentation for your GitHub repositories using AI-powered LangGraph agents.',
-  keywords: ['documentation', 'AI', 'GitHub', 'automation', 'LangGraph'],
+    "DocPulse automatically generates and maintains documentation for your GitHub repositories using AI-powered LangGraph agents.",
+  keywords: ["documentation", "AI", "GitHub", "automation", "LangGraph"],
   openGraph: {
-    title: 'DocPulse — AI Documentation Automation',
-    description: 'Autonomous AI documentation engine for engineering teams.',
-    type: 'website',
+    title: "DocPulse — AI Documentation Automation",
+    description: "Autonomous AI documentation engine for engineering teams.",
+    type: "website",
   },
 };
 

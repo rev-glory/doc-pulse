@@ -1,8 +1,8 @@
-import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { Module } from "@nestjs/common";
+import { ConfigModule } from "@nestjs/config";
 
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { AppController } from "./app.controller";
+import { AppService } from "./app.service";
 import {
   aiConfig,
   appConfig,
@@ -16,23 +16,23 @@ import {
   storageConfig,
   validateEnv,
   workflowConfig,
-} from './config';
-import { AiModule } from './modules/ai/ai.module';
-import { PrismaModule } from './database';
-import { HealthModule } from './modules/health/health.module';
-import { AuthModule } from './modules/auth/auth.module';
-import { UsersModule } from './modules/users/users.module';
-import { GitHubModule } from './modules/github/github.module';
-import { RepositoriesModule } from './modules/repositories/repositories.module';
-import { GitOperationsModule } from './modules/git-operations';
-import { RepositoryAnalysisModule } from './modules/repository-analysis/repository-analysis.module';
-import { WorkflowModule } from './modules/workflow';
-import { QueueModule } from './modules/queue/queue.module';
-import { RealtimeModule } from './modules/realtime/realtime.module';
-import { RunsModule } from './modules/runs/runs.module';
-import { PullRequestsModule } from './modules/pull-requests/pull-requests.module';
-import { DashboardModule } from './modules/dashboard/dashboard.module';
-import { ReviewModule } from './modules/review/review.module';
+} from "./config";
+import { AiModule } from "./modules/ai/ai.module";
+import { PrismaModule } from "./database";
+import { HealthModule } from "./modules/health/health.module";
+import { AuthModule } from "./modules/auth/auth.module";
+import { UsersModule } from "./modules/users/users.module";
+import { GitHubModule } from "./modules/github/github.module";
+import { RepositoriesModule } from "./modules/repositories/repositories.module";
+import { GitOperationsModule } from "./modules/git-operations";
+import { RepositoryAnalysisModule } from "./modules/repository-analysis/repository-analysis.module";
+import { WorkflowModule } from "./modules/workflow";
+import { QueueModule } from "./modules/queue/queue.module";
+import { RealtimeModule } from "./modules/realtime/realtime.module";
+import { RunsModule } from "./modules/runs/runs.module";
+import { PullRequestsModule } from "./modules/pull-requests/pull-requests.module";
+import { DashboardModule } from "./modules/dashboard/dashboard.module";
+import { ReviewModule } from "./modules/review/review.module";
 
 @Module({
   imports: [
@@ -52,8 +52,8 @@ import { ReviewModule } from './modules/review/review.module';
         storageConfig,
         workflowConfig,
       ],
-      envFilePath: ['../../.env'],
-      ignoreEnvFile: process.env['NODE_ENV'] === 'production',
+      envFilePath: ["../../.env"],
+      ignoreEnvFile: process.env["NODE_ENV"] === "production",
       expandVariables: false,
     }),
 
@@ -78,5 +78,3 @@ import { ReviewModule } from './modules/review/review.module';
   providers: [AppService],
 })
 export class AppModule {}
-
-

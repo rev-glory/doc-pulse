@@ -1,8 +1,8 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { LlmException, isLlmException } from '../errors/llm-exception';
-import { LlmErrorCode } from '../errors/llm-error-code';
-import { LlmErrorClassifier } from '../errors/llm-error-classifier';
-import { DelayedRetryWorkflowError } from '../../queue/types/queue-errors';
+import { Injectable, Logger } from "@nestjs/common";
+import { LlmException, isLlmException } from "../errors/llm-exception";
+import { LlmErrorCode } from "../errors/llm-error-code";
+import { LlmErrorClassifier } from "../errors/llm-error-classifier";
+import { DelayedRetryWorkflowError } from "../../queue/types/queue-errors";
 
 export interface RetryPolicyOptions {
   maxAttempts?: number;
@@ -34,44 +34,56 @@ export class RetryPolicyService {
 
     while (true) {
       if (signal?.aborted) {
-        throw new Error(`[${operationName}] Operation aborted: execution cancelled.`);
+        throw new Error(
+          `[${operationName}] Operation aborted: execution cancelled.`,
+        );
       }
 
       try {
         const resultPromise = operation();
         if (signal) {
-          const abortError = new Error(`[${operationName}] Operation aborted: execution cancelled.`);
+          const abortError = new Error(
+            `[${operationName}] Operation aborted: execution cancelled.`,
+          );
           const abortPromise = new Promise<never>((_, reject) => {
             if (signal.aborted) reject(abortError);
-            signal.addEventListener('abort', () => reject(abortError), { once: true });
+            signal.addEventListener("abort", () => reject(abortError), {
+              once: true,
+            });
           });
           return await Promise.race([resultPromise, abortPromise]);
         }
         return await resultPromise;
       } catch (error: unknown) {
         if (signal?.aborted) {
-          throw new Error(`[${operationName}] Operation aborted: execution cancelled.`);
+          throw new Error(
+            `[${operationName}] Operation aborted: execution cancelled.`,
+          );
         }
 
         const isLlm = isLlmException(error);
-        const codeStr = isLlm ? error.code : 'UNKNOWN';
+        const codeStr = isLlm ? error.code : "UNKNOWN";
         const retryableFlag = isLlm ? error.retryable : false;
-        const providerName = isLlm ? error.provider.provider : 'UnknownProvider';
-        const modelName = isLlm ? error.provider.model : 'UnknownModel';
+        const providerName = isLlm
+          ? error.provider.provider
+          : "UnknownProvider";
+        const modelName = isLlm ? error.provider.model : "UnknownModel";
         const statusVal = isLlm ? error.providerStatus : undefined;
         const opName = isLlm ? error.operation : operationName;
 
         if (attempt >= maxAttempts || !this.isRetryableError(error)) {
           this.logger.error(
             `[${operationName}] Failed permanently on attempt ${attempt}/${maxAttempts}. ` +
-            `Provider: ${providerName}, Model: ${modelName}, Code: ${codeStr}, Status: ${statusVal ?? 'none'}, Retryable: ${retryableFlag}, Operation: ${opName}. ` +
-            `Message: ${error instanceof Error ? error.message : String(error)}`
+              `Provider: ${providerName}, Model: ${modelName}, Code: ${codeStr}, Status: ${statusVal ?? "none"}, Retryable: ${retryableFlag}, Operation: ${opName}. ` +
+              `Message: ${error instanceof Error ? error.message : String(error)}`,
           );
           throw error;
         }
 
         const isRateLimit = this.isRateLimitError(error);
-        const extractedDelay = isRateLimit ? this.extractRetryDelayMs(error) : null;
+        const extractedDelay = isRateLimit
+          ? this.extractRetryDelayMs(error)
+          : null;
 
         let totalDelay: number;
         if (extractedDelay !== null && extractedDelay > 0) {
@@ -79,7 +91,10 @@ export class RetryPolicyService {
         } else if (isRateLimit) {
           totalDelay = 60000;
         } else {
-          const backoffDelay = Math.min(baseDelayMs * Math.pow(2, attempt - 1), maxDelayMs);
+          const backoffDelay = Math.min(
+            baseDelayMs * Math.pow(2, attempt - 1),
+            maxDelayMs,
+          );
           const jitter = Math.random() * 200;
           totalDelay = backoffDelay + jitter;
         }
@@ -87,19 +102,26 @@ export class RetryPolicyService {
         if (isRateLimit && totalDelay >= 5000) {
           this.logger.warn(
             `[${operationName}] Rate limit encountered (HTTP ${statusVal ?? 429}) with retryDelay=${Math.round(totalDelay)}ms. ` +
-            `Provider: ${providerName}, Model: ${modelName}. Delegating long retry to BullMQ.`,
+              `Provider: ${providerName}, Model: ${modelName}. Delegating long retry to BullMQ.`,
           );
           throw new DelayedRetryWorkflowError(
             `Rate limit exceeded (Code: ${codeStr}). Delegating retry to BullMQ.`,
             Math.round(totalDelay),
-            { operationName, attempt, provider: providerName, model: modelName, code: codeStr, status: statusVal },
+            {
+              operationName,
+              attempt,
+              provider: providerName,
+              model: modelName,
+              code: codeStr,
+              status: statusVal,
+            },
           );
         }
 
         this.logger.warn(
           `[${operationName}] Encountered retryable failure on attempt ${attempt}/${maxAttempts}. Retrying in ${Math.round(totalDelay)}ms... ` +
-          `Provider: ${providerName}, Model: ${modelName}, Code: ${codeStr}, Status: ${statusVal ?? 'none'}. ` +
-          `Cause: ${error instanceof Error ? error.message : String(error)}`,
+            `Provider: ${providerName}, Model: ${modelName}, Code: ${codeStr}, Status: ${statusVal ?? "none"}. ` +
+            `Cause: ${error instanceof Error ? error.message : String(error)}`,
         );
 
         await this.sleep(totalDelay, signal);
@@ -121,7 +143,11 @@ export class RetryPolicyService {
     let current: any = error;
     while (current) {
       queue.push(current);
-      current = current.originalCause ?? current.cause ?? current.causeError ?? current.error;
+      current =
+        current.originalCause ??
+        current.cause ??
+        current.causeError ??
+        current.error;
     }
 
     for (const item of queue) {
@@ -136,9 +162,10 @@ export class RetryPolicyService {
 
       if (Array.isArray(details)) {
         for (const detail of details) {
-          if (detail && typeof detail === 'object') {
-            const typeUrl = detail['@type'] || '';
-            const isRetryInfo = typeUrl.includes('RetryInfo') || detail.retryDelay !== undefined;
+          if (detail && typeof detail === "object") {
+            const typeUrl = detail["@type"] || "";
+            const isRetryInfo =
+              typeUrl.includes("RetryInfo") || detail.retryDelay !== undefined;
             if (isRetryInfo) {
               const delayVal = detail.retryDelay ?? detail;
               const ms = this.parseDelayValueToMs(delayVal);
@@ -148,20 +175,31 @@ export class RetryPolicyService {
         }
       }
 
-      if (typeof item === 'object') {
-        if ('retryDelay' in item) {
+      if (typeof item === "object") {
+        if ("retryDelay" in item) {
           const ms = this.parseDelayValueToMs(item.retryDelay);
           if (ms !== null) return ms;
         }
-        if (item.error && typeof item.error === 'object' && 'retryDelay' in item.error) {
+        if (
+          item.error &&
+          typeof item.error === "object" &&
+          "retryDelay" in item.error
+        ) {
           const ms = this.parseDelayValueToMs(item.error.retryDelay);
           if (ms !== null) return ms;
         }
       }
 
-      const str = item instanceof Error ? `${item.message} ${item.stack ?? ''}` : typeof item === 'string' ? item : JSON.stringify(item);
+      const str =
+        item instanceof Error
+          ? `${item.message} ${item.stack ?? ""}`
+          : typeof item === "string"
+            ? item
+            : JSON.stringify(item);
       if (str) {
-        const match = str.match(/retryDelay\s*[=:]\s*"?(\d+(?:\.\d+)?)s"?/i) || str.match(/seconds"?\s*:\s*(\d+)/i);
+        const match =
+          str.match(/retryDelay\s*[=:]\s*"?(\d+(?:\.\d+)?)s"?/i) ||
+          str.match(/seconds"?\s*:\s*(\d+)/i);
         if (match && match[1]) {
           const sec = parseFloat(match[1]);
           if (!isNaN(sec) && sec > 0) {
@@ -176,17 +214,19 @@ export class RetryPolicyService {
 
   private parseDelayValueToMs(val: any): number | null {
     if (!val) return null;
-    if (typeof val === 'string') {
+    if (typeof val === "string") {
       const match = val.match(/^(\d+(?:\.\d+)?)s?$/i);
       if (match && match[1]) {
         const num = parseFloat(match[1]);
         if (!isNaN(num) && num > 0) {
-          return val.endsWith('s') || val.endsWith('S') || num < 1000 ? Math.round(num * 1000) : Math.round(num);
+          return val.endsWith("s") || val.endsWith("S") || num < 1000
+            ? Math.round(num * 1000)
+            : Math.round(num);
         }
       }
-    } else if (typeof val === 'number' && !isNaN(val) && val > 0) {
+    } else if (typeof val === "number" && !isNaN(val) && val > 0) {
       return val < 1000 ? Math.round(val * 1000) : Math.round(val);
-    } else if (typeof val === 'object' && val.seconds !== undefined) {
+    } else if (typeof val === "object" && val.seconds !== undefined) {
       const sec = Number(val.seconds);
       const nanos = Number(val.nanos ?? 0);
       if (!isNaN(sec)) {
@@ -200,23 +240,22 @@ export class RetryPolicyService {
     return new Promise((resolve, reject) => {
       const onAbort = () => {
         clearTimeout(timer);
-        reject(new Error('Operation aborted: sleep cancelled.'));
+        reject(new Error("Operation aborted: sleep cancelled."));
       };
       const timer = setTimeout(() => {
         if (signal) {
-          signal.removeEventListener('abort', onAbort);
+          signal.removeEventListener("abort", onAbort);
         }
         resolve();
       }, ms);
       if (signal) {
         if (signal.aborted) {
           clearTimeout(timer);
-          reject(new Error('Operation aborted: sleep cancelled.'));
+          reject(new Error("Operation aborted: sleep cancelled."));
         } else {
-          signal.addEventListener('abort', onAbort, { once: true });
+          signal.addEventListener("abort", onAbort, { once: true });
         }
       }
     });
   }
 }
-

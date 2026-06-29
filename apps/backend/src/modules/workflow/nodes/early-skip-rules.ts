@@ -1,9 +1,12 @@
-import { Injectable } from '@nestjs/common';
-import * as path from 'path';
-import { WorkflowGraphState } from '../graph/graph.types';
-import { DOCUMENTATION_EXTENSIONS, DEPENDENCY_LOCK_FILES } from '../constants/patterns';
+import { Injectable } from "@nestjs/common";
+import * as path from "path";
+import { WorkflowGraphState } from "../graph/graph.types";
+import {
+  DOCUMENTATION_EXTENSIONS,
+  DEPENDENCY_LOCK_FILES,
+} from "../constants/patterns";
 
-export const SKIP_RULES = Symbol('SKIP_RULES');
+export const SKIP_RULES = Symbol("SKIP_RULES");
 
 export interface SkipDecision {
   shouldSkip: boolean;
@@ -25,7 +28,10 @@ export interface SkipRule {
 export class DisabledRepositoryRule implements SkipRule {
   public async evaluate(context: SkipRuleContext): Promise<SkipDecision> {
     if (!context.isRepositoryActive) {
-      return { shouldSkip: true, reason: 'Repository documentation generation disabled' };
+      return {
+        shouldSkip: true,
+        reason: "Repository documentation generation disabled",
+      };
     }
     return { shouldSkip: false };
   }
@@ -34,10 +40,18 @@ export class DisabledRepositoryRule implements SkipRule {
 @Injectable()
 export class CommitMessageSkipRule implements SkipRule {
   public async evaluate(context: SkipRuleContext): Promise<SkipDecision> {
-    const skipKeywords = ['[skip ci]', '[ci skip]', '[skip docs]', '[skip docpulse]'];
+    const skipKeywords = [
+      "[skip ci]",
+      "[ci skip]",
+      "[skip docs]",
+      "[skip docpulse]",
+    ];
     const lowerMsg = context.commitMessage.toLowerCase();
     if (skipKeywords.some((kw) => lowerMsg.includes(kw))) {
-      return { shouldSkip: true, reason: 'Explicit skip request in commit message' };
+      return {
+        shouldSkip: true,
+        reason: "Explicit skip request in commit message",
+      };
     }
     return { shouldSkip: false };
   }
@@ -56,13 +70,13 @@ export class DocumentationOnlyRule implements SkipRule {
       const ext = path.extname(lower);
       return (
         DOCUMENTATION_EXTENSIONS.includes(ext) ||
-        lower.startsWith('docs/') ||
-        lower.includes('/docs/')
+        lower.startsWith("docs/") ||
+        lower.includes("/docs/")
       );
     };
 
     if (files.every(isDoc)) {
-      return { shouldSkip: true, reason: 'Documentation-only changes' };
+      return { shouldSkip: true, reason: "Documentation-only changes" };
     }
     return { shouldSkip: false };
   }
@@ -82,7 +96,7 @@ export class DependencyOnlyRule implements SkipRule {
     };
 
     if (files.every(isLock)) {
-      return { shouldSkip: true, reason: 'Dependency-only updates' };
+      return { shouldSkip: true, reason: "Dependency-only updates" };
     }
     return { shouldSkip: false };
   }

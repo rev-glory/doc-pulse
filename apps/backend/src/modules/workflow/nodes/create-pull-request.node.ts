@@ -1,8 +1,11 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
-import { PullRequestService } from '../../github/services/pull-request.service';
-import { GitOperationStatus } from '../../../domain/workflow';
-import { PrismaService } from '@/database';
-import type { WorkflowGraphState, WorkflowExecutionConfig } from '../graph/graph.types';
+import { Injectable, Logger, Optional } from "@nestjs/common";
+import { PullRequestService } from "../../github/services/pull-request.service";
+import { GitOperationStatus } from "../../../domain/workflow";
+import { PrismaService } from "@/database";
+import type {
+  WorkflowGraphState,
+  WorkflowExecutionConfig,
+} from "../graph/graph.types";
 
 @Injectable()
 export class CreatePullRequestNode {
@@ -13,31 +16,41 @@ export class CreatePullRequestNode {
     @Optional() private readonly prisma?: PrismaService,
   ) {}
 
-  async invoke(state: WorkflowGraphState, ctx?: WorkflowExecutionConfig): Promise<Partial<WorkflowGraphState>> {
-    const runId = state.runId || 'automated';
-    
+  async invoke(
+    state: WorkflowGraphState,
+    ctx?: WorkflowExecutionConfig,
+  ): Promise<Partial<WorkflowGraphState>> {
+    const runId = state.runId || "automated";
+
     // Bypass Pull Request creation under CURRENT_BRANCH strategy
-    if (ctx && ctx.branchStrategy === 'CURRENT_BRANCH') {
-      this.logger.log(`[${runId}] Bypassing Pull Request creation because branch strategy is CURRENT_BRANCH.`);
+    if (ctx && ctx.branchStrategy === "CURRENT_BRANCH") {
+      this.logger.log(
+        `[${runId}] Bypassing Pull Request creation because branch strategy is CURRENT_BRANCH.`,
+      );
       return {
         gitOperationStatus: GitOperationStatus.NoPullRequestRequired,
         pullRequestUrl: undefined,
       };
     }
 
-    const headBranch = state.targetBranch || '';
+    const headBranch = state.targetBranch || "";
     const repoSummary = state.repository;
 
     this.logger.debug(`Executing CreatePullRequestNode for run [${runId}]...`);
 
     if (!headBranch || !repoSummary) {
-      throw new Error(`CreatePullRequestNode error: Missing branchName or repository summary in workflow state.`);
+      throw new Error(
+        `CreatePullRequestNode error: Missing branchName or repository summary in workflow state.`,
+      );
     }
 
     // Extract installation metadata (fallback to 0 or metadata)
     let installationId = Number(state.metadata?.installationId || 0);
-    let owner = (repoSummary as any).owner || (state.metadata?.owner as string) || 'docpulse';
-    let repo = repoSummary.name || 'doc-pulse';
+    let owner =
+      (repoSummary as any).owner ||
+      (state.metadata?.owner as string) ||
+      "docpulse";
+    let repo = repoSummary.name || "doc-pulse";
 
     if (this.prisma && this.prisma.repository) {
       const dbRepo = await this.prisma.repository.findUnique({
@@ -68,24 +81,32 @@ export class CreatePullRequestNode {
         update: {
           githubPrNumber: prSummary.number,
           githubPrUrl: prSummary.url,
-          title: prSummary.title || `docs(docpulse): update automated documentation [${runId}]`,
-          body: prSummary.body || '',
+          title:
+            prSummary.title ||
+            `docs(docpulse): update automated documentation [${runId}]`,
+          body: prSummary.body || "",
           headBranch: prSummary.headBranch || headBranch,
-          baseBranch: prSummary.baseBranch || 'main',
+          baseBranch: prSummary.baseBranch || "main",
         },
         create: {
           workflowRunId: runId,
           githubPrNumber: prSummary.number,
           githubPrUrl: prSummary.url,
-          title: prSummary.title || `docs(docpulse): update automated documentation [${runId}]`,
-          body: prSummary.body || '',
+          title:
+            prSummary.title ||
+            `docs(docpulse): update automated documentation [${runId}]`,
+          body: prSummary.body || "",
           headBranch: prSummary.headBranch || headBranch,
-          baseBranch: prSummary.baseBranch || 'main',
+          baseBranch: prSummary.baseBranch || "main",
         },
       });
-      this.logger.log(`CreatePullRequestNode completed successfully [PR #${prSummary.number}, DB ID: ${dbPr.id}]`);
+      this.logger.log(
+        `CreatePullRequestNode completed successfully [PR #${prSummary.number}, DB ID: ${dbPr.id}]`,
+      );
     } else {
-      this.logger.log(`CreatePullRequestNode completed successfully [PR #${prSummary.number}] (Prisma persistence bypassed)`);
+      this.logger.log(
+        `CreatePullRequestNode completed successfully [PR #${prSummary.number}] (Prisma persistence bypassed)`,
+      );
     }
 
     // Does NOT mark workflow executionStatus as Completed.

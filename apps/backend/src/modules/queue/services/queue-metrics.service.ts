@@ -1,9 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import type { Queue } from 'bullmq';
+import { Injectable, Logger } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import type { Queue } from "bullmq";
 
-import { WORKFLOW_EXECUTION_QUEUE } from '../constants/queue.constants';
-import type { QueueSnapshotMetrics, QueueMetricsCollector } from '../types/queue-metrics.types';
+import { WORKFLOW_EXECUTION_QUEUE } from "../constants/queue.constants";
+import type {
+  QueueSnapshotMetrics,
+  QueueMetricsCollector,
+} from "../types/queue-metrics.types";
 
 @Injectable()
 export class QueueMetricsService implements QueueMetricsCollector {
@@ -44,7 +47,9 @@ export class QueueMetricsService implements QueueMetricsCollector {
     ]);
 
     const averageProcessingDurationMs =
-      this.jobsProcessed > 0 ? Math.round(this.totalProcessingDurationMs / this.jobsProcessed) : 0;
+      this.jobsProcessed > 0
+        ? Math.round(this.totalProcessingDurationMs / this.jobsProcessed)
+        : 0;
 
     return {
       jobsProcessed: this.jobsProcessed,

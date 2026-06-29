@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
-import type { WorkflowState } from '../../../domain/workflow';
-import { SourceCodeAnalysis } from '../../../domain/source-code-analysis/source-code-analysis';
-import type { DocumentationFile } from '../../../domain/documentation';
+import { Injectable } from "@nestjs/common";
+import type { WorkflowState } from "../../../domain/workflow";
+import { SourceCodeAnalysis } from "../../../domain/source-code-analysis/source-code-analysis";
+import type { DocumentationFile } from "../../../domain/documentation";
 
 export interface CriticPromptContext {
   overallScore: number;
@@ -46,15 +46,16 @@ export class RepositoryContextBuilderService {
     const metadata = state.metadata as Record<string, any> | undefined;
     const generationMeta = state.generation as Record<string, any> | undefined;
 
-    const repositoryName = repo?.name ?? 'unknown-repository';
-    const rootPath = repo?.rootPath ?? '';
+    const repositoryName = repo?.name ?? "unknown-repository";
+    const rootPath = repo?.rootPath ?? "";
     const languages = repo?.languages ?? (repo as any)?.detectedLanguages ?? [];
-    const frameworks = repo?.frameworks ?? (repo as any)?.detectedFrameworks ?? [];
-    
+    const frameworks =
+      repo?.frameworks ?? (repo as any)?.detectedFrameworks ?? [];
+
     const dependencies: Record<string, string> = {};
     if (repo?.dependencies && Array.isArray(repo.dependencies)) {
       for (const dep of repo.dependencies) {
-        if (dep?.name) dependencies[dep.name] = dep.version ?? '*';
+        if (dep?.name) dependencies[dep.name] = dep.version ?? "*";
       }
     } else if ((repo as any)?.packageJson?.dependencies) {
       Object.assign(dependencies, (repo as any).packageJson.dependencies);
@@ -62,7 +63,9 @@ export class RepositoryContextBuilderService {
       Object.assign(dependencies, metadata.dependencies);
     }
 
-    const existingDocs = (docs?.documentationFiles ?? []).map((file: any) => file.path ?? file.fileName ?? String(file));
+    const existingDocs = (docs?.documentationFiles ?? []).map(
+      (file: any) => file.path ?? file.fileName ?? String(file),
+    );
     const missingDocs = docs?.missingDocuments ?? [];
 
     const gitDiff =
@@ -71,27 +74,35 @@ export class RepositoryContextBuilderService {
       undefined;
 
     const readmeFile = (docs?.documentationFiles ?? []).find((f: any) =>
-      (f.path ?? f.fileName ?? String(f)).toLowerCase().includes('readme'),
+      (f.path ?? f.fileName ?? String(f)).toLowerCase().includes("readme"),
     );
     const readmeContent = readmeFile
-      ? (readmeFile as any).summary ?? (readmeFile as any).content ?? undefined
+      ? ((readmeFile as any).summary ??
+        (readmeFile as any).content ??
+        undefined)
       : undefined;
 
     const architectureFiles = existingDocs.filter(
-      (path: string) => path.toLowerCase().includes('arch') || path.toLowerCase().includes('design'),
+      (path: string) =>
+        path.toLowerCase().includes("arch") ||
+        path.toLowerCase().includes("design"),
     );
     const apiDocs = existingDocs.filter(
-      (path: string) => path.toLowerCase().includes('api') || path.toLowerCase().includes('swagger'),
+      (path: string) =>
+        path.toLowerCase().includes("api") ||
+        path.toLowerCase().includes("swagger"),
     );
 
     const formattedSummary = [
       `Repository: ${repositoryName}`,
-      `Languages: ${languages.join(', ') || 'None detected'}`,
-      `Frameworks: ${frameworks.join(', ') || 'None detected'}`,
-      `Existing Documentation: ${existingDocs.length} files (${existingDocs.join(', ') || 'None'})`,
-      `Missing Documentation: ${missingDocs.join(', ') || 'None'}`,
-      gitDiff ? `Git Diff Available: Yes (${gitDiff.length} chars)` : `Git Diff Available: No`,
-    ].join('\n');
+      `Languages: ${languages.join(", ") || "None detected"}`,
+      `Frameworks: ${frameworks.join(", ") || "None detected"}`,
+      `Existing Documentation: ${existingDocs.length} files (${existingDocs.join(", ") || "None"})`,
+      `Missing Documentation: ${missingDocs.join(", ") || "None"}`,
+      gitDiff
+        ? `Git Diff Available: Yes (${gitDiff.length} chars)`
+        : `Git Diff Available: No`,
+    ].join("\n");
 
     let criticFeedback: CriticPromptContext | undefined = undefined;
     if (state.criticReview) {
@@ -117,33 +128,36 @@ export class RepositoryContextBuilderService {
     const formattedPreviousGenDocs = previousGeneratedDocs
       .map((doc) => {
         const heading = `### ${doc.path}`;
-        const body = doc.content?.trim() ?? '';
+        const body = doc.content?.trim() ?? "";
         return body ? `${heading}\n\n${body}` : heading;
       })
-      .join('\n\n---\n\n');
+      .join("\n\n---\n\n");
 
-    let formattedSourceAnalysis = '';
+    let formattedSourceAnalysis = "";
     if (sourceCodeAnalysis) {
       const sc = sourceCodeAnalysis;
       const techStr = (sc.technologies || [])
-        .map((t: any) => `${t.name} (${t.category}, ${(t.confidence * 100).toFixed(0)}% confidence)`)
-        .join(', ');
+        .map(
+          (t: any) =>
+            `${t.name} (${t.category}, ${(t.confidence * 100).toFixed(0)}% confidence)`,
+        )
+        .join(", ");
 
       formattedSourceAnalysis = [
         `### Discovered Codebase Structure & Architecture`,
-        `**Architectural Style**: ${sc.architecture?.style || 'Generic App'}`,
-        `**Architectural Patterns**: ${sc.architecture?.patterns?.join(', ') || 'None detected'}`,
-        `**Key Layers**: ${sc.architecture?.layers?.join(', ') || 'None detected'}`,
-        `**Modules & Package Structure**: ${sc.architecture?.moduleStructure?.join(', ') || 'None detected'}`,
-        `**Key Technologies**: ${techStr || 'None detected'}`,
-        `**Databases**: ${sc.database?.join(', ') || 'None detected'}`,
-        `**Entry Points**: ${sc.entryPoints?.join(', ') || 'None detected'}`,
-        `**Configuration Files**: ${sc.configurationFiles?.join(', ') || 'None'}`,
-        `**Directories Structure**:\n${sc.importantDirectories?.map((d: string) => `- ${d}`).join('\n') || 'None'}`,
-        `**Key Implementation Files**:\n${sc.importantFiles?.map((f: any) => `- ${f.path}: ${f.reason}`).join('\n') || 'None'}`,
-        `**Discovered API Endpoints**:\n${sc.apiEndpoints?.map((ep: any) => `- ${ep.method} ${ep.path}${ep.handler ? ` (${ep.handler})` : ''}`).join('\n') || 'None detected'}`,
+        `**Architectural Style**: ${sc.architecture?.style || "Generic App"}`,
+        `**Architectural Patterns**: ${sc.architecture?.patterns?.join(", ") || "None detected"}`,
+        `**Key Layers**: ${sc.architecture?.layers?.join(", ") || "None detected"}`,
+        `**Modules & Package Structure**: ${sc.architecture?.moduleStructure?.join(", ") || "None detected"}`,
+        `**Key Technologies**: ${techStr || "None detected"}`,
+        `**Databases**: ${sc.database?.join(", ") || "None detected"}`,
+        `**Entry Points**: ${sc.entryPoints?.join(", ") || "None detected"}`,
+        `**Configuration Files**: ${sc.configurationFiles?.join(", ") || "None"}`,
+        `**Directories Structure**:\n${sc.importantDirectories?.map((d: string) => `- ${d}`).join("\n") || "None"}`,
+        `**Key Implementation Files**:\n${sc.importantFiles?.map((f: any) => `- ${f.path}: ${f.reason}`).join("\n") || "None"}`,
+        `**Discovered API Endpoints**:\n${sc.apiEndpoints?.map((ep: any) => `- ${ep.method} ${ep.path}${ep.handler ? ` (${ep.handler})` : ""}`).join("\n") || "None detected"}`,
         `**Codebase Metrics**:\n- Total Source Files: ${sc.metrics?.totalSourceFiles ?? 0}\n- Controllers Count: ${sc.metrics?.controllerCount ?? 0}\n- Services Count: ${sc.metrics?.serviceCount ?? 0}\n- Modules Count: ${sc.metrics?.moduleCount ?? 0}\n- Interfaces Count: ${sc.metrics?.interfaceCount ?? 0}\n- Classes Count: ${sc.metrics?.classCount ?? 0}\n- Test Files: ${sc.metrics?.testCount ?? 0}`,
-      ].join('\n\n');
+      ].join("\n\n");
     }
 
     return {

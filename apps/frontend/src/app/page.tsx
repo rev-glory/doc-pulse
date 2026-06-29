@@ -1,9 +1,8 @@
+"use client";
 
-'use client';
-
-import { useAuth } from '@/features/auth/providers/auth-provider';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useAuth } from "@/features/auth/providers/auth-provider";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function RootIndexPage() {
   const { isAuthenticated, loading } = useAuth();
@@ -12,9 +11,9 @@ export default function RootIndexPage() {
   useEffect(() => {
     if (!loading) {
       if (isAuthenticated) {
-        router.push('/dashboard');
+        router.push("/dashboard");
       } else {
-        router.push('/login');
+        router.push("/login");
       }
     }
   }, [isAuthenticated, loading, router]);

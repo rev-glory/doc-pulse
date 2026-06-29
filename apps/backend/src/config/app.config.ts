@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 // ---------------------------------------------------------------------------
 // App Configuration
@@ -10,16 +10,16 @@ import type { Env } from './env.validation';
 // ---------------------------------------------------------------------------
 
 export interface AppConfig {
-  nodeEnv: Env['NODE_ENV'];
+  nodeEnv: Env["NODE_ENV"];
   port: number;
   frontendUrl: string;
   backendUrl: string;
-  logLevel: Env['LOG_LEVEL'];
+  logLevel: Env["LOG_LEVEL"];
   isProduction: boolean;
   isDevelopment: boolean;
 }
 
-export const appConfig = registerAs('app', (): AppConfig => {
+export const appConfig = registerAs("app", (): AppConfig => {
   const env = process.env as unknown as Env;
 
   return {
@@ -28,7 +28,7 @@ export const appConfig = registerAs('app', (): AppConfig => {
     frontendUrl: env.FRONTEND_URL,
     backendUrl: env.BACKEND_URL,
     logLevel: env.LOG_LEVEL,
-    isProduction: env.NODE_ENV === 'production',
-    isDevelopment: env.NODE_ENV === 'development',
+    isProduction: env.NODE_ENV === "production",
+    isDevelopment: env.NODE_ENV === "development",
   };
 });

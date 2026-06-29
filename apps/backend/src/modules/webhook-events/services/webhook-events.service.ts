@@ -1,6 +1,6 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from "@nestjs/common";
 
-import { PrismaService } from '@/database';
+import { PrismaService } from "@/database";
 
 // ---------------------------------------------------------------------------
 // WebhookEventsService
@@ -32,7 +32,7 @@ export class WebhookEventsService {
     repositoryId?: string;
     payload: unknown;
   }) {
-    this.logger.log('Persisting webhook event', {
+    this.logger.log("Persisting webhook event", {
       githubDeliveryId,
       eventType,
       action,
@@ -46,7 +46,7 @@ export class WebhookEventsService {
         action,
         repositoryId,
         payload: payload as any,
-        status: 'RECEIVED',
+        status: "RECEIVED",
       },
     });
   }
@@ -55,12 +55,12 @@ export class WebhookEventsService {
    * Mark an event as processed successfully.
    */
   async markAsProcessed(githubDeliveryId: string) {
-    this.logger.log('Marking webhook event as processed', { githubDeliveryId });
+    this.logger.log("Marking webhook event as processed", { githubDeliveryId });
 
     return this.prisma.webhookEvent.update({
       where: { githubDeliveryId },
       data: {
-        status: 'PROCESSED',
+        status: "PROCESSED",
         processedAt: new Date(),
       },
     });
@@ -70,12 +70,12 @@ export class WebhookEventsService {
    * Mark an event as failed.
    */
   async markAsFailed(githubDeliveryId: string) {
-    this.logger.log('Marking webhook event as failed', { githubDeliveryId });
+    this.logger.log("Marking webhook event as failed", { githubDeliveryId });
 
     return this.prisma.webhookEvent.update({
       where: { githubDeliveryId },
       data: {
-        status: 'FAILED',
+        status: "FAILED",
         processedAt: new Date(),
       },
     });

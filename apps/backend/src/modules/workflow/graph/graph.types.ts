@@ -1,15 +1,18 @@
-import { Annotation } from '@langchain/langgraph';
-import { RepositorySummary } from '../../../domain/repository';
-import { DocumentationInventory, DocumentationFile } from '../../../domain/documentation';
-import { SourceCodeAnalysis } from '../../../domain/source-code-analysis/source-code-analysis';
+import { Annotation } from "@langchain/langgraph";
+import { RepositorySummary } from "../../../domain/repository";
+import {
+  DocumentationInventory,
+  DocumentationFile,
+} from "../../../domain/documentation";
+import { SourceCodeAnalysis } from "../../../domain/source-code-analysis/source-code-analysis";
 import {
   GeneratedDocument,
   CriticReview,
   PullRequestSummary,
   WorkflowStatus,
   GitOperationStatus,
-} from '../../../domain/workflow';
-import { BranchStrategy } from '@/generated/prisma/client';
+} from "../../../domain/workflow";
+import { BranchStrategy } from "@/generated/prisma/client";
 
 export interface WorkflowExecutionConfig {
   branchStrategy: BranchStrategy;

@@ -1,4 +1,4 @@
-import { QUEUE_NAMES } from '../../../config/queue.config';
+import { QUEUE_NAMES } from "../../../config/queue.config";
 
 /**
  * BullMQ Queue Name Constants for the Queue Module.
@@ -9,4 +9,4 @@ export const WORKFLOW_DLQ_QUEUE = QUEUE_NAMES.WORKFLOW_DLQ;
 /**
  * BullMQ Job Type Constants.
  */
-export const RUN_WORKFLOW_JOB = 'run-workflow';
+export const RUN_WORKFLOW_JOB = "run-workflow";

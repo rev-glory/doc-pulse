@@ -1,34 +1,44 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useApiQuery } from '@/lib/query/use-api-query';
-import { RepositoryApi } from '@/lib/api/services/repository.api';
-import { GitHubApi } from '@/lib/api/services/github.api';
-import { DashboardApi } from '@/lib/api/services/dashboard.api';
-import { PageHeader } from '@/components/shared/page-header';
-import { SectionCard } from '@/components/shared/section-card';
-import { LoadingState } from '@/components/feedback/loading-state';
-import { ErrorState } from '@/components/feedback/error-state';
-import { RepositoryTable } from '@/features/repositories/components/repository-table';
-import { EmptyInstallation } from '@/features/repositories/components/empty-installation';
+import React, { useState, useEffect, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { useApiQuery } from "@/lib/query/use-api-query";
+import { RepositoryApi } from "@/lib/api/services/repository.api";
+import { GitHubApi } from "@/lib/api/services/github.api";
+import { DashboardApi } from "@/lib/api/services/dashboard.api";
+import { PageHeader } from "@/components/shared/page-header";
+import { SectionCard } from "@/components/shared/section-card";
+import { LoadingState } from "@/components/feedback/loading-state";
+import { ErrorState } from "@/components/feedback/error-state";
+import { RepositoryTable } from "@/features/repositories/components/repository-table";
+import { EmptyInstallation } from "@/features/repositories/components/empty-installation";
 
 function RepositoriesListContent(): React.JSX.Element {
   const searchParams = useSearchParams();
-  const syncStatus = searchParams.get('sync');
+  const syncStatus = searchParams.get("sync");
 
-  const { data: repositories, isLoading: isLoadingRepos, error: reposError, refetch: refetchRepos } = useApiQuery({
-    queryKey: ['repositories', 'list'],
+  const {
+    data: repositories,
+    isLoading: isLoadingRepos,
+    error: reposError,
+    refetch: refetchRepos,
+  } = useApiQuery({
+    queryKey: ["repositories", "list"],
     queryFn: RepositoryApi.listRepositories,
   });
 
-  const { data: installations, isLoading: isLoadingInstallations, error: installationsError, refetch: refetchInstallations } = useApiQuery({
-    queryKey: ['github', 'installations'],
+  const {
+    data: installations,
+    isLoading: isLoadingInstallations,
+    error: installationsError,
+    refetch: refetchInstallations,
+  } = useApiQuery({
+    queryKey: ["github", "installations"],
     queryFn: GitHubApi.getInstallations,
   });
 
   const { refetch: refetchDashboard } = useApiQuery({
-    queryKey: ['dashboard', 'stats'],
+    queryKey: ["dashboard", "stats"],
     queryFn: DashboardApi.getStats,
   });
 
@@ -38,20 +48,25 @@ function RepositoriesListContent(): React.JSX.Element {
   const [showSyncBanner, setShowSyncBanner] = useState(true);
 
   useEffect(() => {
-    if (syncStatus === 'success') {
-      setSyncSuccess('Onboarding completed! Your repositories have been synchronized successfully.');
+    if (syncStatus === "success") {
+      setSyncSuccess(
+        "Onboarding completed! Your repositories have been synchronized successfully.",
+      );
       // Auto-clear success message after 5 seconds
       const timer = setTimeout(() => setSyncSuccess(null), 5000);
       return () => clearTimeout(timer);
-    } else if (syncStatus === 'background') {
-      setSyncSuccess('Workspace sync is running in the background. Repositories will appear as they index.');
+    } else if (syncStatus === "background") {
+      setSyncSuccess(
+        "Workspace sync is running in the background. Repositories will appear as they index.",
+      );
     }
     return undefined;
   }, [syncStatus]);
 
   const handleConnectGitHub = () => {
     // Lead user directly to the new installation setup
-    window.location.href = 'https://github.com/apps/docpulse-test-app/installations/new';
+    window.location.href =
+      "https://github.com/apps/docpulse-test-app/installations/new";
   };
 
   const handleSyncRepositories = async () => {
@@ -62,18 +77,20 @@ function RepositoriesListContent(): React.JSX.Element {
       const installs = installations || [];
       if (installs.length > 0) {
         // Sync the first installation or loop through them
-        addSyncBanner('Syncing repositories with GitHub...');
+        addSyncBanner("Syncing repositories with GitHub...");
         for (const inst of installs) {
           await RepositoryApi.syncInstallationRepositories(inst.installationId);
         }
         await refetchRepos();
         await refetchDashboard();
-        setSyncSuccess('Repositories synchronized successfully.');
+        setSyncSuccess("Repositories synchronized successfully.");
       } else {
-        setSyncError('No GitHub App installations found. Please connect GitHub first.');
+        setSyncError(
+          "No GitHub App installations found. Please connect GitHub first.",
+        );
       }
     } catch (e: any) {
-      setSyncError(e.message || 'Failed to sync repositories');
+      setSyncError(e.message || "Failed to sync repositories");
     } finally {
       setIsSyncing(false);
       removeSyncBanner();
@@ -87,7 +104,7 @@ function RepositoriesListContent(): React.JSX.Element {
 
   const removeSyncBanner = () => {
     // If not a background or success redirect query, clear it
-    if (syncStatus !== 'background') {
+    if (syncStatus !== "background") {
       setSyncSuccess(null);
     }
   };
@@ -97,8 +114,14 @@ function RepositoriesListContent(): React.JSX.Element {
   if (isLoadingRepos || isLoadingInstallations) {
     return (
       <div className="space-y-8">
-        <PageHeader title="Connected Repositories" description="Fetching installation details..." />
-        <LoadingState message="Fetching connected GitHub repositories..." rows={6} />
+        <PageHeader
+          title="Connected Repositories"
+          description="Fetching installation details..."
+        />
+        <LoadingState
+          message="Fetching connected GitHub repositories..."
+          rows={6}
+        />
       </div>
     );
   }
@@ -107,9 +130,15 @@ function RepositoriesListContent(): React.JSX.Element {
     return (
       <div className="space-y-8">
         <PageHeader title="Connected Repositories" />
-        <ErrorState 
-          message={(reposError || installationsError)?.message || 'Failed to retrieve repository status.'} 
-          retry={() => { refetchRepos(); refetchInstallations(); }} 
+        <ErrorState
+          message={
+            (reposError || installationsError)?.message ||
+            "Failed to retrieve repository status."
+          }
+          retry={() => {
+            refetchRepos();
+            refetchInstallations();
+          }}
         />
       </div>
     );
@@ -148,7 +177,7 @@ function RepositoriesListContent(): React.JSX.Element {
               disabled={isSyncing}
               className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-xs font-bold rounded-md shadow transition-all cursor-pointer"
             >
-              {isSyncing ? 'Syncing...' : 'Sync Repositories'}
+              {isSyncing ? "Syncing..." : "Sync Repositories"}
             </button>
           </div>
         }
@@ -158,9 +187,11 @@ function RepositoriesListContent(): React.JSX.Element {
         <div className="p-4 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800/50 rounded-lg flex items-center justify-between animate-fade-in">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-            <p className="text-sm text-emerald-800 dark:text-emerald-300">{syncSuccess}</p>
+            <p className="text-sm text-emerald-800 dark:text-emerald-300">
+              {syncSuccess}
+            </p>
           </div>
-          <button 
+          <button
             onClick={() => setShowSyncBanner(false)}
             className="text-xs text-emerald-600 dark:text-emerald-400 hover:text-emerald-800 font-semibold"
           >
@@ -175,8 +206,14 @@ function RepositoriesListContent(): React.JSX.Element {
         </div>
       )}
 
-      <SectionCard title="Installed Repositories" description="Select which repositories to monitor for documentation changes.">
-        <RepositoryTable repositories={repositories || []} onActionComplete={refetchRepos} />
+      <SectionCard
+        title="Installed Repositories"
+        description="Select which repositories to monitor for documentation changes."
+      >
+        <RepositoryTable
+          repositories={repositories || []}
+          onActionComplete={refetchRepos}
+        />
       </SectionCard>
     </div>
   );
@@ -184,14 +221,21 @@ function RepositoriesListContent(): React.JSX.Element {
 
 export default function RepositoriesListPage(): React.JSX.Element {
   return (
-    <Suspense fallback={
-      <div className="space-y-8">
-        <PageHeader title="Connected Repositories" description="Hydrating React views..." />
-        <LoadingState message="Fetching connected GitHub repositories..." rows={6} />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="space-y-8">
+          <PageHeader
+            title="Connected Repositories"
+            description="Hydrating React views..."
+          />
+          <LoadingState
+            message="Fetching connected GitHub repositories..."
+            rows={6}
+          />
+        </div>
+      }
+    >
       <RepositoriesListContent />
     </Suspense>
   );
 }
-

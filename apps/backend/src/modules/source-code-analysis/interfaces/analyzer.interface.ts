@@ -1,5 +1,5 @@
-import { RepositoryIndex } from '../services/repository-scanner.service';
-import { SourceCodeAnalysis } from '../../../domain/source-code-analysis/source-code-analysis';
+import { RepositoryIndex } from "../services/repository-scanner.service";
+import { SourceCodeAnalysis } from "../../../domain/source-code-analysis/source-code-analysis";
 
 export interface CodebaseAnalyzer {
   supports(index: RepositoryIndex): boolean;

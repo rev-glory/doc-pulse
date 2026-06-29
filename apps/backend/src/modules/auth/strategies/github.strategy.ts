@@ -1,27 +1,27 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
-import { Strategy } from 'passport-github2';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { PassportStrategy } from "@nestjs/passport";
+import { Strategy } from "passport-github2";
 
-import type { GitHubConfig } from '@/config';
-import type { GithubProfile } from '../types/auth.types';
+import type { GitHubConfig } from "@/config";
+import type { GithubProfile } from "../types/auth.types";
 
 @Injectable()
-export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
+export class GithubStrategy extends PassportStrategy(Strategy, "github") {
   constructor(private configService: ConfigService) {
-    const githubCfg = configService.get<GitHubConfig>('github');
+    const githubCfg = configService.get<GitHubConfig>("github");
 
     if (!githubCfg) {
-      throw new Error('GitHub config not found');
+      throw new Error("GitHub config not found");
     }
 
     super({
       clientID: githubCfg.clientId,
       clientSecret: githubCfg.clientSecret,
-      callbackURL: `${configService.get('BACKEND_URL')}/auth/github/callback`,
+      callbackURL: `${configService.get("BACKEND_URL")}/auth/github/callback`,
       // Minimum scope required to identify the user.
       // Repository access uses Installation Access Tokens — never OAuth tokens.
-      scope: ['user:email', 'read:user'],
+      scope: ["user:email", "read:user"],
     });
   }
 
@@ -46,4 +46,3 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     done(null, user);
   }
 }
-

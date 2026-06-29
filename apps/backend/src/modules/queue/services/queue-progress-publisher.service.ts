@@ -1,34 +1,48 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
-import type { Job } from 'bullmq';
-import { QueueEventStatus, RealtimeWorkflowStage } from '@docpulse/shared-types';
-import { WorkflowStage } from '../../../domain/workflow';
+import { Injectable, Logger, Optional } from "@nestjs/common";
+import type { Job } from "bullmq";
+import {
+  QueueEventStatus,
+  RealtimeWorkflowStage,
+} from "@docpulse/shared-types";
+import { WorkflowStage } from "../../../domain/workflow";
 
-import type { ProgressPublisher, WorkflowProgressEvent } from '../types/progress.types';
-import { WorkflowEventService } from '../../realtime/services/workflow-event.service';
+import type {
+  ProgressPublisher,
+  WorkflowProgressEvent,
+} from "../types/progress.types";
+import { WorkflowEventService } from "../../realtime/services/workflow-event.service";
 
 @Injectable()
 export class QueueProgressPublisherService implements ProgressPublisher {
   private readonly logger = new Logger(QueueProgressPublisherService.name);
 
-  constructor(@Optional() private readonly eventService?: WorkflowEventService) {}
+  constructor(
+    @Optional() private readonly eventService?: WorkflowEventService,
+  ) {}
 
   /**
    * Publishes structured progress update to active BullMQ job and logs metadata.
    * Designed for future extension to WebSockets, SSE, or Redis Pub/Sub.
    */
-  public async publishJobProgress(job: Job, event: Omit<WorkflowProgressEvent, 'jobId'>): Promise<void> {
+  public async publishJobProgress(
+    job: Job,
+    event: Omit<WorkflowProgressEvent, "jobId">,
+  ): Promise<void> {
     const fullEvent: WorkflowProgressEvent = {
       ...event,
-      jobId: job.id ?? 'unknown',
+      jobId: job.id ?? "unknown",
     };
 
-    this.logger.log(`[Progress] [${fullEvent.stage}] (${fullEvent.percentage}%) ${fullEvent.message}`, {
-      jobId: fullEvent.jobId,
-      runId: fullEvent.runId,
-      repositoryId: fullEvent.repositoryId,
-      stage: fullEvent.stage,
-      percentage: fullEvent.percentage,
-    });
+    this.logger.log(
+      `[Progress] [${fullEvent.stage}] (${fullEvent.percentage}%) ${fullEvent.message}`,
+      {
+        jobId: fullEvent.jobId,
+        runId: fullEvent.runId,
+        repositoryId: fullEvent.repositoryId,
+        stage: fullEvent.stage,
+        percentage: fullEvent.percentage,
+      },
+    );
 
     try {
       await job.updateProgress({
@@ -41,7 +55,9 @@ export class QueueProgressPublisherService implements ProgressPublisher {
         metadata: fullEvent.metadata,
       });
     } catch (error) {
-      this.logger.warn(`Failed to update BullMQ job progress: ${error instanceof Error ? error.message : String(error)}`);
+      this.logger.warn(
+        `Failed to update BullMQ job progress: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
 
     // Broadcast via WebSockets Gateway
@@ -50,7 +66,8 @@ export class QueueProgressPublisherService implements ProgressPublisher {
 
   public async publishProgress(event: WorkflowProgressEvent): Promise<void> {
     if (this.eventService) {
-      const queueStatus = event.queueStatus ?? this.deriveQueueStatus(event.stage);
+      const queueStatus =
+        event.queueStatus ?? this.deriveQueueStatus(event.stage);
       this.eventService.publishQueueEvent(
         event.runId,
         event.repositoryId,
@@ -59,20 +76,24 @@ export class QueueProgressPublisherService implements ProgressPublisher {
         event.percentage,
         { message: event.message, stage: event.stage, ...event.metadata },
         {
-          stage: event.realtimeStage ?? this.mapRealtimeStage(event.stage, queueStatus),
+          stage:
+            event.realtimeStage ??
+            this.mapRealtimeStage(event.stage, queueStatus),
           status: event.realtimeStatus ?? this.mapRealtimeStatus(queueStatus),
         },
       );
     }
   }
 
-  private deriveQueueStatus(stage: WorkflowProgressEvent['stage']): QueueEventStatus {
+  private deriveQueueStatus(
+    stage: WorkflowProgressEvent["stage"],
+  ): QueueEventStatus {
     switch (stage) {
-      case 'QUEUED':
+      case "QUEUED":
         return QueueEventStatus.Queued;
-      case 'FAILED':
+      case "FAILED":
         return QueueEventStatus.Failed;
-      case 'FINISHED':
+      case "FINISHED":
         return QueueEventStatus.Completed;
       default:
         return QueueEventStatus.Active;
@@ -83,20 +104,23 @@ export class QueueProgressPublisherService implements ProgressPublisher {
     switch (queueStatus) {
       case QueueEventStatus.Queued:
       case QueueEventStatus.Waiting:
-        return 'waiting';
+        return "waiting";
       case QueueEventStatus.Completed:
-        return 'completed';
+        return "completed";
       case QueueEventStatus.Failed:
-        return 'failed';
+        return "failed";
       case QueueEventStatus.Stalled:
-        return 'cancelled';
+        return "cancelled";
       case QueueEventStatus.Active:
       default:
-        return 'running';
+        return "running";
     }
   }
 
-  private mapRealtimeStage(stage: WorkflowProgressEvent['stage'], queueStatus: QueueEventStatus): RealtimeWorkflowStage {
+  private mapRealtimeStage(
+    stage: WorkflowProgressEvent["stage"],
+    queueStatus: QueueEventStatus,
+  ): RealtimeWorkflowStage {
     switch (queueStatus) {
       case QueueEventStatus.Queued:
         return RealtimeWorkflowStage.Queued;
@@ -123,11 +147,11 @@ export class QueueProgressPublisherService implements ProgressPublisher {
       case WorkflowStage.PUSHING:
       case WorkflowStage.CREATING_PULL_REQUEST:
         return RealtimeWorkflowStage.CreatingPR;
-      case 'QUEUED':
+      case "QUEUED":
         return RealtimeWorkflowStage.Queued;
-      case 'FINISHED':
+      case "FINISHED":
         return RealtimeWorkflowStage.Completed;
-      case 'FAILED':
+      case "FAILED":
         return RealtimeWorkflowStage.Failed;
       default:
         return RealtimeWorkflowStage.Cloning;

@@ -1,10 +1,10 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@/database';
-import { GitService } from '../../git-operations/services/git.service';
-import { RepositoryCloneService } from '../../git-operations/services/repository-clone.service';
-import { WorkspaceLifecycleService } from '../../git-operations/services/workspace-lifecycle.service';
-import { WorkflowGraphState } from '../graph/graph.types';
-import { SKIP_RULES, SkipRule } from './early-skip-rules';
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "@/database";
+import { GitService } from "../../git-operations/services/git.service";
+import { RepositoryCloneService } from "../../git-operations/services/repository-clone.service";
+import { WorkspaceLifecycleService } from "../../git-operations/services/workspace-lifecycle.service";
+import { WorkflowGraphState } from "../graph/graph.types";
+import { SKIP_RULES, SkipRule } from "./early-skip-rules";
 
 @Injectable()
 export class EarlySkipNode {
@@ -18,7 +18,9 @@ export class EarlySkipNode {
     @Inject(SKIP_RULES) private readonly rules: SkipRule[],
   ) {}
 
-  public async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
+  public async invoke(
+    state: WorkflowGraphState,
+  ): Promise<Partial<WorkflowGraphState>> {
     const repositoryId = state.repositoryId;
     if (!repositoryId) {
       return {};
@@ -33,7 +35,8 @@ export class EarlySkipNode {
     }
 
     // Step 1: Ensure workspace exists and is cloned
-    const exists = await this.workspaceLifecycleService.workspaceExists(repositoryId);
+    const exists =
+      await this.workspaceLifecycleService.workspaceExists(repositoryId);
     if (!exists) {
       await this.repositoryCloneService.cloneRepository({
         id: repoRecord.id,
@@ -42,18 +45,30 @@ export class EarlySkipNode {
       });
     }
 
-    const workspacePath = this.workspaceLifecycleService.getWorkspacePath(repositoryId);
+    const workspacePath =
+      this.workspaceLifecycleService.getWorkspacePath(repositoryId);
 
     // Step 2: Determine commit Sha and fetch commit metadata (modified files, commit message)
-    const commitSha = state.commitSha && state.commitSha !== 'unknown' ? state.commitSha : 'HEAD';
+    const commitSha =
+      state.commitSha && state.commitSha !== "unknown"
+        ? state.commitSha
+        : "HEAD";
     let modifiedFiles: string[] = [];
-    let commitMessage = '';
+    let commitMessage = "";
 
     try {
-      modifiedFiles = await this.gitService.getModifiedFiles(workspacePath, commitSha);
-      commitMessage = await this.gitService.getCommitMessage(workspacePath, commitSha);
+      modifiedFiles = await this.gitService.getModifiedFiles(
+        workspacePath,
+        commitSha,
+      );
+      commitMessage = await this.gitService.getCommitMessage(
+        workspacePath,
+        commitSha,
+      );
     } catch (err: any) {
-      this.logger.warn(`Failed to retrieve git info for skip analysis: ${err.message}. Defaulting to empty.`);
+      this.logger.warn(
+        `Failed to retrieve git info for skip analysis: ${err.message}. Defaulting to empty.`,
+      );
     }
 
     // Step 3: Run rules engine
@@ -67,7 +82,9 @@ export class EarlySkipNode {
     for (const rule of this.rules) {
       const decision = await rule.evaluate(context);
       if (decision.shouldSkip) {
-        this.logger.log(`Early skip triggered by ${rule.constructor.name}: ${decision.reason}`);
+        this.logger.log(
+          `Early skip triggered by ${rule.constructor.name}: ${decision.reason}`,
+        );
         return {
           workspacePath,
           changedFiles: modifiedFiles,

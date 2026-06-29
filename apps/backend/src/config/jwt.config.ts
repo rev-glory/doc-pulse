@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 // ---------------------------------------------------------------------------
 // JWT Configuration
@@ -19,7 +19,7 @@ export interface JwtConfig {
   refreshExpiresIn: string;
 }
 
-export const jwtConfig = registerAs('jwt', (): JwtConfig => {
+export const jwtConfig = registerAs("jwt", (): JwtConfig => {
   const env = process.env as unknown as Env;
 
   return {

@@ -1,37 +1,43 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { useApiQuery } from '@/lib/query/use-api-query';
+import React, { useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { useApiQuery } from "@/lib/query/use-api-query";
 import {
   RepositoryApi,
   type RepositoryConfig,
   type UpdateRepositoryDto,
-} from '@/lib/api/services/repository.api';
-import { PageHeader } from '@/components/shared/page-header';
-import { SectionCard } from '@/components/shared/section-card';
-import { MetricCard } from '@/components/shared/metric-card';
-import { LoadingState } from '@/components/feedback/loading-state';
-import { ErrorState } from '@/components/feedback/error-state';
-import { EmptyState } from '@/components/feedback/empty-state';
-import { useWorkflowSocket } from '@/hooks/use-workflow-socket';
-import { LiveProgress, WorkflowTimeline } from '@/components/workflow';
-import { WorkflowRunsTable } from '@/features/runs/components/workflow-runs-table';
+} from "@/lib/api/services/repository.api";
+import { PageHeader } from "@/components/shared/page-header";
+import { SectionCard } from "@/components/shared/section-card";
+import { MetricCard } from "@/components/shared/metric-card";
+import { LoadingState } from "@/components/feedback/loading-state";
+import { ErrorState } from "@/components/feedback/error-state";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { useWorkflowSocket } from "@/hooks/use-workflow-socket";
+import { LiveProgress, WorkflowTimeline } from "@/components/workflow";
+import { WorkflowRunsTable } from "@/features/runs/components/workflow-runs-table";
 
 export default function RepositoryDetailsPage(): React.JSX.Element {
   const params = useParams();
-  const repoId = typeof params?.id === 'string' ? params.id : '';
+  const repoId = typeof params?.id === "string" ? params.id : "";
 
   /* ── Core data: use the raw config endpoint so we see all DTO fields ── */
   const { data, isLoading, error, refetch } = useApiQuery<RepositoryConfig>({
-    queryKey: ['repository', repoId, 'config'],
+    queryKey: ["repository", repoId, "config"],
     queryFn: () => RepositoryApi.getRepositoryConfig(repoId),
     enabled: Boolean(repoId),
   });
 
   /* ── Live websocket for active run ── */
   const activeRunId = repoId;
-  const { isConnected, stage, progress, status, error: wsError } = useWorkflowSocket({
+  const {
+    isConnected,
+    stage,
+    progress,
+    status,
+    error: wsError,
+  } = useWorkflowSocket({
     runId: activeRunId,
     workflowId: activeRunId,
     autoConnect: Boolean(activeRunId),
@@ -39,10 +45,12 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
 
   /* ── Edit form state ── */
   const [isEditing, setIsEditing] = useState(false);
-  const [branchStrategy, setBranchStrategy] = useState<'DOCUMENTATION_BRANCH' | 'CURRENT_BRANCH'>('DOCUMENTATION_BRANCH');
-  const [documentationBranchName, setDocumentationBranchName] = useState('');
-  const [documentationDirectory, setDocumentationDirectory] = useState('docs');
-  const [docPathsRaw, setDocPathsRaw] = useState('');
+  const [branchStrategy, setBranchStrategy] = useState<
+    "DOCUMENTATION_BRANCH" | "CURRENT_BRANCH"
+  >("DOCUMENTATION_BRANCH");
+  const [documentationBranchName, setDocumentationBranchName] = useState("");
+  const [documentationDirectory, setDocumentationDirectory] = useState("docs");
+  const [docPathsRaw, setDocPathsRaw] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -54,10 +62,10 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
   /* Populate form when data loads */
   useEffect(() => {
     if (data) {
-      setBranchStrategy(data.branchStrategy || 'DOCUMENTATION_BRANCH');
-      setDocumentationBranchName(data.documentationBranchName || '');
-      setDocumentationDirectory(data.documentationDirectory || 'docs');
-      setDocPathsRaw((data.docPaths || []).join('\n'));
+      setBranchStrategy(data.branchStrategy || "DOCUMENTATION_BRANCH");
+      setDocumentationBranchName(data.documentationBranchName || "");
+      setDocumentationDirectory(data.documentationDirectory || "docs");
+      setDocPathsRaw((data.docPaths || []).join("\n"));
     }
   }, [data]);
 
@@ -65,7 +73,10 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
     return (
       <div>
         <PageHeader title="Repository Details" />
-        <LoadingState message="Loading repository architecture & workflow history..." rows={6} />
+        <LoadingState
+          message="Loading repository architecture & workflow history..."
+          rows={6}
+        />
       </div>
     );
   }
@@ -74,12 +85,16 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
     return (
       <div>
         <PageHeader title="Repository Details" />
-        <ErrorState message={error?.message || 'Repository not found.'} retry={refetch} />
+        <ErrorState
+          message={error?.message || "Repository not found."}
+          retry={refetch}
+        />
       </div>
     );
   }
 
-  const isRunning = status?.toLowerCase() === 'running' || status?.toLowerCase() === 'active';
+  const isRunning =
+    status?.toLowerCase() === "running" || status?.toLowerCase() === "active";
 
   /* ── Handlers ── */
   const handleToggleActive = async () => {
@@ -93,7 +108,7 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
       }
       refetch();
     } catch (e: any) {
-      setToggleError(e?.message || 'Failed to toggle activation.');
+      setToggleError(e?.message || "Failed to toggle activation.");
     } finally {
       setIsToggling(false);
     }
@@ -109,9 +124,11 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
       branchStrategy,
       documentationDirectory,
       documentationBranchName:
-        branchStrategy === 'DOCUMENTATION_BRANCH' ? documentationBranchName || null : null,
+        branchStrategy === "DOCUMENTATION_BRANCH"
+          ? documentationBranchName || null
+          : null,
       docPaths: docPathsRaw
-        .split('\n')
+        .split("\n")
         .map((p) => p.trim())
         .filter(Boolean),
     };
@@ -123,7 +140,7 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
       refetch();
       setTimeout(() => setSaveSuccess(false), 4000);
     } catch (e: any) {
-      setSaveError(e?.message || 'Failed to save settings.');
+      setSaveError(e?.message || "Failed to save settings.");
     } finally {
       setIsSaving(false);
     }
@@ -133,7 +150,10 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
     <div className="space-y-8 animate-fade-in">
       <PageHeader
         title={`${data.repositoryOwner}/${data.name}`}
-        description={data.description || 'Monitored repository for automated documentation generation.'}
+        description={
+          data.description ||
+          "Monitored repository for automated documentation generation."
+        }
         actions={
           <div className="flex items-center gap-3">
             <a
@@ -150,11 +170,15 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
               disabled={isToggling}
               className={`px-3 py-2 text-xs font-bold rounded shadow transition-all disabled:opacity-50 ${
                 data.isActive
-                  ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                  : 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                  ? "bg-amber-500 hover:bg-amber-600 text-white"
+                  : "bg-emerald-600 hover:bg-emerald-700 text-white"
               }`}
             >
-              {isToggling ? 'Updating…' : data.isActive ? 'Deactivate' : 'Activate'}
+              {isToggling
+                ? "Updating…"
+                : data.isActive
+                  ? "Deactivate"
+                  : "Activate"}
             </button>
           </div>
         }
@@ -174,21 +198,41 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
 
       {/* Top Metric Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-5">
-        <MetricCard title="Default Branch" value={data.defaultBranch || 'main'} status="default" />
-        <MetricCard title="Language" value={data.language || '—'} status="default" />
-        <MetricCard title="Visibility" value={data.visibility || (data.private ? 'Private' : 'Public')} status="default" />
+        <MetricCard
+          title="Default Branch"
+          value={data.defaultBranch || "main"}
+          status="default"
+        />
+        <MetricCard
+          title="Language"
+          value={data.language || "—"}
+          status="default"
+        />
+        <MetricCard
+          title="Visibility"
+          value={data.visibility || (data.private ? "Private" : "Public")}
+          status="default"
+        />
         <MetricCard
           title="Status"
-          value={data.isActive ? 'Active' : 'Inactive'}
-          status={data.isActive ? 'success' : 'default'}
+          value={data.isActive ? "Active" : "Inactive"}
+          status={data.isActive ? "success" : "default"}
         />
       </div>
 
       {/* Live stream — only if a run is active */}
       {isRunning && (
-        <SectionCard title="Live Generation Stream" description="Realtime LangGraph execution progress.">
+        <SectionCard
+          title="Live Generation Stream"
+          description="Realtime LangGraph execution progress."
+        >
           <div className="space-y-6">
-            <LiveProgress stage={stage} progress={progress} status={status} errorMessage={wsError} />
+            <LiveProgress
+              stage={stage}
+              progress={progress}
+              status={status}
+              errorMessage={wsError}
+            />
             <WorkflowTimeline currentStage={stage} status={status} />
           </div>
         </SectionCard>
@@ -199,7 +243,10 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
         <div className="lg:col-span-2 space-y-8">
           {/* Workflow execution history */}
           <SectionCard title="Workflow Execution History">
-            <EmptyState title="No past runs recorded" description="Documentation generation history will list here." />
+            <EmptyState
+              title="No past runs recorded"
+              description="Documentation generation history will list here."
+            />
           </SectionCard>
 
           {/* Documentation settings edit form */}
@@ -212,14 +259,27 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
                 {/* Display current config */}
                 <div className="space-y-3 text-xs">
                   {[
-                    { label: 'Branch Strategy', value: data.branchStrategy },
-                    { label: 'Documentation Branch', value: data.documentationBranchName || '—' },
-                    { label: 'Documentation Directory', value: data.documentationDirectory },
-                    { label: 'Clone URL', value: data.cloneUrl },
+                    { label: "Branch Strategy", value: data.branchStrategy },
+                    {
+                      label: "Documentation Branch",
+                      value: data.documentationBranchName || "—",
+                    },
+                    {
+                      label: "Documentation Directory",
+                      value: data.documentationDirectory,
+                    },
+                    { label: "Clone URL", value: data.cloneUrl },
                   ].map(({ label, value }) => (
-                    <div key={label} className="flex justify-between items-start py-2.5 border-b border-zinc-100 dark:border-zinc-800 last:border-0">
-                      <span className="font-semibold text-zinc-500 dark:text-zinc-400 shrink-0">{label}</span>
-                      <span className="font-mono text-zinc-800 dark:text-zinc-200 text-right break-all max-w-[55%]">{value}</span>
+                    <div
+                      key={label}
+                      className="flex justify-between items-start py-2.5 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
+                    >
+                      <span className="font-semibold text-zinc-500 dark:text-zinc-400 shrink-0">
+                        {label}
+                      </span>
+                      <span className="font-mono text-zinc-800 dark:text-zinc-200 text-right break-all max-w-[55%]">
+                        {value}
+                      </span>
                     </div>
                   ))}
 
@@ -231,13 +291,18 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
                     {data.docPaths && data.docPaths.length > 0 ? (
                       <div className="flex flex-wrap gap-1.5">
                         {data.docPaths.map((p) => (
-                          <span key={p} className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 font-mono text-[10px] rounded text-zinc-700 dark:text-zinc-300">
+                          <span
+                            key={p}
+                            className="px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 font-mono text-[10px] rounded text-zinc-700 dark:text-zinc-300"
+                          >
                             {p}
                           </span>
                         ))}
                       </div>
                     ) : (
-                      <span className="text-zinc-400 italic text-xs">No specific paths configured (full repo scanned)</span>
+                      <span className="text-zinc-400 italic text-xs">
+                        No specific paths configured (full repo scanned)
+                      </span>
                     )}
                   </div>
                 </div>
@@ -268,13 +333,17 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
                     onChange={(e) => setBranchStrategy(e.target.value as any)}
                     className="w-full p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500"
                   >
-                    <option value="DOCUMENTATION_BRANCH">DOCUMENTATION_BRANCH — dedicated docs branch</option>
-                    <option value="CURRENT_BRANCH">CURRENT_BRANCH — commit directly to source branch</option>
+                    <option value="DOCUMENTATION_BRANCH">
+                      DOCUMENTATION_BRANCH — dedicated docs branch
+                    </option>
+                    <option value="CURRENT_BRANCH">
+                      CURRENT_BRANCH — commit directly to source branch
+                    </option>
                   </select>
                 </div>
 
                 {/* Documentation Branch Name (only for DOCUMENTATION_BRANCH) */}
-                {branchStrategy === 'DOCUMENTATION_BRANCH' && (
+                {branchStrategy === "DOCUMENTATION_BRANCH" && (
                   <div className="space-y-1.5">
                     <label className="block font-bold text-zinc-400 uppercase tracking-wider text-[10px]">
                       Documentation Branch Name
@@ -282,7 +351,9 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
                     <input
                       type="text"
                       value={documentationBranchName}
-                      onChange={(e) => setDocumentationBranchName(e.target.value)}
+                      onChange={(e) =>
+                        setDocumentationBranchName(e.target.value)
+                      }
                       placeholder="e.g. docpulse/docs"
                       className="w-full p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg font-mono text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500"
                     />
@@ -301,7 +372,10 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
                     placeholder="e.g. docs"
                     className="w-full p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg font-mono text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500"
                   />
-                  <span className="text-zinc-400 text-[10px]">Relative directory path where docs are written inside the repo.</span>
+                  <span className="text-zinc-400 text-[10px]">
+                    Relative directory path where docs are written inside the
+                    repo.
+                  </span>
                 </div>
 
                 {/* Doc Paths */}
@@ -316,7 +390,10 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
                     placeholder={"src/\nlib/\npackages/"}
                     className="w-full p-2.5 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg font-mono text-xs text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-indigo-500 leading-relaxed"
                   />
-                  <span className="text-zinc-400 text-[10px]">Paths to include in doc generation. Leave empty to scan whole repo.</span>
+                  <span className="text-zinc-400 text-[10px]">
+                    Paths to include in doc generation. Leave empty to scan
+                    whole repo.
+                  </span>
                 </div>
 
                 <div className="flex gap-3 pt-2">
@@ -325,11 +402,14 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
                     disabled={isSaving}
                     className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold rounded shadow-sm transition-all"
                   >
-                    {isSaving ? 'Saving…' : '✓ Save Settings'}
+                    {isSaving ? "Saving…" : "✓ Save Settings"}
                   </button>
                   <button
                     type="button"
-                    onClick={() => { setIsEditing(false); setSaveError(null); }}
+                    onClick={() => {
+                      setIsEditing(false);
+                      setSaveError(null);
+                    }}
                     className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-bold rounded transition-all"
                   >
                     Cancel
@@ -343,23 +423,29 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
         {/* Sidebar column */}
         <div className="space-y-8">
           {/* Repository metadata card */}
-          <SectionCard title="Repository Info" description="GitHub metadata and webhook status.">
+          <SectionCard
+            title="Repository Info"
+            description="GitHub metadata and webhook status."
+          >
             <div className="space-y-0 text-xs">
               {[
-                { label: 'Full Name', value: data.fullName },
-                { label: 'GitHub Repo ID', value: String(data.githubRepositoryId) },
+                { label: "Full Name", value: data.fullName },
                 {
-                  label: 'Last Synced',
-                  value: data.lastSyncedAt
-                    ? new Date(data.lastSyncedAt).toLocaleString()
-                    : 'Never',
+                  label: "GitHub Repo ID",
+                  value: String(data.githubRepositoryId),
                 },
                 {
-                  label: 'Created At',
+                  label: "Last Synced",
+                  value: data.lastSyncedAt
+                    ? new Date(data.lastSyncedAt).toLocaleString()
+                    : "Never",
+                },
+                {
+                  label: "Created At",
                   value: new Date(data.createdAt).toLocaleDateString(),
                 },
                 {
-                  label: 'Updated At',
+                  label: "Updated At",
                   value: new Date(data.updatedAt).toLocaleDateString(),
                 },
               ].map(({ label, value }) => (
@@ -367,45 +453,57 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
                   key={label}
                   className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-zinc-800 last:border-0"
                 >
-                  <span className="text-zinc-500 dark:text-zinc-400 font-semibold">{label}</span>
-                  <span className="font-mono text-zinc-700 dark:text-zinc-300 text-right">{value}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400 font-semibold">
+                    {label}
+                  </span>
+                  <span className="font-mono text-zinc-700 dark:text-zinc-300 text-right">
+                    {value}
+                  </span>
                 </div>
               ))}
 
               {/* Webhook status */}
               <div className="flex justify-between items-center py-2.5 border-b border-zinc-100 dark:border-zinc-800">
-                <span className="text-zinc-500 dark:text-zinc-400 font-semibold">Webhook</span>
+                <span className="text-zinc-500 dark:text-zinc-400 font-semibold">
+                  Webhook
+                </span>
                 <div className="flex items-center gap-1.5">
                   <span
                     className={`w-1.5 h-1.5 rounded-full ${
-                      data.isWebhookActive ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'
+                      data.isWebhookActive
+                        ? "bg-emerald-500 animate-pulse"
+                        : "bg-zinc-400"
                     }`}
                   />
                   <span
                     className={`font-bold ${
-                      data.isWebhookActive ? 'text-emerald-600' : 'text-zinc-400'
+                      data.isWebhookActive
+                        ? "text-emerald-600"
+                        : "text-zinc-400"
                     }`}
                   >
                     {data.isWebhookActive
                       ? `Active #${data.webhookId}`
                       : data.webhookId
-                      ? `Inactive #${data.webhookId}`
-                      : 'Not registered'}
+                        ? `Inactive #${data.webhookId}`
+                        : "Not registered"}
                   </span>
                 </div>
               </div>
 
               {/* Live socket badge */}
               <div className="flex justify-between items-center py-2.5">
-                <span className="text-zinc-500 dark:text-zinc-400 font-semibold">Socket Stream</span>
+                <span className="text-zinc-500 dark:text-zinc-400 font-semibold">
+                  Socket Stream
+                </span>
                 <span
                   className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                     isConnected
-                      ? 'bg-emerald-500/10 text-emerald-600'
-                      : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                      ? "bg-emerald-500/10 text-emerald-600"
+                      : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
                   }`}
                 >
-                  {isConnected ? 'Live' : 'Static'}
+                  {isConnected ? "Live" : "Static"}
                 </span>
               </div>
             </div>
@@ -413,7 +511,10 @@ export default function RepositoryDetailsPage(): React.JSX.Element {
 
           {/* Generated documentation artifacts */}
           <SectionCard title="Generated Documentation">
-            <EmptyState title="No documentation synced" description="AI documentation will appear here after the first run." />
+            <EmptyState
+              title="No documentation synced"
+              description="AI documentation will appear here after the first run."
+            />
           </SectionCard>
         </div>
       </div>

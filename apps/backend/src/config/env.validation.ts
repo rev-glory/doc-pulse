@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // ---------------------------------------------------------------------------
 // Reusable preprocessor — converts empty strings from dotenv ('') to undefined
@@ -7,7 +7,7 @@ import { z } from 'zod';
 // that check `value !== undefined`.
 // ---------------------------------------------------------------------------
 const optionalString = z.preprocess(
-  (v) => (v === '' ? undefined : v),
+  (v) => (v === "" ? undefined : v),
   z.string().optional(),
 );
 
@@ -24,71 +24,70 @@ const optionalString = z.preprocess(
 const envSchema = z.object({
   // ── Node Runtime ──────────────────────────────────────────────────────────
   NODE_ENV: z
-    .enum(['development', 'test', 'production'])
-    .default('development'),
+    .enum(["development", "test", "production"])
+    .default("development"),
 
   // ── Application ───────────────────────────────────────────────────────────
   PORT: z.coerce.number().int().min(1).max(65535).default(3001),
-  FRONTEND_URL: z.url().default('http://localhost:3000'),
-  BACKEND_URL: z.url().default('http://localhost:3001'),
+  FRONTEND_URL: z.url().default("http://localhost:3000"),
+  BACKEND_URL: z.url().default("http://localhost:3001"),
 
   // ── Database (PostgreSQL / Prisma) ────────────────────────────────────────
   DATABASE_URL: z
     .string()
-    .min(1, 'DATABASE_URL is required')
-    .startsWith('postgresql://', 'DATABASE_URL must be a PostgreSQL connection string'),
+    .min(1, "DATABASE_URL is required")
+    .startsWith(
+      "postgresql://",
+      "DATABASE_URL must be a PostgreSQL connection string",
+    ),
 
   // ── Redis ─────────────────────────────────────────────────────────────────
   REDIS_URL: z
     .string()
-    .min(1, 'REDIS_URL is required')
-    .regex(/^rediss?:\/\//, 'REDIS_URL must start with redis:// or rediss://'),
-  REDIS_PASSWORD: z.string().min(1, 'REDIS_PASSWORD is required'),
+    .min(1, "REDIS_URL is required")
+    .regex(/^rediss?:\/\//, "REDIS_URL must start with redis:// or rediss://"),
+  REDIS_PASSWORD: z.string().min(1, "REDIS_PASSWORD is required"),
 
   // ── JWT ───────────────────────────────────────────────────────────────────
   JWT_ACCESS_SECRET: z
     .string()
-    .min(32, 'JWT_ACCESS_SECRET must be at least 32 characters for security'),
+    .min(32, "JWT_ACCESS_SECRET must be at least 32 characters for security"),
   JWT_REFRESH_SECRET: z
     .string()
-    .min(32, 'JWT_REFRESH_SECRET must be at least 32 characters for security'),
-  JWT_ACCESS_EXPIRES_IN: z.string().default('15m'),
-  JWT_REFRESH_EXPIRES_IN: z.string().default('7d'),
+    .min(32, "JWT_REFRESH_SECRET must be at least 32 characters for security"),
+  JWT_ACCESS_EXPIRES_IN: z.string().default("15m"),
+  JWT_REFRESH_EXPIRES_IN: z.string().default("7d"),
 
   // ── GitHub App ────────────────────────────────────────────────────────────
-  GITHUB_APP_ID: z.string().min(1, 'GITHUB_APP_ID is required'),
+  GITHUB_APP_ID: z.string().min(1, "GITHUB_APP_ID is required"),
   GITHUB_PRIVATE_KEY_BASE64: z
     .string()
-    .min(1, 'GITHUB_PRIVATE_KEY_BASE64 is required'),
-  GITHUB_WEBHOOK_SECRET: z
-    .string()
-    .min(1, 'GITHUB_WEBHOOK_SECRET is required'),
+    .min(1, "GITHUB_PRIVATE_KEY_BASE64 is required"),
+  GITHUB_WEBHOOK_SECRET: z.string().min(1, "GITHUB_WEBHOOK_SECRET is required"),
 
   // ── GitHub OAuth ──────────────────────────────────────────────────────────
-  GITHUB_CLIENT_ID: z.string().min(1, 'GITHUB_CLIENT_ID is required'),
-  GITHUB_CLIENT_SECRET: z
-    .string()
-    .min(1, 'GITHUB_CLIENT_SECRET is required'),
+  GITHUB_CLIENT_ID: z.string().min(1, "GITHUB_CLIENT_ID is required"),
+  GITHUB_CLIENT_SECRET: z.string().min(1, "GITHUB_CLIENT_SECRET is required"),
 
   // ── OpenAI ────────────────────────────────────────────────────────────────
   OPENAI_API_KEY: optionalString,
-  OPENAI_MODEL: z.string().default('gpt-4o'),
+  OPENAI_MODEL: z.string().default("gpt-4o"),
   OPENAI_TEMPERATURE: z.coerce.number().min(0).max(2).default(0.2),
 
   // ── Anthropic (optional — fallback AI provider) ───────────────────────────
   ANTHROPIC_API_KEY: optionalString,
-  ANTHROPIC_MODEL: z.string().default('claude-3-5-sonnet-latest'),
+  ANTHROPIC_MODEL: z.string().default("claude-3-5-sonnet-latest"),
 
   // ── Gemini ────────────────────────────────────────────────────────────────
-  GEMINI_API_KEY: z.string().min(1, 'GEMINI_API_KEY is required'),
-  GEMINI_MODEL: z.string().default('gemini-2.0-flash'),
+  GEMINI_API_KEY: z.string().min(1, "GEMINI_API_KEY is required"),
+  GEMINI_MODEL: z.string().default("gemini-2.0-flash"),
   GEMINI_TEMPERATURE: z.coerce.number().min(0).max(2).default(0.2),
 
   // ── Queue (BullMQ) ────────────────────────────────────────────────────────
   QUEUE_CONCURRENCY: z.coerce.number().int().min(1).max(50).default(5),
   QUEUE_MAX_RETRIES: z.coerce.number().int().min(0).max(10).default(3),
   QUEUE_RETRY_DELAY_MS: z.coerce.number().int().min(0).default(5000),
-  QUEUE_BACKOFF_TYPE: z.enum(['exponential', 'fixed']).default('exponential'),
+  QUEUE_BACKOFF_TYPE: z.enum(["exponential", "fixed"]).default("exponential"),
   QUEUE_BACKOFF_MULTIPLIER: z.coerce.number().min(1).default(2),
   QUEUE_RETRY_JITTER: z.coerce.number().min(0).max(1).default(0.2),
   QUEUE_STALLED_INTERVAL_MS: z.coerce.number().int().min(1000).default(30000),
@@ -102,7 +101,7 @@ const envSchema = z.object({
   WORKFLOW_MIN_DOC_SCORE: z.coerce.number().int().min(0).max(100).default(80),
 
   // ── LLM Settings ──────────────────────────────────────────────────────────
-  DEFAULT_LLM_PROVIDER: z.string().default('gemini'),
+  DEFAULT_LLM_PROVIDER: z.string().default("gemini"),
 
   // ── Email / Notifications (optional in dev) ───────────────────────────────
   SMTP_HOST: optionalString,
@@ -115,16 +114,20 @@ const envSchema = z.object({
   SMTP_FROM: optionalString,
 
   // ── Storage ───────────────────────────────────────────────────────────────
-  STORAGE_ROOT: z.string().default('./storage'),
-  CLONES_DIR: z.string().default('clones'),
-  WORKSPACE_DIR: z.string().default('workspace'),
-  ARTIFACTS_DIR: z.string().default('artifacts'),
-  WORKSPACE_RETENTION_PERIOD_MS: z.coerce.number().int().min(0).default(24 * 60 * 60 * 1000),
+  STORAGE_ROOT: z.string().default("./storage"),
+  CLONES_DIR: z.string().default("clones"),
+  WORKSPACE_DIR: z.string().default("workspace"),
+  ARTIFACTS_DIR: z.string().default("artifacts"),
+  WORKSPACE_RETENTION_PERIOD_MS: z.coerce
+    .number()
+    .int()
+    .min(0)
+    .default(24 * 60 * 60 * 1000),
 
   // ── Logging ───────────────────────────────────────────────────────────────
   LOG_LEVEL: z
-    .enum(['error', 'warn', 'log', 'debug', 'verbose'])
-    .default('log'),
+    .enum(["error", "warn", "log", "debug", "verbose"])
+    .default("log"),
 });
 
 // ---------------------------------------------------------------------------
@@ -142,8 +145,8 @@ export function validateEnv(rawEnv: Record<string, unknown>): Env {
 
   if (!result.success) {
     const formatted = result.error.issues
-      .map((issue) => `  • ${issue.path.join('.')}: ${issue.message}`)
-      .join('\n');
+      .map((issue) => `  • ${issue.path.join(".")}: ${issue.message}`)
+      .join("\n");
 
     throw new Error(
       `\n\n❌ Environment variable validation failed:\n${formatted}\n\n` +

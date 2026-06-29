@@ -1,4 +1,4 @@
-import { apiClient } from '../client';
+import { apiClient } from "../client";
 
 export interface InstallationDto {
   id: string;
@@ -12,6 +12,6 @@ export interface InstallationDto {
 
 export const GitHubApi = {
   getInstallations: async (): Promise<InstallationDto[]> => {
-    return apiClient<InstallationDto[]>('/github/installations');
+    return apiClient<InstallationDto[]>("/github/installations");
   },
 };

@@ -1,4 +1,3 @@
-
 # DocPulse
 
 AI-powered documentation automation platform for GitHub repositories.
@@ -101,7 +100,7 @@ The platform combines AI agents, workflow orchestration, GitHub Apps, and real-t
                        │
                        ▼
             Automatic Pull Request Creation
-````
+```
 
 ---
 
@@ -109,32 +108,31 @@ The platform combines AI agents, workflow orchestration, GitHub Apps, and real-t
 
 ### Frontend
 
-* Next.js
-* React
-* TypeScript
-* Tailwind CSS
-* TanStack Query
-* Socket.IO Client
+- Next.js
+- React
+- TypeScript
+- Tailwind CSS
+- TanStack Query
+- Socket.IO Client
 
 ### Backend
 
-* NestJS
-* TypeScript
-* PostgreSQL
-* Prisma ORM
-* Redis
-* BullMQ
-* LangGraph
-* GitHub App APIs
+- NestJS
+- TypeScript
+- PostgreSQL
+- Prisma ORM
+- Redis
+- BullMQ
+- LangGraph
+- GitHub App APIs
 
 ### AI
 
-* LangGraph
-* Multi-LLM Architecture
-* Structured AI Agents
+- LangGraph
+- Multi-LLM Architecture
+- Structured AI Agents
 
 ---
-
 
 ## Workflow
 
@@ -227,10 +225,10 @@ Create the required environment files:
 
 Configure the following services:
 
-* PostgreSQL
-* Redis
-* GitHub App
-* LLM Provider(s)
+- PostgreSQL
+- Redis
+- GitHub App
+- LLM Provider(s)
 
 ### Run the Application
 
@@ -250,33 +248,33 @@ pnpm --filter frontend dev
 
 ## Key Implementations
 
-* GitHub App Integration
-* LangGraph Workflow Orchestration
-* Queue-Based Background Processing
-* Human-in-the-Loop Documentation Review
-* Multi-LLM Provider Architecture
-* Previous Documentation Context Injection
-* Unified LLM Error Handling
-* Unified Git Error Handling
-* Configurable Branch Strategies
-* Documentation Directory Support
-* Early Skip and Workflow Cancellation
-* Real-Time Workflow Updates
-* Workspace Lifecycle Management
-* Automatic Pull Request Generation
+- GitHub App Integration
+- LangGraph Workflow Orchestration
+- Queue-Based Background Processing
+- Human-in-the-Loop Documentation Review
+- Multi-LLM Provider Architecture
+- Previous Documentation Context Injection
+- Unified LLM Error Handling
+- Unified Git Error Handling
+- Configurable Branch Strategies
+- Documentation Directory Support
+- Early Skip and Workflow Cancellation
+- Real-Time Workflow Updates
+- Workspace Lifecycle Management
+- Automatic Pull Request Generation
 
 ---
 
 ## Future Enhancements
 
-* Authenticated cloning for private repositories
-* Incremental documentation generation
-* CI/CD pipeline
-* Automated integration and end-to-end testing
-* Notification system
-* Monitoring and observability
-* Additional LLM providers
-* Advanced workflow analytics
+- Authenticated cloning for private repositories
+- Incremental documentation generation
+- CI/CD pipeline
+- Automated integration and end-to-end testing
+- Notification system
+- Monitoring and observability
+- Additional LLM providers
+- Advanced workflow analytics
 
 ---
 
@@ -287,6 +285,3 @@ pnpm --filter frontend dev
 GitHub: https://github.com/rev-glory
 
 LinkedIn: https://linkedin.com/in/abhinav-bansal4
-
-
-

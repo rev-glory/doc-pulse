@@ -1,12 +1,21 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@/database';
-import { WorkflowNodeName, WorkflowStage, WorkflowCheckpointSnapshot } from '../../../domain/workflow';
-import { RunStatus as PrismaRunStatus, WorkflowStage as PrismaWorkflowStage } from '@/generated/prisma/enums';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "@/database";
+import {
+  WorkflowNodeName,
+  WorkflowStage,
+  WorkflowCheckpointSnapshot,
+} from "../../../domain/workflow";
+import {
+  RunStatus as PrismaRunStatus,
+  WorkflowStage as PrismaWorkflowStage,
+} from "@/generated/prisma/enums";
 
 export class OptimisticLockException extends Error {
   constructor(runId: string, expectedVersion: number) {
-    super(`Concurrent modification detected on WorkflowRun [${runId}]: expected version ${expectedVersion}`);
-    this.name = 'OptimisticLockException';
+    super(
+      `Concurrent modification detected on WorkflowRun [${runId}]: expected version ${expectedVersion}`,
+    );
+    this.name = "OptimisticLockException";
   }
 }
 
@@ -24,8 +33,10 @@ export interface RunRecordData {
   currentReviewId: string | null;
 }
 
-type PrismaRunStatusValue = (typeof PrismaRunStatus)[keyof typeof PrismaRunStatus];
-type PrismaWorkflowStageValue = (typeof PrismaWorkflowStage)[keyof typeof PrismaWorkflowStage];
+type PrismaRunStatusValue =
+  (typeof PrismaRunStatus)[keyof typeof PrismaRunStatus];
+type PrismaWorkflowStageValue =
+  (typeof PrismaWorkflowStage)[keyof typeof PrismaWorkflowStage];
 
 @Injectable()
 export class WorkflowCheckpointRepository {
@@ -33,7 +44,9 @@ export class WorkflowCheckpointRepository {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  private toPrismaWorkflowStage(stage: WorkflowStage): PrismaWorkflowStageValue {
+  private toPrismaWorkflowStage(
+    stage: WorkflowStage,
+  ): PrismaWorkflowStageValue {
     switch (stage) {
       case WorkflowStage.CLONING:
         return PrismaWorkflowStage.CLONING;
@@ -124,7 +137,17 @@ export class WorkflowCheckpointRepository {
     error?: unknown;
     newMetadata?: Record<string, unknown>;
   }): Promise<number> {
-    const { runId, expectedVersion, nodeName, stage, snapshot, status, nodeRetries, error, newMetadata } = params;
+    const {
+      runId,
+      expectedVersion,
+      nodeName,
+      stage,
+      snapshot,
+      status,
+      nodeRetries,
+      error,
+      newMetadata,
+    } = params;
 
     return this.prisma.$transaction(async (tx) => {
       // 1. Verify current optimistic lock version and fetch existing metadata
@@ -138,9 +161,12 @@ export class WorkflowCheckpointRepository {
       }
 
       // 2. Append-only shallow merge of executionMetadata
-      const currentMetadata = (existing.executionMetadata && typeof existing.executionMetadata === 'object'
-        ? existing.executionMetadata
-        : {}) as Record<string, unknown>;
+      const currentMetadata = (
+        existing.executionMetadata &&
+        typeof existing.executionMetadata === "object"
+          ? existing.executionMetadata
+          : {}
+      ) as Record<string, unknown>;
 
       const mergedMetadata = {
         ...currentMetadata,
@@ -171,11 +197,13 @@ export class WorkflowCheckpointRepository {
           targetBranch,
           pullRequestUrl,
           gitOperationStatus,
-          ...(status === 'COMPLETED' ? { completedAt: now } : {}),
+          ...(status === "COMPLETED" ? { completedAt: now } : {}),
         },
       });
 
-      this.logger.debug(`Checkpoint persisted for run [${runId}] at node [${nodeName}] (v${nextVersion})`);
+      this.logger.debug(
+        `Checkpoint persisted for run [${runId}] at node [${nodeName}] (v${nextVersion})`,
+      );
       return nextVersion;
     });
   }
@@ -196,9 +224,12 @@ export class WorkflowCheckpointRepository {
 
       const nextVersion = existing.version + 1;
       const now = new Date();
-      const currentMetadata = (existing.executionMetadata && typeof existing.executionMetadata === 'object'
-        ? existing.executionMetadata
-        : {}) as Record<string, unknown>;
+      const currentMetadata = (
+        existing.executionMetadata &&
+        typeof existing.executionMetadata === "object"
+          ? existing.executionMetadata
+          : {}
+      ) as Record<string, unknown>;
 
       await tx.workflowRun.update({
         where: { id: runId },
@@ -221,7 +252,9 @@ export class WorkflowCheckpointRepository {
         },
       });
 
-      this.logger.log(`WorkflowRun [${runId}] reset for restart (v${nextVersion})`);
+      this.logger.log(
+        `WorkflowRun [${runId}] reset for restart (v${nextVersion})`,
+      );
       return nextVersion;
     });
   }
@@ -229,7 +262,11 @@ export class WorkflowCheckpointRepository {
   /**
    * Marks a WorkflowRun as completed in the database.
    */
-  public async markRunCompleted(runId: string, completionReason?: string, skipReason?: string): Promise<void> {
+  public async markRunCompleted(
+    runId: string,
+    completionReason?: string,
+    skipReason?: string,
+  ): Promise<void> {
     const now = new Date();
     await this.prisma.workflowRun.update({
       where: { id: runId },
@@ -241,13 +278,18 @@ export class WorkflowCheckpointRepository {
         updatedAt: now,
       },
     });
-    this.logger.log(`WorkflowRun [${runId}] marked as COMPLETED. Reason: ${completionReason || 'SUCCESS'}`);
+    this.logger.log(
+      `WorkflowRun [${runId}] marked as COMPLETED. Reason: ${completionReason || "SUCCESS"}`,
+    );
   }
 
   /**
    * Marks a WorkflowRun as failed in the database (unconditional update).
    */
-  public async markRunFailed(runId: string, errorMessage: string): Promise<void> {
+  public async markRunFailed(
+    runId: string,
+    errorMessage: string,
+  ): Promise<void> {
     const now = new Date();
     await this.prisma.workflowRun.update({
       where: { id: runId },
@@ -258,7 +300,9 @@ export class WorkflowCheckpointRepository {
         updatedAt: now,
       },
     });
-    this.logger.log(`WorkflowRun [${runId}] marked as FAILED. Error: ${errorMessage}`);
+    this.logger.log(
+      `WorkflowRun [${runId}] marked as FAILED. Error: ${errorMessage}`,
+    );
   }
 
   /**
@@ -277,6 +321,8 @@ export class WorkflowCheckpointRepository {
         updatedAt: now,
       },
     });
-    this.logger.log(`WorkflowRun [${runId}] marked as CHECKPOINTED (awaiting human review).`);
+    this.logger.log(
+      `WorkflowRun [${runId}] marked as CHECKPOINTED (awaiting human review).`,
+    );
   }
 }

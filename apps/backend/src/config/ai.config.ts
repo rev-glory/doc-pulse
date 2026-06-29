@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 // ---------------------------------------------------------------------------
 // AI Configuration
@@ -30,12 +30,12 @@ export interface AiConfig {
   };
 }
 
-export const aiConfig = registerAs('ai', (): AiConfig => {
+export const aiConfig = registerAs("ai", (): AiConfig => {
   const env = process.env as unknown as Env;
 
   return {
     openai: {
-      apiKey: env.OPENAI_API_KEY || '',
+      apiKey: env.OPENAI_API_KEY || "",
       model: env.OPENAI_MODEL,
       temperature: Number(env.OPENAI_TEMPERATURE),
     },

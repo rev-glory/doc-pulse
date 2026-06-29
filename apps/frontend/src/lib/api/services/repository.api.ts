@@ -1,5 +1,5 @@
-import { apiClient } from '../client';
-import type { RepositoryDetail } from '@docpulse/shared-types';
+import { apiClient } from "../client";
+import type { RepositoryDetail } from "@docpulse/shared-types";
 
 export interface RepositorySummaryDto {
   id: string;
@@ -44,7 +44,7 @@ export interface RepositoryConfig {
   docPaths: string[];
   webhookId: number | null;
   isWebhookActive: boolean;
-  branchStrategy: 'DOCUMENTATION_BRANCH' | 'CURRENT_BRANCH';
+  branchStrategy: "DOCUMENTATION_BRANCH" | "CURRENT_BRANCH";
   documentationBranchName: string | null;
   documentationDirectory: string;
   createdAt: string;
@@ -55,7 +55,7 @@ export interface RepositoryConfig {
 export interface UpdateRepositoryDto {
   docPaths?: string[];
   isActive?: boolean;
-  branchStrategy?: 'DOCUMENTATION_BRANCH' | 'CURRENT_BRANCH';
+  branchStrategy?: "DOCUMENTATION_BRANCH" | "CURRENT_BRANCH";
   documentationBranchName?: string | null;
   documentationDirectory?: string;
 }
@@ -69,11 +69,11 @@ export interface ConnectRepositoryDto {
 
 export const RepositoryApi = {
   listRepositories: async (): Promise<RepositorySummaryDto[]> => {
-    const repos = await apiClient<any[]>('/repositories');
+    const repos = await apiClient<any[]>("/repositories");
     return repos.map((r) => ({
       ...r,
-      status: r.isActive ? 'Active' : 'Inactive',
-      latestWorkflow: r.lastSyncedAt ? 'Completed' : 'Pending',
+      status: r.isActive ? "Active" : "Inactive",
+      latestWorkflow: r.lastSyncedAt ? "Completed" : "Pending",
     }));
   },
 
@@ -91,8 +91,10 @@ export const RepositoryApi = {
       language: r.language,
       htmlUrl: r.htmlUrl,
       isActive: r.isActive,
-      lastSyncedAt: r.lastSyncedAt ? new Date(r.lastSyncedAt).toISOString() : null,
-      status: r.isActive ? 'Active' : 'Inactive',
+      lastSyncedAt: r.lastSyncedAt
+        ? new Date(r.lastSyncedAt).toISOString()
+        : null,
+      status: r.isActive ? "Active" : "Inactive",
       latestRun: null,
       latestPullRequest: null,
       recentRuns: [],
@@ -107,17 +109,22 @@ export const RepositoryApi = {
   },
 
   /** PATCH /repositories/:id — update documentation strategy / paths */
-  updateRepository: async (id: string, dto: UpdateRepositoryDto): Promise<RepositoryConfig> => {
+  updateRepository: async (
+    id: string,
+    dto: UpdateRepositoryDto,
+  ): Promise<RepositoryConfig> => {
     return apiClient<RepositoryConfig>(`/repositories/${id}`, {
-      method: 'PATCH',
+      method: "PATCH",
       body: JSON.stringify(dto),
     });
   },
 
   /** POST /repositories/connect — manually connect a specific GitHub repo */
-  connectRepository: async (dto: ConnectRepositoryDto): Promise<RepositoryConfig> => {
-    return apiClient<RepositoryConfig>('/repositories/connect', {
-      method: 'POST',
+  connectRepository: async (
+    dto: ConnectRepositoryDto,
+  ): Promise<RepositoryConfig> => {
+    return apiClient<RepositoryConfig>("/repositories/connect", {
+      method: "POST",
       body: JSON.stringify(dto),
     });
   },
@@ -127,19 +134,23 @@ export const RepositoryApi = {
   ): Promise<SyncSummaryDto> => {
     return apiClient<SyncSummaryDto>(
       `/repositories/installations/${installationId}/sync`,
-      { method: 'POST' },
+      { method: "POST" },
     );
   },
 
   activateRepository: async (id: string): Promise<RepositoryConfig> => {
-    return apiClient<RepositoryConfig>(`/repositories/${id}/activate`, { method: 'PATCH' });
+    return apiClient<RepositoryConfig>(`/repositories/${id}/activate`, {
+      method: "PATCH",
+    });
   },
 
   deactivateRepository: async (id: string): Promise<RepositoryConfig> => {
-    return apiClient<RepositoryConfig>(`/repositories/${id}/deactivate`, { method: 'PATCH' });
+    return apiClient<RepositoryConfig>(`/repositories/${id}/deactivate`, {
+      method: "PATCH",
+    });
   },
 
   deleteRepository: async (id: string): Promise<void> => {
-    return apiClient<void>(`/repositories/${id}`, { method: 'DELETE' });
+    return apiClient<void>(`/repositories/${id}`, { method: "DELETE" });
   },
 };

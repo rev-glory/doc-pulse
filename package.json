@@ -8,12 +8,12 @@
   },
   "scripts": {
     "dev": "pnpm --parallel --filter \"./apps/*\" dev",
-    "build": "pnpm -r run build",
-    "lint": "pnpm -r run lint",
+    "build": "pnpm -r --filter=./apps/* --filter=./packages/* --if-present run build",
+    "lint": "pnpm -r --filter=./apps/* --filter=./packages/* --if-present run lint",
     "format": "prettier --write \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,cjs,json,md,yml,yaml}\"",
-    "test": "pnpm -r run test",
-    "typecheck": "pnpm -r --if-present run typecheck"
+    "test": "pnpm -r --filter=./apps/* --filter=./packages/* --if-present run test",
+    "typecheck": "pnpm -r --filter=./apps/* --filter=./packages/* --if-present run typecheck"
   },
   "devDependencies": {
     "prettier": "catalog:",

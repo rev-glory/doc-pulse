@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface QueueStatusProps {
   status?: string;
@@ -6,9 +6,20 @@ export interface QueueStatusProps {
   progress?: number;
 }
 
-export const QueueStatus: React.FC<QueueStatusProps> = ({ status = 'queued', position, progress = 0 }) => {
+export const QueueStatus: React.FC<QueueStatusProps> = ({
+  status = "queued",
+  position,
+  progress = 0,
+}) => {
   return (
-    <div style={{ border: '1px solid #ddd', padding: '8px', borderRadius: '4px', marginTop: '8px' }}>
+    <div
+      style={{
+        border: "1px solid #ddd",
+        padding: "8px",
+        borderRadius: "4px",
+        marginTop: "8px",
+      }}
+    >
       <h4>Queue Status</h4>
       <div>
         <strong>Job Status: </strong> <span>{status}</span>

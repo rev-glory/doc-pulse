@@ -1,7 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
-import { PrismaService } from '@/database';
-import type { Installation, Prisma } from '@/generated/prisma/client';
+import { PrismaService } from "@/database";
+import type { Installation, Prisma } from "@/generated/prisma/client";
 
 @Injectable()
 export class InstallationsPersistence {
@@ -36,7 +36,9 @@ export class InstallationsPersistence {
     return { installation, isNew: !existing };
   }
 
-  async findByInstallationId(installationId: number): Promise<Installation | null> {
+  async findByInstallationId(
+    installationId: number,
+  ): Promise<Installation | null> {
     return this.prisma.installation.findUnique({
       where: { installationId },
     });

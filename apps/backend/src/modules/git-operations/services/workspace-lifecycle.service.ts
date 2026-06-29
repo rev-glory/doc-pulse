@@ -1,10 +1,10 @@
-import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PrismaService } from '@/database';
-import { WorkspaceService } from './workspace.service';
-import { RepositoryCloneService } from './repository-clone.service';
-import { RepositoryLockService } from './repository-lock.service';
-import type { StorageConfig } from '@/config';
+import { Injectable, Logger, OnApplicationBootstrap } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { PrismaService } from "@/database";
+import { WorkspaceService } from "./workspace.service";
+import { RepositoryCloneService } from "./repository-clone.service";
+import { RepositoryLockService } from "./repository-lock.service";
+import type { StorageConfig } from "@/config";
 
 @Injectable()
 export class WorkspaceLifecycleService implements OnApplicationBootstrap {
@@ -18,15 +18,19 @@ export class WorkspaceLifecycleService implements OnApplicationBootstrap {
     private readonly lockService: RepositoryLockService,
     private readonly configService: ConfigService,
   ) {
-    this.storageConfig = this.configService.getOrThrow<StorageConfig>('storage');
+    this.storageConfig =
+      this.configService.getOrThrow<StorageConfig>("storage");
   }
 
   async onApplicationBootstrap(): Promise<void> {
-    this.logger.log('Executing workspace cleanup on application bootstrap...');
+    this.logger.log("Executing workspace cleanup on application bootstrap...");
     try {
       await this.cleanupExpiredWorkspaces();
     } catch (error) {
-      this.logger.error('Failed to clean up expired workspaces on bootstrap:', error);
+      this.logger.error(
+        "Failed to clean up expired workspaces on bootstrap:",
+        error,
+      );
     }
   }
 
@@ -53,7 +57,7 @@ export class WorkspaceLifecycleService implements OnApplicationBootstrap {
       where: {
         repositoryId,
         status: {
-          in: ['QUEUED', 'RUNNING', 'CHECKPOINTED', 'WAITING_FOR_REVIEW'],
+          in: ["QUEUED", "RUNNING", "CHECKPOINTED", "WAITING_FOR_REVIEW"],
         },
       },
     });
@@ -76,7 +80,9 @@ export class WorkspaceLifecycleService implements OnApplicationBootstrap {
           });
 
           if (!repository) {
-            this.logger.log(`Workspace [${repositoryId}] is orphaned: repository was disconnected.`);
+            this.logger.log(
+              `Workspace [${repositoryId}] is orphaned: repository was disconnected.`,
+            );
             await this.workspaceService.removeRepository(repositoryId);
             continue;
           }
@@ -87,7 +93,9 @@ export class WorkspaceLifecycleService implements OnApplicationBootstrap {
           });
 
           if (workflowRuns.length === 0) {
-            this.logger.log(`Workspace [${repositoryId}] is orphaned: no workflow runs exist.`);
+            this.logger.log(
+              `Workspace [${repositoryId}] is orphaned: no workflow runs exist.`,
+            );
             await this.workspaceService.removeRepository(repositoryId);
             continue;
           }
@@ -102,7 +110,10 @@ export class WorkspaceLifecycleService implements OnApplicationBootstrap {
               latestUpdatedAt = runUpdatedAt;
             }
 
-            const isTerminal = run.status === 'COMPLETED' || run.status === 'FAILED' || run.status === 'CANCELLED';
+            const isTerminal =
+              run.status === "COMPLETED" ||
+              run.status === "FAILED" ||
+              run.status === "CANCELLED";
             if (!isTerminal) {
               hasActiveRuns = true;
             }
@@ -119,7 +130,7 @@ export class WorkspaceLifecycleService implements OnApplicationBootstrap {
             } else {
               this.logger.log(
                 `Cleaning up expired workspace [${repositoryId}]: All workflows completed long ago (inactive for ${Math.round(ageMs / 1000 / 60)} minutes).`,
-               );
+              );
             }
             await this.workspaceService.removeRepository(repositoryId);
           }
@@ -127,7 +138,10 @@ export class WorkspaceLifecycleService implements OnApplicationBootstrap {
           releaseLock();
         }
       } catch (error) {
-        this.logger.error(`Error processing workspace cleanup for repository [${repositoryId}]:`, error);
+        this.logger.error(
+          `Error processing workspace cleanup for repository [${repositoryId}]:`,
+          error,
+        );
       }
     }
   }

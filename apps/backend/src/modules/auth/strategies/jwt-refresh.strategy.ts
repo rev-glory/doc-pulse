@@ -1,32 +1,32 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PassportStrategy } from '@nestjs/passport';
-import { ExtractJwt, Strategy } from 'passport-jwt';
-import { Request } from 'express';
+import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { PassportStrategy } from "@nestjs/passport";
+import { ExtractJwt, Strategy } from "passport-jwt";
+import { Request } from "express";
 
-import { PrismaService } from '@/database';
-import type { JwtConfig } from '@/config';
-import type { AuthJwtPayload } from '../types/auth.types';
+import { PrismaService } from "@/database";
+import type { JwtConfig } from "@/config";
+import type { AuthJwtPayload } from "../types/auth.types";
 
 @Injectable()
 export class JwtRefreshStrategy extends PassportStrategy(
   Strategy,
-  'jwt-refresh',
+  "jwt-refresh",
 ) {
   constructor(
     private configService: ConfigService,
     private prisma: PrismaService,
   ) {
-    const jwtCfg = configService.get<JwtConfig>('jwt');
+    const jwtCfg = configService.get<JwtConfig>("jwt");
 
     if (!jwtCfg) {
-      throw new Error('JWT config not found');
+      throw new Error("JWT config not found");
     }
 
     super({
       jwtFromRequest: ExtractJwt.fromExtractors([
         (request: Request) => {
-          return request?.cookies?.['refresh_token'];
+          return request?.cookies?.["refresh_token"];
         },
       ]),
       secretOrKey: jwtCfg.refreshSecret,

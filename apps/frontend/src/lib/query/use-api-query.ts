@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback, useRef } from 'react';
-import type { ApiError } from '../api/client';
+import { useState, useEffect, useCallback, useRef } from "react";
+import type { ApiError } from "../api/client";
 
 export interface UseApiQueryOptions<T> {
   queryKey: unknown[];
@@ -20,8 +20,16 @@ export interface UseApiQueryResult<T> {
   refetch: () => Promise<void>;
 }
 
-export function useApiQuery<T>(options: UseApiQueryOptions<T>): UseApiQueryResult<T> {
-  const { queryKey, queryFn, enabled = true, initialData, isEmpty: customIsEmpty } = options;
+export function useApiQuery<T>(
+  options: UseApiQueryOptions<T>,
+): UseApiQueryResult<T> {
+  const {
+    queryKey,
+    queryFn,
+    enabled = true,
+    initialData,
+    isEmpty: customIsEmpty,
+  } = options;
   const serializedKey = JSON.stringify(queryKey);
 
   const [data, setData] = useState<T | undefined>(initialData);
@@ -56,7 +64,9 @@ export function useApiQuery<T>(options: UseApiQueryOptions<T>): UseApiQueryResul
     !error &&
     (data === undefined ||
       data === null ||
-      (customIsEmpty ? customIsEmpty(data) : Array.isArray(data) && data.length === 0));
+      (customIsEmpty
+        ? customIsEmpty(data)
+        : Array.isArray(data) && data.length === 0));
 
   const isSuccess = !isLoading && !error && data !== undefined;
 

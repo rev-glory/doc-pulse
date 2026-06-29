@@ -1,5 +1,11 @@
-import { IsOptional, IsString, IsEnum, IsBoolean, ValidateNested } from 'class-validator';
-import { Type } from 'class-transformer';
+import {
+  IsOptional,
+  IsString,
+  IsEnum,
+  IsBoolean,
+  ValidateNested,
+} from "class-validator";
+import { Type } from "class-transformer";
 
 class NotificationsSettingsDto {
   @IsOptional()
@@ -10,13 +16,13 @@ class NotificationsSettingsDto {
 class AiSettingsDto {
   @IsOptional()
   @IsString()
-  provider?: 'openai';
+  provider?: "openai";
 }
 
 export class UpdateSettingsDto {
   @IsOptional()
-  @IsEnum(['system', 'light', 'dark'])
-  theme?: 'system' | 'light' | 'dark';
+  @IsEnum(["system", "light", "dark"])
+  theme?: "system" | "light" | "dark";
 
   @IsOptional()
   @ValidateNested()

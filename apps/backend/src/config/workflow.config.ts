@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 // ---------------------------------------------------------------------------
 // Workflow Orchestration Configuration (LangGraph)
@@ -13,7 +13,7 @@ export interface WorkflowConfig {
   minDocScore: number;
 }
 
-export const workflowConfig = registerAs('workflow', (): WorkflowConfig => {
+export const workflowConfig = registerAs("workflow", (): WorkflowConfig => {
   const env = process.env as unknown as Env;
 
   return {

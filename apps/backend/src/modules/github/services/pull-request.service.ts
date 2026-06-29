@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { GitHubApiService } from './github-api.service';
-import { PullRequestTemplateService } from './pull-request-template.service';
-import type { WorkflowState, PullRequestSummary } from '@/domain/workflow';
+import { Injectable, Logger } from "@nestjs/common";
+import { GitHubApiService } from "./github-api.service";
+import { PullRequestTemplateService } from "./pull-request-template.service";
+import type { WorkflowState, PullRequestSummary } from "@/domain/workflow";
 
 @Injectable()
 export class PullRequestService {
@@ -15,13 +15,24 @@ export class PullRequestService {
   /**
    * Discovers the repository default branch (e.g., 'main' or 'master').
    */
-  async getDefaultBranch(installationId: number, owner: string, repo: string): Promise<string> {
+  async getDefaultBranch(
+    installationId: number,
+    owner: string,
+    repo: string,
+  ): Promise<string> {
     try {
-      const metadata = await this.gitHubApiService.getRepository(installationId, owner, repo);
-      return metadata.default_branch || 'main';
+      const metadata = await this.gitHubApiService.getRepository(
+        installationId,
+        owner,
+        repo,
+      );
+      return metadata.default_branch || "main";
     } catch (error) {
-      this.logger.warn(`Failed to discover default branch for [${owner}/${repo}]. Defaulting to 'main'.`, (error as Error).message);
-      return 'main';
+      this.logger.warn(
+        `Failed to discover default branch for [${owner}/${repo}]. Defaulting to 'main'.`,
+        (error as Error).message,
+      );
+      return "main";
     }
   }
 
@@ -36,19 +47,26 @@ export class PullRequestService {
     state: WorkflowState,
   ): Promise<PullRequestSummary> {
     const startTime = Date.now();
-    this.logger.debug(`Creating Pull Request on [${owner}/${repo}] from [${headBranch}]...`);
+    this.logger.debug(
+      `Creating Pull Request on [${owner}/${repo}] from [${headBranch}]...`,
+    );
 
     try {
-      const octokit = await this.gitHubApiService.getInstallationClient(installationId);
-      const baseBranch = await this.getDefaultBranch(installationId, owner, repo);
+      const octokit =
+        await this.gitHubApiService.getInstallationClient(installationId);
+      const baseBranch = await this.getDefaultBranch(
+        installationId,
+        owner,
+        repo,
+      );
 
       // Check if an open Pull Request already exists with matching head and base branches
       const openPRsResponse = await octokit.pulls.list({
         owner,
         repo,
-        state: 'open',
+        state: "open",
       });
-      
+
       const existingPR = openPRsResponse.data.find(
         (pr) => pr.head.ref === headBranch && pr.base.ref === baseBranch,
       );
@@ -59,7 +77,7 @@ export class PullRequestService {
         const durationMs = Date.now() - startTime;
 
         this.logger.log({
-          event: 'pull_request_reused',
+          event: "pull_request_reused",
           owner,
           repo,
           pullRequestNumber: prNumber,
@@ -94,7 +112,7 @@ export class PullRequestService {
       const durationMs = Date.now() - startTime;
 
       this.logger.log({
-        event: 'pull_request_created',
+        event: "pull_request_created",
         owner,
         repo,
         pullRequestNumber: prNumber,
@@ -111,12 +129,18 @@ export class PullRequestService {
         body,
       };
     } catch (error: any) {
-      this.logger.error(`GitHub API Pull Request creation failed for [${owner}/${repo}]: ${error.message}`);
+      this.logger.error(
+        `GitHub API Pull Request creation failed for [${owner}/${repo}]: ${error.message}`,
+      );
       if (error.status === 422) {
-        throw new Error(`Pull Request creation rejected (422): Branch might already have an open PR or no diff exists.`);
+        throw new Error(
+          `Pull Request creation rejected (422): Branch might already have an open PR or no diff exists.`,
+        );
       }
       if (error.status === 403 || error.status === 401) {
-        throw new Error(`GitHub App permission denied (${error.status}): Ensure 'Pull requests: write' permission is granted.`);
+        throw new Error(
+          `GitHub App permission denied (${error.status}): Ensure 'Pull requests: write' permission is granted.`,
+        );
       }
       throw error;
     }

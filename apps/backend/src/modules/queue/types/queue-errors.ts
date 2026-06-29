@@ -1,51 +1,60 @@
-import { isLlmException } from '../../ai/errors/llm-exception';
-import { isGitException } from '../../git-operations/errors/git-exception';
+import { isLlmException } from "../../ai/errors/llm-exception";
+import { isGitException } from "../../git-operations/errors/git-exception";
 
 export enum QueueErrorClassification {
-  TRANSIENT = 'TRANSIENT',
-  PERMANENT = 'PERMANENT',
+  TRANSIENT = "TRANSIENT",
+  PERMANENT = "PERMANENT",
 }
 
 export class PermanentWorkflowError extends Error {
   public readonly classification = QueueErrorClassification.PERMANENT;
 
-  constructor(message: string, public readonly metadata?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    public readonly metadata?: Record<string, unknown>,
+  ) {
     super(message);
-    this.name = 'PermanentWorkflowError';
+    this.name = "PermanentWorkflowError";
   }
 }
 
 export class TransientWorkflowError extends Error {
   public readonly classification = QueueErrorClassification.TRANSIENT;
 
-  constructor(message: string, public readonly metadata?: Record<string, unknown>) {
+  constructor(
+    message: string,
+    public readonly metadata?: Record<string, unknown>,
+  ) {
     super(message);
-    this.name = 'TransientWorkflowError';
+    this.name = "TransientWorkflowError";
   }
 }
 
 export class DelayedRetryWorkflowError extends TransientWorkflowError {
-  constructor(message: string = 'Delayed retry scheduled', public readonly delayMs: number = 0, metadata?: Record<string, unknown>) {
+  constructor(
+    message: string = "Delayed retry scheduled",
+    public readonly delayMs: number = 0,
+    metadata?: Record<string, unknown>,
+  ) {
     super(message, metadata);
-    this.name = 'DelayedRetryWorkflowError';
+    this.name = "DelayedRetryWorkflowError";
   }
 }
-
 
 /**
  * Helper to check for authentication/permission signatures that should not be retried.
  */
 function isAuthOrPermissionError(message: string): boolean {
   const signatures = [
-    'permission denied',
-    'authentication failed',
-    'error: 403',
-    'could not read username',
-    'repository access denied',
-    'invalid credentials',
-    'remote rejected',
+    "permission denied",
+    "authentication failed",
+    "error: 403",
+    "could not read username",
+    "repository access denied",
+    "invalid credentials",
+    "remote rejected",
   ];
-  return signatures.some(sig => message.includes(sig));
+  return signatures.some((sig) => message.includes(sig));
 }
 
 /**
@@ -56,7 +65,7 @@ function findDomainExceptionInCauseChain(
   error: unknown,
   visited = new Set<unknown>(),
 ): { retryable: boolean } | null {
-  if (!error || typeof error !== 'object') return null;
+  if (!error || typeof error !== "object") return null;
   if (visited.has(error)) return null;
   visited.add(error);
 
@@ -65,7 +74,7 @@ function findDomainExceptionInCauseChain(
   if (isGitException(error)) return { retryable: error.retryable };
 
   // Recurse into known cause properties
-  for (const key of ['cause', 'originalCause', 'inner']) {
+  for (const key of ["cause", "originalCause", "inner"]) {
     const nested = (error as Record<string, unknown>)[key];
     if (nested) {
       const found = findDomainExceptionInCauseChain(nested, visited);
@@ -84,7 +93,9 @@ function findDomainExceptionInCauseChain(
  * nested inside a domain wrapper (e.g. CloneFailedException -> GitException)
  * still drives the classification decision.
  */
-export function classifyWorkflowError(error: unknown): QueueErrorClassification {
+export function classifyWorkflowError(
+  error: unknown,
+): QueueErrorClassification {
   // 1. Walk the full cause chain first — domain exceptions take priority
   const domainException = findDomainExceptionInCauseChain(error);
   if (domainException !== null) {
@@ -94,24 +105,26 @@ export function classifyWorkflowError(error: unknown): QueueErrorClassification 
   }
 
   // 2. Explicit workflow classification marker
-  if (error && typeof error === 'object' && 'classification' in error) {
+  if (error && typeof error === "object" && "classification" in error) {
     if ((error as any).classification === QueueErrorClassification.PERMANENT) {
       return QueueErrorClassification.PERMANENT;
     }
     return QueueErrorClassification.TRANSIENT;
   }
 
-  const message = (error instanceof Error ? error.message : String(error)).toLowerCase();
+  const message = (
+    error instanceof Error ? error.message : String(error)
+  ).toLowerCase();
 
   // 3. Permanent failure signatures
   if (
-    message.includes('not found') ||
-    message.includes('cannot resume non-existent') ||
-    message.includes('deleted') ||
-    message.includes('invalid configuration') ||
-    message.includes('unsupported') ||
-    message.includes('malformed') ||
-    message.includes('validation failed') ||
+    message.includes("not found") ||
+    message.includes("cannot resume non-existent") ||
+    message.includes("deleted") ||
+    message.includes("invalid configuration") ||
+    message.includes("unsupported") ||
+    message.includes("malformed") ||
+    message.includes("validation failed") ||
     isAuthOrPermissionError(message)
   ) {
     return QueueErrorClassification.PERMANENT;

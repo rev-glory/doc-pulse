@@ -1,12 +1,17 @@
-import { Injectable, Logger, NotFoundException, BadRequestException } from '@nestjs/common';
-import { PrismaService } from '@/database';
-import { WorkflowQueueService } from '../../queue/services/workflow-queue.service';
-import { WorkspaceService } from '../../git-operations/services/workspace.service';
-import type { User } from '@/generated/prisma/client';
-import { ReviewDecisionDto } from '../dto/review-decision.dto';
-import { RunStatus as PrismaRunStatus } from '@/generated/prisma/enums';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  BadRequestException,
+} from "@nestjs/common";
+import { PrismaService } from "@/database";
+import { WorkflowQueueService } from "../../queue/services/workflow-queue.service";
+import { WorkspaceService } from "../../git-operations/services/workspace.service";
+import type { User } from "@/generated/prisma/client";
+import { ReviewDecisionDto } from "../dto/review-decision.dto";
+import { RunStatus as PrismaRunStatus } from "@/generated/prisma/enums";
 
-import { ReviewDetail, RunStatus } from '@docpulse/shared-types';
+import { ReviewDetail, RunStatus } from "@docpulse/shared-types";
 
 @Injectable()
 export class ReviewsService {
@@ -37,13 +42,13 @@ export class ReviewsService {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return reviews.map((r) => {
       let parsed = { reviewer: null, comment: r.comment };
       try {
-        if (r.comment && r.comment.startsWith('{')) {
+        if (r.comment && r.comment.startsWith("{")) {
           const raw = JSON.parse(r.comment);
           parsed.reviewer = raw.reviewer ?? null;
           parsed.comment = raw.comment ?? raw.text ?? r.comment;
@@ -77,7 +82,12 @@ export class ReviewsService {
         workflowRun: {
           include: {
             repository: {
-              select: { id: true, name: true, repositoryOwner: true, ownerId: true },
+              select: {
+                id: true,
+                name: true,
+                repositoryOwner: true,
+                ownerId: true,
+              },
             },
           },
         },
@@ -89,12 +99,12 @@ export class ReviewsService {
     }
 
     if (review.workflowRun.repository.ownerId !== user.id) {
-      throw new BadRequestException('Not authorized to access this review');
+      throw new BadRequestException("Not authorized to access this review");
     }
 
     let parsed = { reviewer: null, comment: review.comment };
     try {
-      if (review.comment && review.comment.startsWith('{')) {
+      if (review.comment && review.comment.startsWith("{")) {
         const raw = JSON.parse(review.comment);
         parsed.reviewer = raw.reviewer ?? null;
         parsed.comment = raw.comment ?? raw.text ?? review.comment;
@@ -121,7 +131,9 @@ export class ReviewsService {
       repositoryOwner: review.workflowRun.repository.repositoryOwner,
       commitSha: review.workflowRun.commitSha,
       branch: review.workflowRun.branch,
-      workflowStage: review.workflowRun.currentStage ? String(review.workflowRun.currentStage) : null,
+      workflowStage: review.workflowRun.currentStage
+        ? String(review.workflowRun.currentStage)
+        : null,
       workflowStatus: review.workflowRun.status as unknown as RunStatus,
       generatedDocuments,
       criticReview,
@@ -139,45 +151,49 @@ export class ReviewsService {
       throw new NotFoundException(`Review ${id} not found`);
     }
 
-    if (review.status !== 'PENDING') {
-      throw new BadRequestException(`Review is already in status ${review.status}`);
+    if (review.status !== "PENDING") {
+      throw new BadRequestException(
+        `Review is already in status ${review.status}`,
+      );
     }
 
     const commentJson = JSON.stringify({
       reviewer: user.githubLogin || user.id,
-      text: decision.comment || 'Approved',
+      text: decision.comment || "Approved",
     });
 
     // 1. Transactionally update review (Invariant 3 atomic guard)
     await this.prisma.$transaction(async (tx) => {
       const updated = await tx.review.updateMany({
-        where: { id, status: 'PENDING' },
+        where: { id, status: "PENDING" },
         data: {
-          status: 'APPROVED',
+          status: "APPROVED",
           reviewedAt: new Date(),
           comment: commentJson,
         },
       });
 
       if (updated.count === 0) {
-        throw new BadRequestException('Review is already processed.');
+        throw new BadRequestException("Review is already processed.");
       }
     });
 
     // 2. Enqueue resume job (run status is updated to RUNNING only inside worker resume startup)
-    const repositoryPath = this.workspaceService.getRepositoryPath(review.workflowRun.repositoryId);
+    const repositoryPath = this.workspaceService.getRepositoryPath(
+      review.workflowRun.repositoryId,
+    );
     await this.workflowQueueService.enqueueWorkflow({
       runId: review.workflowRunId,
       repositoryId: review.workflowRun.repositoryId,
       repositoryPath,
-      executionMode: 'resume',
+      executionMode: "resume",
       metadata: {
         reviewer: user.githubLogin || user.id,
         resumedAt: new Date().toISOString(),
       },
     });
 
-    return { message: 'Review approved and workflow execution resumed' };
+    return { message: "Review approved and workflow execution resumed" };
   }
 
   async rejectReview(id: string, decision: ReviewDecisionDto, user: User) {
@@ -193,38 +209,43 @@ export class ReviewsService {
 
     const commentJson = JSON.stringify({
       reviewer: user.githubLogin || user.id,
-      text: decision.comment || 'Rejected',
+      text: decision.comment || "Rejected",
     });
 
     // 1. Transactionally update review (Invariant 3 atomic guard)
     await this.prisma.$transaction(async (tx) => {
       const updated = await tx.review.updateMany({
-        where: { id, status: 'PENDING' },
+        where: { id, status: "PENDING" },
         data: {
-          status: 'REJECTED',
+          status: "REJECTED",
           reviewedAt: new Date(),
           comment: commentJson,
         },
       });
 
       if (updated.count === 0) {
-        throw new BadRequestException('Review is already processed.');
+        throw new BadRequestException("Review is already processed.");
       }
     });
 
     // 2. Enqueue loopback resume job to go back to TechnicalWriter
-    const repositoryPath = this.workspaceService.getRepositoryPath(review.workflowRun.repositoryId);
+    const repositoryPath = this.workspaceService.getRepositoryPath(
+      review.workflowRun.repositoryId,
+    );
     await this.workflowQueueService.enqueueWorkflow({
       runId: review.workflowRunId,
       repositoryId: review.workflowRun.repositoryId,
       repositoryPath,
-      executionMode: 'resume',
+      executionMode: "resume",
       metadata: {
         reviewer: user.githubLogin || user.id,
         resumedAt: new Date().toISOString(),
       },
     });
 
-    return { message: 'Review rejected and workflow execution resumed for document regeneration' };
+    return {
+      message:
+        "Review rejected and workflow execution resumed for document regeneration",
+    };
   }
 }

@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 // ---------------------------------------------------------------------------
 // Redis Configuration
@@ -18,7 +18,7 @@ export interface RedisConfig {
   password: string;
 }
 
-export const redisConfig = registerAs('redis', (): RedisConfig => {
+export const redisConfig = registerAs("redis", (): RedisConfig => {
   const env = process.env as unknown as Env;
 
   return {

@@ -1,4 +1,4 @@
-import { TechnologyCategory } from './enums';
+import { TechnologyCategory } from "./enums";
 
 export interface Technology {
   name: string;

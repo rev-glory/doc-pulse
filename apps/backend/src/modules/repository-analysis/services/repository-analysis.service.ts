@@ -1,29 +1,32 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as path from 'node:path';
-import * as fs from 'node:fs/promises';
-import { RepositorySummary, RepositoryMetrics } from '../../../domain/repository';
-import { DocumentationInventory } from '../../../domain/documentation';
-import { parsePackageJson } from '../utils/package-json.util';
+import { Injectable, Logger } from "@nestjs/common";
+import * as path from "node:path";
+import * as fs from "node:fs/promises";
+import {
+  RepositorySummary,
+  RepositoryMetrics,
+} from "../../../domain/repository";
+import { DocumentationInventory } from "../../../domain/documentation";
+import { parsePackageJson } from "../utils/package-json.util";
 import {
   detectLanguages,
   detectFrameworks,
   detectBuildTools,
   detectTestFrameworks,
-} from '../utils/framework-detector.util';
+} from "../utils/framework-detector.util";
 import {
   detectPackageManager,
   detectMonorepoTools,
   detectDockerFiles,
   detectCiCd,
   detectWorkspaceFolders,
-} from '../utils/workspace-detector.util';
+} from "../utils/workspace-detector.util";
 import {
   detectDocumentation,
   detectEnvironmentFiles,
   detectApiSpecifications,
   buildDocumentationInventory,
-} from '../utils/documentation-detector.util';
-import { REPOSITORY_ANALYSIS_CONSTANTS } from '../constants/repository-analysis.constants';
+} from "../utils/documentation-detector.util";
+import { REPOSITORY_ANALYSIS_CONSTANTS } from "../constants/repository-analysis.constants";
 
 @Injectable()
 export class RepositoryAnalysisService {
@@ -76,9 +79,13 @@ export class RepositoryAnalysisService {
     ]);
 
     const metrics: RepositoryMetrics = {
-      packageCount: await this.calculatePackageCount(rootPath, workspaceFolders),
+      packageCount: await this.calculatePackageCount(
+        rootPath,
+        workspaceFolders,
+      ),
       documentationCount: documentation.length,
-      configurationFileCount: await this.calculateConfigurationFileCount(rootPath),
+      configurationFileCount:
+        await this.calculateConfigurationFileCount(rootPath),
       workspaceCount: workspaceFolders.length,
     };
 
@@ -93,7 +100,9 @@ export class RepositoryAnalysisService {
       testFrameworks,
       dependencies,
       scripts,
-      workspaceType: monorepoData.isMonorepo ? monorepoData.tools[0] || 'unknown' : null,
+      workspaceType: monorepoData.isMonorepo
+        ? monorepoData.tools[0] || "unknown"
+        : null,
       dockerSupport: dockerFiles,
       ciCdSupport: ciCdFiles,
       documentation,
@@ -104,8 +113,13 @@ export class RepositoryAnalysisService {
     };
   }
 
-  public async analyzeDocumentation(rootPath: string, documentationDirectory?: string): Promise<DocumentationInventory> {
-    this.logger.debug(`Starting documentation analysis for repository at: ${rootPath}`);
+  public async analyzeDocumentation(
+    rootPath: string,
+    documentationDirectory?: string,
+  ): Promise<DocumentationInventory> {
+    this.logger.debug(
+      `Starting documentation analysis for repository at: ${rootPath}`,
+    );
 
     // Verify root path exists
     try {
@@ -120,12 +134,15 @@ export class RepositoryAnalysisService {
     return buildDocumentationInventory(rootPath, documentationDirectory);
   }
 
-  private async calculatePackageCount(rootPath: string, workspaceFolders: string[]): Promise<number> {
+  private async calculatePackageCount(
+    rootPath: string,
+    workspaceFolders: string[],
+  ): Promise<number> {
     let count = 0;
-    
+
     // Root package.json
     try {
-      const rootPkg = await fs.stat(path.join(rootPath, 'package.json'));
+      const rootPkg = await fs.stat(path.join(rootPath, "package.json"));
       if (rootPkg.isFile()) {
         count++;
       }
@@ -140,7 +157,7 @@ export class RepositoryAnalysisService {
         const entries = await fs.readdir(folderPath, { withFileTypes: true });
         for (const entry of entries) {
           if (entry.isDirectory()) {
-            const pkgPath = path.join(folderPath, entry.name, 'package.json');
+            const pkgPath = path.join(folderPath, entry.name, "package.json");
             try {
               const stat = await fs.stat(pkgPath);
               if (stat.isFile()) count++;
@@ -157,20 +174,32 @@ export class RepositoryAnalysisService {
     return count;
   }
 
-  private async calculateConfigurationFileCount(rootPath: string): Promise<number> {
+  private async calculateConfigurationFileCount(
+    rootPath: string,
+  ): Promise<number> {
     try {
       const entries = await fs.readdir(rootPath);
       let count = 0;
-      
-      const configExtensions = ['.json', '.yaml', '.yml', '.toml', '.xml', 'rc'];
-      const configFiles = ['.env', 'Makefile', 'Dockerfile'];
+
+      const configExtensions = [
+        ".json",
+        ".yaml",
+        ".yml",
+        ".toml",
+        ".xml",
+        "rc",
+      ];
+      const configFiles = [".env", "Makefile", "Dockerfile"];
 
       for (const entry of entries) {
-        if (configExtensions.some(ext => entry.endsWith(ext)) || configFiles.some(f => entry.startsWith(f))) {
+        if (
+          configExtensions.some((ext) => entry.endsWith(ext)) ||
+          configFiles.some((f) => entry.startsWith(f))
+        ) {
           count++;
         }
       }
-      
+
       return count;
     } catch {
       return 0;

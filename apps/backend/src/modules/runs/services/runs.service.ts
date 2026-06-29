@@ -1,7 +1,12 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { PrismaService } from '@/database';
-import type { User } from '@/generated/prisma/client';
-import { RunStatus, WorkflowRunSummary } from '@docpulse/shared-types';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+} from "@nestjs/common";
+import { PrismaService } from "@/database";
+import type { User } from "@/generated/prisma/client";
+import { RunStatus, WorkflowRunSummary } from "@docpulse/shared-types";
 
 @Injectable()
 export class RunsService {
@@ -22,7 +27,7 @@ export class RunsService {
           select: { id: true, name: true, repositoryOwner: true },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
 
@@ -35,10 +40,15 @@ export class RunsService {
       status: r.status as unknown as RunStatus,
       currentStage: r.currentStage ? String(r.currentStage) : null,
       currentNode: r.currentNode,
-      progress: (r.executionMetadata as any)?.progress ?? (r.status === 'COMPLETED' ? 100 : r.status === 'RUNNING' ? 50 : 0),
+      progress:
+        (r.executionMetadata as any)?.progress ??
+        (r.status === "COMPLETED" ? 100 : r.status === "RUNNING" ? 50 : 0),
       startedAt: r.startedAt?.toISOString() ?? r.createdAt.toISOString(),
       completedAt: r.completedAt?.toISOString() ?? null,
-      durationMs: r.startedAt && r.completedAt ? r.completedAt.getTime() - r.startedAt.getTime() : null,
+      durationMs:
+        r.startedAt && r.completedAt
+          ? r.completedAt.getTime() - r.startedAt.getTime()
+          : null,
       repositoryId: r.repositoryId,
       repositoryName: r.repository.name,
       repositoryOwner: r.repository.repositoryOwner,
@@ -57,7 +67,12 @@ export class RunsService {
       where: { id },
       include: {
         repository: {
-          select: { id: true, name: true, repositoryOwner: true, ownerId: true },
+          select: {
+            id: true,
+            name: true,
+            repositoryOwner: true,
+            ownerId: true,
+          },
         },
       },
     });
@@ -67,7 +82,9 @@ export class RunsService {
     }
 
     if (run.repository.ownerId !== user.id) {
-      throw new ForbiddenException('Not authorized to access this workflow run');
+      throw new ForbiddenException(
+        "Not authorized to access this workflow run",
+      );
     }
 
     const snapshot = run.checkpointSnapshot as any;
@@ -84,10 +101,15 @@ export class RunsService {
       status: run.status as unknown as RunStatus,
       currentStage: run.currentStage ? String(run.currentStage) : null,
       currentNode: run.currentNode,
-      progress: (run.executionMetadata as any)?.progress ?? (run.status === 'COMPLETED' ? 100 : run.status === 'RUNNING' ? 50 : 0),
+      progress:
+        (run.executionMetadata as any)?.progress ??
+        (run.status === "COMPLETED" ? 100 : run.status === "RUNNING" ? 50 : 0),
       startedAt: run.startedAt?.toISOString() ?? run.createdAt.toISOString(),
       completedAt: run.completedAt?.toISOString() ?? null,
-      durationMs: run.startedAt && run.completedAt ? run.completedAt.getTime() - run.startedAt.getTime() : null,
+      durationMs:
+        run.startedAt && run.completedAt
+          ? run.completedAt.getTime() - run.startedAt.getTime()
+          : null,
       repositoryId: run.repositoryId,
       repositoryName: run.repository.name,
       repositoryOwner: run.repository.repositoryOwner,

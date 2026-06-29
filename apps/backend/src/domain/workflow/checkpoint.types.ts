@@ -1,21 +1,21 @@
-import { RepositorySummary } from '../repository/repository-summary';
-import { DocumentationFile } from '../documentation/documentation-file';
+import { RepositorySummary } from "../repository/repository-summary";
+import { DocumentationFile } from "../documentation/documentation-file";
 
 /**
  * Canonical shared enum representing LangGraph documentation graph nodes.
  * Used across orchestration, graph compilation, checkpoint snapshots, and retry tracking.
  */
 export enum WorkflowNodeName {
-  EarlySkip = 'EarlySkip',
-  RepositoryAnalyzer = 'RepositoryAnalyzer',
-  DocumentationLocator = 'DocumentationLocator',
-  CodebaseAnalyzer = 'CodebaseAnalyzer',
-  TechnicalWriter = 'TechnicalWriter',
-  DocumentationCritic = 'DocumentationCritic',
-  HumanReview = 'HumanReview',
-  GitCommit = 'GitCommit',
-  PushBranch = 'PushBranch',
-  CreatePullRequest = 'CreatePullRequest',
+  EarlySkip = "EarlySkip",
+  RepositoryAnalyzer = "RepositoryAnalyzer",
+  DocumentationLocator = "DocumentationLocator",
+  CodebaseAnalyzer = "CodebaseAnalyzer",
+  TechnicalWriter = "TechnicalWriter",
+  DocumentationCritic = "DocumentationCritic",
+  HumanReview = "HumanReview",
+  GitCommit = "GitCommit",
+  PushBranch = "PushBranch",
+  CreatePullRequest = "CreatePullRequest",
 }
 
 /**
@@ -23,17 +23,17 @@ export enum WorkflowNodeName {
  * Strictly decoupled from overall run lifecycle status (RunStatus).
  */
 export enum WorkflowStage {
-  CLONING = 'CLONING',
-  EARLY_SKIP = 'EARLY_SKIP',
-  ANALYZING = 'ANALYZING',
-  SOURCE_CODE_ANALYSIS = 'SOURCE_CODE_ANALYSIS',
-  LOCATING_DOCUMENTATION = 'LOCATING_DOCUMENTATION',
-  WRITING = 'WRITING',
-  REVIEWING = 'REVIEWING',
-  COMMITTING = 'COMMITTING',
-  PUSHING = 'PUSHING',
-  CREATING_PULL_REQUEST = 'CREATING_PULL_REQUEST',
-  FINISHED = 'FINISHED',
+  CLONING = "CLONING",
+  EARLY_SKIP = "EARLY_SKIP",
+  ANALYZING = "ANALYZING",
+  SOURCE_CODE_ANALYSIS = "SOURCE_CODE_ANALYSIS",
+  LOCATING_DOCUMENTATION = "LOCATING_DOCUMENTATION",
+  WRITING = "WRITING",
+  REVIEWING = "REVIEWING",
+  COMMITTING = "COMMITTING",
+  PUSHING = "PUSHING",
+  CREATING_PULL_REQUEST = "CREATING_PULL_REQUEST",
+  FINISHED = "FINISHED",
 }
 
 /**

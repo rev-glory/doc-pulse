@@ -1,21 +1,25 @@
-import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
+import {
+  registerDecorator,
+  ValidationOptions,
+  ValidationArguments,
+} from "class-validator";
 
 /**
  * Validates branch name based on Git reference name rules,
  * and additionally rejects names starting with 'refs/'.
  */
 export function isValidGitBranchName(branchName: string): boolean {
-  if (!branchName || typeof branchName !== 'string') {
+  if (!branchName || typeof branchName !== "string") {
     return false;
   }
-  
+
   const trimmed = branchName.trim();
-  if (trimmed === '' || /\s/.test(trimmed)) {
+  if (trimmed === "" || /\s/.test(trimmed)) {
     return false;
   }
 
   // Reject refs/ prefix (e.g. refs/heads/main)
-  if (trimmed.startsWith('refs/')) {
+  if (trimmed.startsWith("refs/")) {
     return false;
   }
 
@@ -24,8 +28,8 @@ export function isValidGitBranchName(branchName: string): boolean {
   if (/[\s~^:\?\*\[\\]/.test(trimmed)) return false;
   if (/\.\./.test(trimmed)) return false;
   if (/@\{/.test(trimmed)) return false;
-  if (trimmed.endsWith('.lock') || trimmed.endsWith('.')) return false;
-  if (trimmed.startsWith('/') || trimmed.endsWith('/')) return false;
+  if (trimmed.endsWith(".lock") || trimmed.endsWith(".")) return false;
+  if (trimmed.startsWith("/") || trimmed.endsWith("/")) return false;
   if (/\/\//.test(trimmed)) return false;
 
   return true;
@@ -34,7 +38,7 @@ export function isValidGitBranchName(branchName: string): boolean {
 export function IsGitBranchName(validationOptions?: ValidationOptions) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
-      name: 'isGitBranchName',
+      name: "isGitBranchName",
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,

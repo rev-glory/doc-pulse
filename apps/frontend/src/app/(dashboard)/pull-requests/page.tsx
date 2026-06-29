@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useApiQuery } from '@/lib/query/use-api-query';
-import { PullRequestApi } from '@/lib/api/services/pull-request.api';
-import { PageHeader } from '@/components/shared/page-header';
-import { SectionCard } from '@/components/shared/section-card';
-import { LoadingState } from '@/components/feedback/loading-state';
-import { ErrorState } from '@/components/feedback/error-state';
-import { RecentPullRequests } from '@/features/pull-requests/components/recent-pull-requests';
+import React from "react";
+import { useApiQuery } from "@/lib/query/use-api-query";
+import { PullRequestApi } from "@/lib/api/services/pull-request.api";
+import { PageHeader } from "@/components/shared/page-header";
+import { SectionCard } from "@/components/shared/section-card";
+import { LoadingState } from "@/components/feedback/loading-state";
+import { ErrorState } from "@/components/feedback/error-state";
+import { RecentPullRequests } from "@/features/pull-requests/components/recent-pull-requests";
 
 export default function PullRequestsListPage(): React.JSX.Element {
   const { data, isLoading, error, refetch } = useApiQuery({
-    queryKey: ['pull-requests', 'list'],
+    queryKey: ["pull-requests", "list"],
     queryFn: PullRequestApi.listPullRequests,
   });
 

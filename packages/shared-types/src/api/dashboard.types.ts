@@ -1,4 +1,4 @@
-import { WorkflowRunSummary } from './workflow.types.js';
+import { WorkflowRunSummary } from "./workflow.types.js";
 
 export interface PullRequestSummary {
   id: string;
@@ -8,7 +8,7 @@ export interface PullRequestSummary {
   body: string | null;
   headBranch: string;
   baseBranch: string;
-  status: 'OPEN' | 'MERGED' | 'CLOSED';
+  status: "OPEN" | "MERGED" | "CLOSED";
   createdAt: string;
   mergedAt: string | null;
   repositoryId: string;

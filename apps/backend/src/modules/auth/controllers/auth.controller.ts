@@ -1,36 +1,29 @@
-import {
-  Controller,
-  Get,
-  Post,
-  UseGuards,
-  Res,
-  Req,
-} from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Response, Request } from 'express';
+import { Controller, Get, Post, UseGuards, Res, Req } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { Response, Request } from "express";
 
-import { AuthService } from '../services/auth.service';
-import { GithubAuthGuard } from '../guards/github-auth.guard';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { JwtRefreshAuthGuard } from '../guards/jwt-refresh-auth.guard';
-import { CurrentUser } from '../decorators/current-user.decorator';
-import type { User } from '@/generated/prisma/client';
-import type { JwtConfig } from '@/config';
+import { AuthService } from "../services/auth.service";
+import { GithubAuthGuard } from "../guards/github-auth.guard";
+import { JwtAuthGuard } from "../guards/jwt-auth.guard";
+import { JwtRefreshAuthGuard } from "../guards/jwt-refresh-auth.guard";
+import { CurrentUser } from "../decorators/current-user.decorator";
+import type { User } from "@/generated/prisma/client";
+import type { JwtConfig } from "@/config";
 
-@Controller('auth')
+@Controller("auth")
 export class AuthController {
   constructor(
     private authService: AuthService,
     private configService: ConfigService,
   ) {}
 
-  @Get('github')
+  @Get("github")
   @UseGuards(GithubAuthGuard)
   async githubLogin() {
     // Passport will handle redirecting to GitHub
   }
 
-  @Get('github/callback')
+  @Get("github/callback")
   @UseGuards(GithubAuthGuard)
   async githubCallback(
     @Req() req: Request,
@@ -49,17 +42,17 @@ export class AuthController {
 
     this.setAuthCookies(res, tokens);
 
-    const frontendUrl = this.configService.get('FRONTEND_URL');
+    const frontendUrl = this.configService.get("FRONTEND_URL");
     res.redirect(`${frontendUrl}/dashboard`);
   }
 
-  @Get('me')
+  @Get("me")
   @UseGuards(JwtAuthGuard)
   async getCurrentUser(@CurrentUser() user: User) {
     return user;
   }
 
-  @Post('refresh')
+  @Post("refresh")
   @UseGuards(JwtRefreshAuthGuard)
   async refreshTokens(
     @CurrentUser() user: User,
@@ -67,35 +60,38 @@ export class AuthController {
   ) {
     const tokens = await this.authService.generateTokens(user);
     this.setAuthCookies(res, tokens);
-    return { message: 'Tokens refreshed successfully' };
+    return { message: "Tokens refreshed successfully" };
   }
 
-  @Post('logout')
+  @Post("logout")
   async logout(@Res({ passthrough: true }) res: Response) {
-    res.clearCookie('access_token', this.getCookieOptions());
-    res.clearCookie('refresh_token', this.getCookieOptions());
-    return { message: 'Logged out successfully' };
+    res.clearCookie("access_token", this.getCookieOptions());
+    res.clearCookie("refresh_token", this.getCookieOptions());
+    return { message: "Logged out successfully" };
   }
 
-  private setAuthCookies(res: Response, tokens: { accessToken: string; refreshToken: string }) {
-    res.cookie('access_token', tokens.accessToken, {
+  private setAuthCookies(
+    res: Response,
+    tokens: { accessToken: string; refreshToken: string },
+  ) {
+    res.cookie("access_token", tokens.accessToken, {
       ...this.getCookieOptions(),
       maxAge: 15 * 60 * 1000, // 15 minutes
     });
 
-    res.cookie('refresh_token', tokens.refreshToken, {
+    res.cookie("refresh_token", tokens.refreshToken, {
       ...this.getCookieOptions(),
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
   }
 
   private getCookieOptions() {
-    const isProduction = process.env.NODE_ENV === 'production';
+    const isProduction = process.env.NODE_ENV === "production";
     return {
       httpOnly: true,
       secure: isProduction,
-      sameSite: 'lax' as const,
-      path: '/',
+      sameSite: "lax" as const,
+      path: "/",
     };
   }
 }

@@ -3,10 +3,10 @@ import {
   Logger,
   OnModuleDestroy,
   OnModuleInit,
-} from '@nestjs/common';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { PrismaClient } from '../../generated/prisma/client';
-import pg from 'pg';
+} from "@nestjs/common";
+import { PrismaPg } from "@prisma/adapter-pg";
+import { PrismaClient } from "../../generated/prisma/client";
+import pg from "pg";
 
 // ---------------------------------------------------------------------------
 // PrismaService
@@ -37,12 +37,12 @@ export class PrismaService
   private readonly pool: pg.Pool;
 
   constructor() {
-    const connectionString = process.env['DATABASE_URL'];
+    const connectionString = process.env["DATABASE_URL"];
 
     if (!connectionString) {
       throw new Error(
-        'DATABASE_URL environment variable is not set. ' +
-          'Copy .env.example to .env and fill in the required values.',
+        "DATABASE_URL environment variable is not set. " +
+          "Copy .env.example to .env and fill in the required values.",
       );
     }
 
@@ -55,15 +55,15 @@ export class PrismaService
   }
 
   async onModuleInit(): Promise<void> {
-    this.logger.log('Connecting to database…');
+    this.logger.log("Connecting to database…");
     await this.$connect();
-    this.logger.log('Database connection established.');
+    this.logger.log("Database connection established.");
   }
 
   async onModuleDestroy(): Promise<void> {
-    this.logger.log('Disconnecting from database…');
+    this.logger.log("Disconnecting from database…");
     await this.$disconnect();
     await this.pool.end();
-    this.logger.log('Database connection closed.');
+    this.logger.log("Database connection closed.");
   }
 }

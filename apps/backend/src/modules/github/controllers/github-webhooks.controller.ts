@@ -7,11 +7,11 @@ import {
   HttpStatus,
   UnauthorizedException,
   Logger,
-} from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Request } from 'express';
+} from "@nestjs/common";
+import { ApiTags, ApiOperation, ApiResponse } from "@nestjs/swagger";
+import { Request } from "express";
 
-import { GitHubWebhookService } from '../services/github-webhook.service';
+import { GitHubWebhookService } from "../services/github-webhook.service";
 
 // ---------------------------------------------------------------------------
 // GitHubWebhooksController
@@ -29,30 +29,33 @@ import { GitHubWebhookService } from '../services/github-webhook.service';
 //     created with `{ rawBody: true }` in main.ts.
 // ---------------------------------------------------------------------------
 
-@ApiTags('Webhooks')
-@Controller('github')
+@ApiTags("Webhooks")
+@Controller("github")
 export class GitHubWebhooksController {
   private readonly logger = new Logger(GitHubWebhooksController.name);
 
   constructor(private readonly gitHubWebhookService: GitHubWebhookService) {}
 
-  @Post(['webhooks', 'webhook'])
+  @Post(["webhooks", "webhook"])
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Receive GitHub App webhook events' })
-  @ApiResponse({ status: 200, description: 'Event received and queued for processing' })
-  @ApiResponse({ status: 401, description: 'Invalid webhook signature' })
+  @ApiOperation({ summary: "Receive GitHub App webhook events" })
+  @ApiResponse({
+    status: 200,
+    description: "Event received and queued for processing",
+  })
+  @ApiResponse({ status: 401, description: "Invalid webhook signature" })
   async handleWebhook(
     @Req() req: Request,
-    @Headers('x-github-event') event: string,
-    @Headers('x-github-delivery') deliveryId: string,
-    @Headers('x-hub-signature-256') signature: string,
+    @Headers("x-github-event") event: string,
+    @Headers("x-github-delivery") deliveryId: string,
+    @Headers("x-hub-signature-256") signature: string,
   ): Promise<{ received: boolean }> {
     const body = req.body || {};
     const instId = body?.installation?.id;
     const repoId = body?.repository?.id;
 
     this.logger.log({
-      message: 'Received GitHub webhook',
+      message: "Received GitHub webhook",
       event,
       delivery: deliveryId,
       installationId: instId,
@@ -66,20 +69,27 @@ export class GitHubWebhooksController {
 
     if (!rawBody) {
       this.logger.error(
-        'rawBody not available — ensure NestFactory.create is called with { rawBody: true }',
+        "rawBody not available — ensure NestFactory.create is called with { rawBody: true }",
       );
-      throw new UnauthorizedException('Webhook signature could not be verified');
+      throw new UnauthorizedException(
+        "Webhook signature could not be verified",
+      );
     }
 
-    const isValid = this.gitHubWebhookService.verifySignature(rawBody, signature);
+    const isValid = this.gitHubWebhookService.verifySignature(
+      rawBody,
+      signature,
+    );
 
     if (!isValid) {
-      this.logger.warn(`Webhook signature verification failed for event: ${event}`);
-      throw new UnauthorizedException('Invalid webhook signature');
+      this.logger.warn(
+        `Webhook signature verification failed for event: ${event}`,
+      );
+      throw new UnauthorizedException("Invalid webhook signature");
     }
 
     this.logger.log({
-      message: 'Webhook signature validated',
+      message: "Webhook signature validated",
       event,
       delivery: deliveryId,
     });
@@ -87,9 +97,11 @@ export class GitHubWebhooksController {
     // Process asynchronously — do not await so we return 200 immediately.
     // GitHub expects a fast acknowledgement; long processing happens in the
     // background (BullMQ jobs for push/PR events).
-    void this.gitHubWebhookService.handleEvent(event, deliveryId, req.body).catch((error) => {
-      this.logger.error(`Webhook handler failed for event: ${event}`, error);
-    });
+    void this.gitHubWebhookService
+      .handleEvent(event, deliveryId, req.body)
+      .catch((error) => {
+        this.logger.error(`Webhook handler failed for event: ${event}`, error);
+      });
 
     return { received: true };
   }

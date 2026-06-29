@@ -1,11 +1,15 @@
-import { Injectable, Logger, UnprocessableEntityException } from '@nestjs/common';
-import * as crypto from 'node:crypto';
+import {
+  Injectable,
+  Logger,
+  UnprocessableEntityException,
+} from "@nestjs/common";
+import * as crypto from "node:crypto";
 import {
   createGeneratedDocument,
   GeneratedDocument,
   GeneratedDocumentMetrics,
   GeneratedDocumentType,
-} from '../../../domain/workflow';
+} from "../../../domain/workflow";
 
 export interface RawDocumentOutput {
   title?: string;
@@ -15,7 +19,7 @@ export interface RawDocumentOutput {
 }
 
 export interface RawCriticIssue {
-  severity: 'CRITICAL' | 'MAJOR' | 'MINOR';
+  severity: "CRITICAL" | "MAJOR" | "MINOR";
   category: string;
   message: string;
   location?: string;
@@ -40,8 +44,10 @@ export class OutputParserService {
     documentType: GeneratedDocumentType,
     metrics?: GeneratedDocumentMetrics,
   ): GeneratedDocument {
-    if (!rawText || typeof rawText !== 'string') {
-      throw new UnprocessableEntityException(`[OutputParser] Empty or invalid LLM output received for ${documentType}`);
+    if (!rawText || typeof rawText !== "string") {
+      throw new UnprocessableEntityException(
+        `[OutputParser] Empty or invalid LLM output received for ${documentType}`,
+      );
     }
 
     const cleanedJson = this.recoverJson(rawText);
@@ -50,30 +56,39 @@ export class OutputParserService {
     try {
       parsed = JSON.parse(cleanedJson);
     } catch (error) {
-      this.logger.error(`[OutputParser] Failed to parse JSON for ${documentType}:`, rawText);
+      this.logger.error(
+        `[OutputParser] Failed to parse JSON for ${documentType}:`,
+        rawText,
+      );
       throw new UnprocessableEntityException(
-        `[OutputParser] Malformed JSON structure for ${documentType}: ${error instanceof Error ? error.message : 'Syntax error'}`,
+        `[OutputParser] Malformed JSON structure for ${documentType}: ${error instanceof Error ? error.message : "Syntax error"}`,
       );
     }
 
-    if (!parsed || typeof parsed !== 'object') {
-      throw new UnprocessableEntityException(`[OutputParser] Parsed LLM response is not an object for ${documentType}`);
+    if (!parsed || typeof parsed !== "object") {
+      throw new UnprocessableEntityException(
+        `[OutputParser] Parsed LLM response is not an object for ${documentType}`,
+      );
     }
 
     const missingFields: string[] = [];
-    if (!parsed.title || typeof parsed.title !== 'string') missingFields.push('title');
-    if (!parsed.path || typeof parsed.path !== 'string') missingFields.push('path');
-    if (!parsed.markdown || typeof parsed.markdown !== 'string') missingFields.push('markdown');
-    if (!parsed.summary || typeof parsed.summary !== 'string') missingFields.push('summary');
+    if (!parsed.title || typeof parsed.title !== "string")
+      missingFields.push("title");
+    if (!parsed.path || typeof parsed.path !== "string")
+      missingFields.push("path");
+    if (!parsed.markdown || typeof parsed.markdown !== "string")
+      missingFields.push("markdown");
+    if (!parsed.summary || typeof parsed.summary !== "string")
+      missingFields.push("summary");
 
     if (missingFields.length > 0) {
       throw new UnprocessableEntityException(
-        `[OutputParser] Missing required fields [${missingFields.join(', ')}] in LLM response for ${documentType}`,
+        `[OutputParser] Missing required fields [${missingFields.join(", ")}] in LLM response for ${documentType}`,
       );
     }
 
-    const normalizedMarkdown = parsed.markdown!.replace(/\r\n/g, '\n').trim();
-    const normalizedSummary = parsed.summary!.replace(/\r\n/g, '\n').trim();
+    const normalizedMarkdown = parsed.markdown!.replace(/\r\n/g, "\n").trim();
+    const normalizedSummary = parsed.summary!.replace(/\r\n/g, "\n").trim();
 
     return createGeneratedDocument({
       id: `doc-${crypto.randomUUID()}`,
@@ -89,9 +104,14 @@ export class OutputParserService {
   /**
    * Parses structured LLM JSON review evaluation responses.
    */
-  public parseCriticReview(rawText: string, documentType: GeneratedDocumentType): RawCriticReviewOutput {
-    if (!rawText || typeof rawText !== 'string') {
-      throw new UnprocessableEntityException(`[OutputParser] Empty or invalid critic output received for ${documentType}`);
+  public parseCriticReview(
+    rawText: string,
+    documentType: GeneratedDocumentType,
+  ): RawCriticReviewOutput {
+    if (!rawText || typeof rawText !== "string") {
+      throw new UnprocessableEntityException(
+        `[OutputParser] Empty or invalid critic output received for ${documentType}`,
+      );
     }
 
     const cleanedJson = this.recoverJson(rawText);
@@ -100,17 +120,26 @@ export class OutputParserService {
     try {
       parsed = JSON.parse(cleanedJson);
     } catch (error) {
-      this.logger.error(`[OutputParser] Failed to parse critic review JSON for ${documentType}:`, rawText);
+      this.logger.error(
+        `[OutputParser] Failed to parse critic review JSON for ${documentType}:`,
+        rawText,
+      );
       throw new UnprocessableEntityException(
-        `[OutputParser] Malformed critic JSON structure for ${documentType}: ${error instanceof Error ? error.message : 'Syntax error'}`,
+        `[OutputParser] Malformed critic JSON structure for ${documentType}: ${error instanceof Error ? error.message : "Syntax error"}`,
       );
     }
 
-    if (!parsed || typeof parsed !== 'object') {
-      throw new UnprocessableEntityException(`[OutputParser] Parsed critic response is not an object for ${documentType}`);
+    if (!parsed || typeof parsed !== "object") {
+      throw new UnprocessableEntityException(
+        `[OutputParser] Parsed critic response is not an object for ${documentType}`,
+      );
     }
 
-    if (typeof parsed.score !== 'number' || !Array.isArray(parsed.issues) || !Array.isArray(parsed.suggestions)) {
+    if (
+      typeof parsed.score !== "number" ||
+      !Array.isArray(parsed.issues) ||
+      !Array.isArray(parsed.suggestions)
+    ) {
       throw new UnprocessableEntityException(
         `[OutputParser] Missing required fields [score, issues, suggestions] in critic response for ${documentType}`,
       );
@@ -121,21 +150,30 @@ export class OutputParserService {
     return {
       score: clampedScore,
       issues: parsed.issues.map((iss: any) => ({
-        severity: (['CRITICAL', 'MAJOR', 'MINOR'].includes(iss?.severity) ? iss.severity : 'MINOR') as any,
-        category: typeof iss?.category === 'string' ? iss.category : 'General',
-        message: typeof iss?.message === 'string' ? iss.message : 'Unspecified issue',
-        location: typeof iss?.location === 'string' ? iss.location : undefined,
+        severity: (["CRITICAL", "MAJOR", "MINOR"].includes(iss?.severity)
+          ? iss.severity
+          : "MINOR") as any,
+        category: typeof iss?.category === "string" ? iss.category : "General",
+        message:
+          typeof iss?.message === "string" ? iss.message : "Unspecified issue",
+        location: typeof iss?.location === "string" ? iss.location : undefined,
       })),
-      suggestions: parsed.suggestions.filter((s: any) => typeof s === 'string').map((s: string) => s.trim()),
+      suggestions: parsed.suggestions
+        .filter((s: any) => typeof s === "string")
+        .map((s: string) => s.trim()),
     };
   }
 
   /**
    * Parses structured LLM JSON batch review evaluation responses.
    */
-  public parseBatchCriticReview(rawText: string): Record<string, RawCriticReviewOutput> {
-    if (!rawText || typeof rawText !== 'string') {
-      throw new UnprocessableEntityException('[OutputParser] Empty or invalid batch critic output received');
+  public parseBatchCriticReview(
+    rawText: string,
+  ): Record<string, RawCriticReviewOutput> {
+    if (!rawText || typeof rawText !== "string") {
+      throw new UnprocessableEntityException(
+        "[OutputParser] Empty or invalid batch critic output received",
+      );
     }
 
     const cleanedJson = this.recoverJson(rawText);
@@ -144,35 +182,56 @@ export class OutputParserService {
     try {
       parsed = JSON.parse(cleanedJson);
     } catch (error) {
-      this.logger.error('[OutputParser] Failed to parse batch critic review JSON:', rawText);
+      this.logger.error(
+        "[OutputParser] Failed to parse batch critic review JSON:",
+        rawText,
+      );
       throw new UnprocessableEntityException(
-        `[OutputParser] Malformed batch critic JSON structure: ${error instanceof Error ? error.message : 'Syntax error'}`,
+        `[OutputParser] Malformed batch critic JSON structure: ${error instanceof Error ? error.message : "Syntax error"}`,
       );
     }
 
-    if (!parsed || typeof parsed !== 'object' || !Array.isArray(parsed.reviews)) {
-      throw new UnprocessableEntityException('[OutputParser] Missing required array field [reviews] in batch critic response');
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      !Array.isArray(parsed.reviews)
+    ) {
+      throw new UnprocessableEntityException(
+        "[OutputParser] Missing required array field [reviews] in batch critic response",
+      );
     }
 
     const resultMap: Record<string, RawCriticReviewOutput> = {};
 
     for (const item of parsed.reviews) {
-      if (!item || typeof item !== 'object') continue;
-      const docType = typeof item.documentType === 'string' ? item.documentType.toUpperCase() : 'UNKNOWN';
-      const rawScore = typeof item.score === 'number' ? item.score : 0;
+      if (!item || typeof item !== "object") continue;
+      const docType =
+        typeof item.documentType === "string"
+          ? item.documentType.toUpperCase()
+          : "UNKNOWN";
+      const rawScore = typeof item.score === "number" ? item.score : 0;
       const clampedScore = Math.max(0, Math.min(100, Math.round(rawScore)));
 
       const issues = Array.isArray(item.issues)
         ? item.issues.map((iss: any) => ({
-            severity: (['CRITICAL', 'MAJOR', 'MINOR'].includes(iss?.severity) ? iss.severity : 'MINOR') as any,
-            category: typeof iss?.category === 'string' ? iss.category : 'General',
-            message: typeof iss?.message === 'string' ? iss.message : 'Unspecified issue',
-            location: typeof iss?.location === 'string' ? iss.location : undefined,
+            severity: (["CRITICAL", "MAJOR", "MINOR"].includes(iss?.severity)
+              ? iss.severity
+              : "MINOR") as any,
+            category:
+              typeof iss?.category === "string" ? iss.category : "General",
+            message:
+              typeof iss?.message === "string"
+                ? iss.message
+                : "Unspecified issue",
+            location:
+              typeof iss?.location === "string" ? iss.location : undefined,
           }))
         : [];
 
       const suggestions = Array.isArray(item.suggestions)
-        ? item.suggestions.filter((s: any) => typeof s === 'string').map((s: string) => s.trim())
+        ? item.suggestions
+            .filter((s: any) => typeof s === "string")
+            .map((s: string) => s.trim())
         : [];
 
       resultMap[docType] = {
@@ -196,9 +255,9 @@ export class OutputParserService {
       trimmed = fenceMatch[1].trim();
     }
 
-    if (!trimmed.startsWith('{') || !trimmed.endsWith('}')) {
-      const firstBrace = trimmed.indexOf('{');
-      const lastBrace = trimmed.lastIndexOf('}');
+    if (!trimmed.startsWith("{") || !trimmed.endsWith("}")) {
+      const firstBrace = trimmed.indexOf("{");
+      const lastBrace = trimmed.lastIndexOf("}");
       if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
         trimmed = trimmed.substring(firstBrace, lastBrace + 1).trim();
       }

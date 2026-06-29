@@ -1,7 +1,12 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException } from '@nestjs/common';
-import { PrismaService } from '@/database';
-import type { User } from '@/generated/prisma/client';
-import type { PullRequestSummary } from '@docpulse/shared-types';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+} from "@nestjs/common";
+import { PrismaService } from "@/database";
+import type { User } from "@/generated/prisma/client";
+import type { PullRequestSummary } from "@docpulse/shared-types";
 
 @Injectable()
 export class PullRequestsService {
@@ -28,7 +33,7 @@ export class PullRequestsService {
           },
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 50,
     });
 
@@ -40,7 +45,7 @@ export class PullRequestsService {
       body: pr.body,
       headBranch: pr.headBranch,
       baseBranch: pr.baseBranch,
-      status: pr.isMerged ? 'MERGED' : 'OPEN',
+      status: pr.isMerged ? "MERGED" : "OPEN",
       createdAt: pr.createdAt.toISOString(),
       mergedAt: pr.mergedAt?.toISOString() ?? null,
       repositoryId: pr.workflowRun.repositoryId,
@@ -53,7 +58,10 @@ export class PullRequestsService {
     }));
   }
 
-  async getPullRequestById(id: string, user: User): Promise<PullRequestSummary> {
+  async getPullRequestById(
+    id: string,
+    user: User,
+  ): Promise<PullRequestSummary> {
     this.logger.log(`Getting pull request ${id} for user ${user.id}`);
     const pr = await this.prisma.pullRequest.findUnique({
       where: { id },
@@ -61,7 +69,12 @@ export class PullRequestsService {
         workflowRun: {
           include: {
             repository: {
-              select: { id: true, name: true, repositoryOwner: true, ownerId: true },
+              select: {
+                id: true,
+                name: true,
+                repositoryOwner: true,
+                ownerId: true,
+              },
             },
           },
         },
@@ -73,7 +86,9 @@ export class PullRequestsService {
     }
 
     if (pr.workflowRun.repository.ownerId !== user.id) {
-      throw new ForbiddenException('Not authorized to access this pull request');
+      throw new ForbiddenException(
+        "Not authorized to access this pull request",
+      );
     }
 
     return {
@@ -84,7 +99,7 @@ export class PullRequestsService {
       body: pr.body,
       headBranch: pr.headBranch,
       baseBranch: pr.baseBranch,
-      status: pr.isMerged ? 'MERGED' : 'OPEN',
+      status: pr.isMerged ? "MERGED" : "OPEN",
       createdAt: pr.createdAt.toISOString(),
       mergedAt: pr.mergedAt?.toISOString() ?? null,
       repositoryId: pr.workflowRun.repositoryId,

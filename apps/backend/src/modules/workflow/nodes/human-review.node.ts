@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { PrismaService } from '@/database';
-import { WorkflowGraphState } from '../graph/graph.types';
-import { RunStatus as PrismaRunStatus } from '@/generated/prisma/enums';
+import { Injectable, Logger } from "@nestjs/common";
+import { PrismaService } from "@/database";
+import { WorkflowGraphState } from "../graph/graph.types";
+import { RunStatus as PrismaRunStatus } from "@/generated/prisma/enums";
 
 @Injectable()
 export class HumanReviewNode {
@@ -9,7 +9,9 @@ export class HumanReviewNode {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
+  async invoke(
+    state: WorkflowGraphState,
+  ): Promise<Partial<WorkflowGraphState>> {
     const runId = state.runId;
     this.logger.debug(`Executing HumanReviewNode for run [${runId}]...`);
 
@@ -20,11 +22,13 @@ export class HumanReviewNode {
 
     // 2. If it doesn't exist, create it as PENDING and keep the run resumable until the executor checkpoints it.
     if (!review) {
-      this.logger.log(`No review record found for run [${runId}]. Creating pending review...`);
+      this.logger.log(
+        `No review record found for run [${runId}]. Creating pending review...`,
+      );
       review = await this.prisma.review.create({
         data: {
           workflowRunId: runId,
-          status: 'PENDING',
+          status: "PENDING",
         },
       });
 

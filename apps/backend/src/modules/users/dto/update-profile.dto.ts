@@ -1,4 +1,4 @@
-import { IsOptional, IsString, MaxLength, IsUrl } from 'class-validator';
+import { IsOptional, IsString, MaxLength, IsUrl } from "class-validator";
 
 export class UpdateProfileDto {
   @IsOptional()
@@ -6,4 +6,3 @@ export class UpdateProfileDto {
   @MaxLength(100)
   displayName?: string | null;
 }
-

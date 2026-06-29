@@ -1,16 +1,20 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { useApiQuery } from '@/lib/query/use-api-query';
-import { GitHubApi } from '@/lib/api/services/github.api';
-import { RepositoryApi, type RepositoryConfig, type ConnectRepositoryDto } from '@/lib/api/services/repository.api';
-import { DashboardApi } from '@/lib/api/services/dashboard.api';
-import { PageHeader } from '@/components/shared/page-header';
-import { SectionCard } from '@/components/shared/section-card';
-import { LoadingState } from '@/components/feedback/loading-state';
-import { ErrorState } from '@/components/feedback/error-state';
-import { EmptyState } from '@/components/feedback/empty-state';
+import React, { useState } from "react";
+import Link from "next/link";
+import { useApiQuery } from "@/lib/query/use-api-query";
+import { GitHubApi } from "@/lib/api/services/github.api";
+import {
+  RepositoryApi,
+  type RepositoryConfig,
+  type ConnectRepositoryDto,
+} from "@/lib/api/services/repository.api";
+import { DashboardApi } from "@/lib/api/services/dashboard.api";
+import { PageHeader } from "@/components/shared/page-header";
+import { SectionCard } from "@/components/shared/section-card";
+import { LoadingState } from "@/components/feedback/loading-state";
+import { ErrorState } from "@/components/feedback/error-state";
+import { EmptyState } from "@/components/feedback/empty-state";
 
 export default function IntegrationsDashboardPage(): React.JSX.Element {
   const {
@@ -19,7 +23,7 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
     error: instError,
     refetch: refetchInst,
   } = useApiQuery({
-    queryKey: ['github', 'installations'],
+    queryKey: ["github", "installations"],
     queryFn: GitHubApi.getInstallations,
   });
 
@@ -30,7 +34,7 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
     error: repoError,
     refetch: refetchRepo,
   } = useApiQuery({
-    queryKey: ['repositories', 'list'],
+    queryKey: ["repositories", "list"],
     queryFn: RepositoryApi.listRepositories,
   });
 
@@ -39,7 +43,7 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
     isLoading: isSettingsLoading,
     error: settingsError,
   } = useApiQuery({
-    queryKey: ['dashboard', 'settings'],
+    queryKey: ["dashboard", "settings"],
     queryFn: DashboardApi.getSettings,
   });
 
@@ -53,15 +57,17 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
 
   // Connect form state per installation
   const [connectingInstId, setConnectingInstId] = useState<string | null>(null);
-  const [connectRepoOwner, setConnectRepoOwner] = useState('');
-  const [connectRepoName, setConnectRepoName] = useState('');
+  const [connectRepoOwner, setConnectRepoOwner] = useState("");
+  const [connectRepoName, setConnectRepoName] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectError, setConnectError] = useState<string | null>(null);
   const [connectSuccess, setConnectSuccess] = useState<string | null>(null);
 
   // Expanded repo detail per installation
   const [expandedRepoId, setExpandedRepoId] = useState<string | null>(null);
-  const [repoConfigMap, setRepoConfigMap] = useState<Record<string, RepositoryConfig>>({});
+  const [repoConfigMap, setRepoConfigMap] = useState<
+    Record<string, RepositoryConfig>
+  >({});
   const [loadingConfigId, setLoadingConfigId] = useState<string | null>(null);
 
   if (isInstLoading || isRepoLoading || isSettingsLoading) {
@@ -75,11 +81,20 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
 
   if (instError || repoError || settingsError) {
     const errorMsg =
-      instError?.message || repoError?.message || settingsError?.message || 'Failed to load integration states.';
+      instError?.message ||
+      repoError?.message ||
+      settingsError?.message ||
+      "Failed to load integration states.";
     return (
       <div>
         <PageHeader title="Integrations" />
-        <ErrorState message={errorMsg} retry={() => { refetchInst(); refetchRepo(); }} />
+        <ErrorState
+          message={errorMsg}
+          retry={() => {
+            refetchInst();
+            refetchRepo();
+          }}
+        />
       </div>
     );
   }
@@ -88,7 +103,8 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
     setSyncingId(installationId);
     setSyncSummary(null);
     try {
-      const summary = await RepositoryApi.syncInstallationRepositories(installationId);
+      const summary =
+        await RepositoryApi.syncInstallationRepositories(installationId);
       setSyncSummary(summary);
       refetchRepo();
     } catch (err: any) {
@@ -105,7 +121,7 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
   const openConnectForm = (instId: string, accountLogin: string) => {
     setConnectingInstId(instId);
     setConnectRepoOwner(accountLogin);
-    setConnectRepoName('');
+    setConnectRepoName("");
     setConnectError(null);
     setConnectSuccess(null);
   };
@@ -126,10 +142,10 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
     try {
       const result = await RepositoryApi.connectRepository(dto);
       setConnectSuccess(`✓ Connected "${result.fullName}" successfully!`);
-      setConnectRepoName('');
+      setConnectRepoName("");
       refetchRepo();
     } catch (err: any) {
-      setConnectError(err?.message || 'Failed to connect repository.');
+      setConnectError(err?.message || "Failed to connect repository.");
     } finally {
       setIsConnecting(false);
     }
@@ -171,9 +187,12 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
               <div className="space-y-6">
                 <div className="w-12 h-12 rounded-full border-4 border-zinc-200 border-t-emerald-500 animate-spin mx-auto" />
                 <div>
-                  <h3 className="text-lg font-bold">Synchronizing Repositories</h3>
+                  <h3 className="text-lg font-bold">
+                    Synchronizing Repositories
+                  </h3>
                   <p className="text-xs text-zinc-400 mt-2">
-                    Querying GitHub installation endpoints and mapping repository schemas...
+                    Querying GitHub installation endpoints and mapping
+                    repository schemas...
                   </p>
                 </div>
               </div>
@@ -183,7 +202,9 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                   ✓
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold">Synchronization Complete</h3>
+                  <h3 className="text-lg font-bold">
+                    Synchronization Complete
+                  </h3>
                   <div className="mt-4 p-4 bg-zinc-50 dark:bg-zinc-950 rounded-xl space-y-2 text-xs font-medium">
                     <div className="flex justify-between">
                       <span className="text-zinc-400">Total Synced</span>
@@ -191,11 +212,15 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                     </div>
                     <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-900 pt-2">
                       <span className="text-zinc-400">New Connected</span>
-                      <span className="font-bold text-emerald-600">{syncSummary.created}</span>
+                      <span className="font-bold text-emerald-600">
+                        {syncSummary.created}
+                      </span>
                     </div>
                     <div className="flex justify-between border-t border-zinc-100 dark:border-zinc-900 pt-2">
                       <span className="text-zinc-400">Updated</span>
-                      <span className="font-bold text-amber-600">{syncSummary.updated}</span>
+                      <span className="font-bold text-amber-600">
+                        {syncSummary.updated}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -215,7 +240,10 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Left Columns: Installations List */}
         <div className="lg:col-span-2 space-y-8">
-          <SectionCard title="Active Installations" description="Target profiles connected to DocPulse.">
+          <SectionCard
+            title="Active Installations"
+            description="Target profiles connected to DocPulse."
+          >
             {!hasInstallations ? (
               <EmptyState
                 title="No GitHub App installations found"
@@ -224,12 +252,16 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
             ) : (
               <div className="divide-y divide-zinc-200 dark:divide-zinc-800">
                 {installations.map((inst) => {
-                  const instRepos = repositoriesRaw?.filter(
-                    (r) => r.fullName.startsWith(`${inst.accountLogin}/`)
-                  ) || [];
+                  const instRepos =
+                    repositoriesRaw?.filter((r) =>
+                      r.fullName.startsWith(`${inst.accountLogin}/`),
+                    ) || [];
 
                   return (
-                    <div key={inst.id} className="py-5 first:pt-0 last:pb-0 space-y-5">
+                    <div
+                      key={inst.id}
+                      className="py-5 first:pt-0 last:pb-0 space-y-5"
+                    >
                       {/* Installation header */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3">
@@ -241,7 +273,8 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                               {inst.accountLogin}
                             </h4>
                             <p className="text-xs text-zinc-400">
-                              {inst.accountType} Account • Installation ID: {inst.installationId}
+                              {inst.accountType} Account • Installation ID:{" "}
+                              {inst.installationId}
                             </p>
                             <p className="text-[10px] text-zinc-400 font-mono">
                               DB ID: {inst.id}
@@ -252,7 +285,9 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                         <div className="flex items-center gap-2">
                           <button
                             type="button"
-                            onClick={() => openConnectForm(inst.id, inst.accountLogin)}
+                            onClick={() =>
+                              openConnectForm(inst.id, inst.accountLogin)
+                            }
                             className="px-3 py-1.5 border border-zinc-300 dark:border-zinc-700 text-zinc-700 dark:text-zinc-300 text-xs font-bold rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
                           >
                             + Connect Repo
@@ -283,24 +318,35 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                               ⚠️ {connectError}
                             </div>
                           )}
-                          <form onSubmit={handleConnectRepository} className="flex flex-col sm:flex-row gap-3 items-end">
+                          <form
+                            onSubmit={handleConnectRepository}
+                            className="flex flex-col sm:flex-row gap-3 items-end"
+                          >
                             <div className="flex-1 space-y-1">
-                              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Owner</label>
+                              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                                Owner
+                              </label>
                               <input
                                 type="text"
                                 value={connectRepoOwner}
-                                onChange={(e) => setConnectRepoOwner(e.target.value)}
+                                onChange={(e) =>
+                                  setConnectRepoOwner(e.target.value)
+                                }
                                 placeholder="owner / org"
                                 required
                                 className="w-full p-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg font-mono text-xs focus:outline-none focus:border-indigo-500"
                               />
                             </div>
                             <div className="flex-1 space-y-1">
-                              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Repository Name</label>
+                              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
+                                Repository Name
+                              </label>
                               <input
                                 type="text"
                                 value={connectRepoName}
-                                onChange={(e) => setConnectRepoName(e.target.value)}
+                                onChange={(e) =>
+                                  setConnectRepoName(e.target.value)
+                                }
                                 placeholder="repo-name"
                                 required
                                 className="w-full p-2 bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-lg font-mono text-xs focus:outline-none focus:border-indigo-500"
@@ -312,7 +358,7 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                                 disabled={isConnecting}
                                 className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-bold text-xs rounded-lg transition-all"
                               >
-                                {isConnecting ? '…' : 'Connect'}
+                                {isConnecting ? "…" : "Connect"}
                               </button>
                               <button
                                 type="button"
@@ -344,7 +390,9 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                                   <div className="flex items-center gap-3">
                                     <span
                                       className={`w-2 h-2 rounded-full shrink-0 ${
-                                        repo.isActive ? 'bg-emerald-500 animate-pulse' : 'bg-zinc-400'
+                                        repo.isActive
+                                          ? "bg-emerald-500 animate-pulse"
+                                          : "bg-zinc-400"
                                       }`}
                                     />
                                     <div>
@@ -352,7 +400,10 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                                         {repo.name}
                                       </span>
                                       <span className="text-[10px] text-zinc-400">
-                                        Branch: <span className="font-mono">{repo.defaultBranch}</span>
+                                        Branch:{" "}
+                                        <span className="font-mono">
+                                          {repo.defaultBranch}
+                                        </span>
                                       </span>
                                     </div>
                                   </div>
@@ -360,11 +411,11 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                                     <span
                                       className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                                         repo.isActive
-                                          ? 'bg-emerald-500/10 text-emerald-600'
-                                          : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                                          ? "bg-emerald-500/10 text-emerald-600"
+                                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-500"
                                       }`}
                                     >
-                                      {repo.isActive ? 'Active' : 'Inactive'}
+                                      {repo.isActive ? "Active" : "Inactive"}
                                     </span>
                                     <Link
                                       href={`/repositories/${repo.id}`}
@@ -374,10 +425,14 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                                     </Link>
                                     <button
                                       type="button"
-                                      onClick={() => handleToggleRepoExpand(repo.id)}
+                                      onClick={() =>
+                                        handleToggleRepoExpand(repo.id)
+                                      }
                                       className="px-2.5 py-1 text-[10px] font-bold text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 border border-zinc-200 dark:border-zinc-700 rounded hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-all"
                                     >
-                                      {isExpanded ? '▲ Hide Config' : '▼ View Config'}
+                                      {isExpanded
+                                        ? "▲ Hide Config"
+                                        : "▼ View Config"}
                                     </button>
                                   </div>
                                 </div>
@@ -393,25 +448,61 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                                     ) : config ? (
                                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-2.5">
                                         {[
-                                          { label: 'Branch Strategy', value: config.branchStrategy },
-                                          { label: 'Doc Branch', value: config.documentationBranchName || '—' },
-                                          { label: 'Doc Directory', value: config.documentationDirectory },
-                                          { label: 'Visibility', value: config.visibility },
-                                          { label: 'Webhook ID', value: config.webhookId ? `#${config.webhookId}` : 'None' },
                                           {
-                                            label: 'Webhook Active',
-                                            value: config.isWebhookActive ? '✓ Yes' : '✗ No',
+                                            label: "Branch Strategy",
+                                            value: config.branchStrategy,
                                           },
-                                          { label: 'Language', value: config.language || '—' },
                                           {
-                                            label: 'Last Synced',
+                                            label: "Doc Branch",
+                                            value:
+                                              config.documentationBranchName ||
+                                              "—",
+                                          },
+                                          {
+                                            label: "Doc Directory",
+                                            value:
+                                              config.documentationDirectory,
+                                          },
+                                          {
+                                            label: "Visibility",
+                                            value: config.visibility,
+                                          },
+                                          {
+                                            label: "Webhook ID",
+                                            value: config.webhookId
+                                              ? `#${config.webhookId}`
+                                              : "None",
+                                          },
+                                          {
+                                            label: "Webhook Active",
+                                            value: config.isWebhookActive
+                                              ? "✓ Yes"
+                                              : "✗ No",
+                                          },
+                                          {
+                                            label: "Language",
+                                            value: config.language || "—",
+                                          },
+                                          {
+                                            label: "Last Synced",
                                             value: config.lastSyncedAt
-                                              ? new Date(config.lastSyncedAt).toLocaleDateString()
-                                              : 'Never',
+                                              ? new Date(
+                                                  config.lastSyncedAt,
+                                                ).toLocaleDateString()
+                                              : "Never",
                                           },
-                                          { label: 'Doc Paths', value: config.docPaths?.length > 0 ? config.docPaths.join(', ') : '(all)' },
+                                          {
+                                            label: "Doc Paths",
+                                            value:
+                                              config.docPaths?.length > 0
+                                                ? config.docPaths.join(", ")
+                                                : "(all)",
+                                          },
                                         ].map(({ label, value }) => (
-                                          <div key={label} className="space-y-0.5">
+                                          <div
+                                            key={label}
+                                            className="space-y-0.5"
+                                          >
                                             <span className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">
                                               {label}
                                             </span>
@@ -422,7 +513,9 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                                         ))}
                                       </div>
                                     ) : (
-                                      <p className="text-zinc-400 italic">Could not load config.</p>
+                                      <p className="text-zinc-400 italic">
+                                        Could not load config.
+                                      </p>
                                     )}
                                   </div>
                                 )}
@@ -432,7 +525,8 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
                         </div>
                       ) : (
                         <p className="text-xs text-zinc-400 italic pt-1">
-                          No repositories synchronized yet. Trigger sync to fetch repositories.
+                          No repositories synchronized yet. Trigger sync to
+                          fetch repositories.
                         </p>
                       )}
                     </div>
@@ -445,7 +539,10 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
 
         {/* Right Column: Webhook health metrics and app configurations */}
         <div className="space-y-8">
-          <SectionCard title="Operational Webhooks" description="Delivery system logs & active config.">
+          <SectionCard
+            title="Operational Webhooks"
+            description="Delivery system logs & active config."
+          >
             <div className="space-y-4 text-xs">
               <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/25 rounded-lg flex items-center justify-between text-emerald-800 dark:text-emerald-300">
                 <span className="font-bold">Webhook Listener Connection</span>
@@ -454,15 +551,25 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
 
               <div className="space-y-2.5">
                 <div className="flex justify-between py-2 border-b border-zinc-100 dark:border-zinc-850">
-                  <span className="text-zinc-500 dark:text-zinc-400 font-semibold">GitHub App ID</span>
-                  <span className="font-mono text-zinc-700 dark:text-zinc-300 font-bold">{settings?.workflow.appId}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400 font-semibold">
+                    GitHub App ID
+                  </span>
+                  <span className="font-mono text-zinc-700 dark:text-zinc-300 font-bold">
+                    {settings?.workflow.appId}
+                  </span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-zinc-100 dark:border-zinc-850">
-                  <span className="text-zinc-500 dark:text-zinc-400 font-semibold">Trigger event</span>
-                  <span className="font-mono text-zinc-700 dark:text-zinc-300 font-bold uppercase">{settings?.workflow.triggerEvent}</span>
+                  <span className="text-zinc-500 dark:text-zinc-400 font-semibold">
+                    Trigger event
+                  </span>
+                  <span className="font-mono text-zinc-700 dark:text-zinc-300 font-bold uppercase">
+                    {settings?.workflow.triggerEvent}
+                  </span>
                 </div>
                 <div className="py-2.5">
-                  <span className="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1.5">Callback endpoint</span>
+                  <span className="block text-zinc-500 dark:text-zinc-400 font-semibold mb-1.5">
+                    Callback endpoint
+                  </span>
                   <span className="block font-mono bg-zinc-100 dark:bg-zinc-950 p-2 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 break-all select-all rounded">
                     {settings?.workflow.webhookUrl}
                   </span>
@@ -472,30 +579,56 @@ export default function IntegrationsDashboardPage(): React.JSX.Element {
           </SectionCard>
 
           {/* Per-installation stats */}
-          <SectionCard title="Installation Summary" description="Repo counts per GitHub installation.">
+          <SectionCard
+            title="Installation Summary"
+            description="Repo counts per GitHub installation."
+          >
             {!hasInstallations ? (
               <p className="text-xs text-zinc-400 italic">No installations.</p>
             ) : (
               <div className="space-y-3 text-xs">
                 {installations.map((inst) => {
-                  const total = repositoriesRaw?.filter((r) => r.fullName.startsWith(`${inst.accountLogin}/`)).length || 0;
-                  const active = repositoriesRaw?.filter((r) => r.fullName.startsWith(`${inst.accountLogin}/`) && r.isActive).length || 0;
+                  const total =
+                    repositoriesRaw?.filter((r) =>
+                      r.fullName.startsWith(`${inst.accountLogin}/`),
+                    ).length || 0;
+                  const active =
+                    repositoriesRaw?.filter(
+                      (r) =>
+                        r.fullName.startsWith(`${inst.accountLogin}/`) &&
+                        r.isActive,
+                    ).length || 0;
 
                   return (
-                    <div key={inst.id} className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg space-y-2">
-                      <div className="font-bold text-zinc-800 dark:text-zinc-200">{inst.accountLogin}</div>
+                    <div
+                      key={inst.id}
+                      className="p-3 bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-lg space-y-2"
+                    >
+                      <div className="font-bold text-zinc-800 dark:text-zinc-200">
+                        {inst.accountLogin}
+                      </div>
                       <div className="flex gap-4">
                         <div className="text-center">
-                          <div className="font-black text-lg text-zinc-900 dark:text-zinc-100">{total}</div>
+                          <div className="font-black text-lg text-zinc-900 dark:text-zinc-100">
+                            {total}
+                          </div>
                           <div className="text-zinc-400 text-[10px]">Total</div>
                         </div>
                         <div className="text-center">
-                          <div className="font-black text-lg text-emerald-600">{active}</div>
-                          <div className="text-zinc-400 text-[10px]">Active</div>
+                          <div className="font-black text-lg text-emerald-600">
+                            {active}
+                          </div>
+                          <div className="text-zinc-400 text-[10px]">
+                            Active
+                          </div>
                         </div>
                         <div className="text-center">
-                          <div className="font-black text-lg text-zinc-400">{total - active}</div>
-                          <div className="text-zinc-400 text-[10px]">Inactive</div>
+                          <div className="font-black text-lg text-zinc-400">
+                            {total - active}
+                          </div>
+                          <div className="text-zinc-400 text-[10px]">
+                            Inactive
+                          </div>
                         </div>
                       </div>
                     </div>

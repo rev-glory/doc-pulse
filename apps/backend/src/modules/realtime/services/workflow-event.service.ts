@@ -1,12 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { WorkflowGateway } from '../gateways/workflow.gateway';
+import { Injectable, Logger } from "@nestjs/common";
+import { WorkflowGateway } from "../gateways/workflow.gateway";
 import {
   RealtimeEventPayload,
   RealtimeWorkflowStage,
   WorkflowEventType,
   QueueEventStatus,
   NodeExecutionEventMetadata,
-} from '@docpulse/shared-types';
+} from "@docpulse/shared-types";
 
 @Injectable()
 export class WorkflowEventService {
@@ -18,14 +18,17 @@ export class WorkflowEventService {
    * Publishes general workflow lifecycle transition events with structured logging.
    */
   public publishWorkflowEvent(payload: RealtimeEventPayload): void {
-    this.logger.log(`[Event: ${payload.eventType}] Run: [${payload.runId}] Stage: [${payload.stage}] (${payload.progress}%)`, {
-      runId: payload.runId,
-      repositoryId: payload.repositoryId,
-      workflowId: payload.workflowId,
-      stage: payload.stage,
-      status: payload.status,
-      progress: payload.progress,
-    });
+    this.logger.log(
+      `[Event: ${payload.eventType}] Run: [${payload.runId}] Stage: [${payload.stage}] (${payload.progress}%)`,
+      {
+        runId: payload.runId,
+        repositoryId: payload.repositoryId,
+        workflowId: payload.workflowId,
+        stage: payload.stage,
+        status: payload.status,
+        progress: payload.progress,
+      },
+    );
 
     this.gateway.emitEvent(payload);
   }
@@ -69,12 +72,15 @@ export class WorkflowEventService {
     metadata?: Record<string, unknown>,
   ): void {
     const stage = this.mapNodeToStage(nodeMetadata.nodeName);
-    const progress = this.calculateNodeProgress(nodeMetadata.nodeName, nodeMetadata.status);
+    const progress = this.calculateNodeProgress(
+      nodeMetadata.nodeName,
+      nodeMetadata.status,
+    );
 
     const eventType =
-      nodeMetadata.status === 'started'
+      nodeMetadata.status === "started"
         ? WorkflowEventType.WorkflowNodeStarted
-        : nodeMetadata.status === 'completed'
+        : nodeMetadata.status === "completed"
           ? WorkflowEventType.WorkflowNodeCompleted
           : WorkflowEventType.WorkflowFailed;
 
@@ -84,7 +90,7 @@ export class WorkflowEventService {
       workflowId,
       stage,
       progress,
-      status: nodeMetadata.status === 'failed' ? 'failed' : 'running',
+      status: nodeMetadata.status === "failed" ? "failed" : "running",
       timestamp: new Date().toISOString(),
       eventType,
       node: nodeMetadata,
@@ -97,14 +103,19 @@ export class WorkflowEventService {
   /**
    * Publishes terminal successful workflow completion event.
    */
-  public publishCompletionEvent(runId: string, repositoryId: string, workflowId: string, metadata?: Record<string, unknown>): void {
+  public publishCompletionEvent(
+    runId: string,
+    repositoryId: string,
+    workflowId: string,
+    metadata?: Record<string, unknown>,
+  ): void {
     const payload: RealtimeEventPayload = {
       runId,
       repositoryId,
       workflowId,
       stage: RealtimeWorkflowStage.Completed,
       progress: 100,
-      status: 'completed',
+      status: "completed",
       timestamp: new Date().toISOString(),
       eventType: WorkflowEventType.WorkflowCompleted,
       metadata,
@@ -124,7 +135,9 @@ export class WorkflowEventService {
     failedNode?: string,
     isCancelled = false,
   ): void {
-    const stage = failedNode ? this.mapNodeToStage(failedNode) : RealtimeWorkflowStage.Failed;
+    const stage = failedNode
+      ? this.mapNodeToStage(failedNode)
+      : RealtimeWorkflowStage.Failed;
 
     const payload: RealtimeEventPayload = {
       runId,
@@ -132,9 +145,11 @@ export class WorkflowEventService {
       workflowId,
       stage,
       progress: 0,
-      status: isCancelled ? 'cancelled' : 'failed',
+      status: isCancelled ? "cancelled" : "failed",
       timestamp: new Date().toISOString(),
-      eventType: isCancelled ? WorkflowEventType.WorkflowCancelled : WorkflowEventType.WorkflowFailed,
+      eventType: isCancelled
+        ? WorkflowEventType.WorkflowCancelled
+        : WorkflowEventType.WorkflowFailed,
       metadata: { error: errorMessage, failedNode },
     };
 
@@ -153,7 +168,7 @@ export class WorkflowEventService {
       workflowId,
       stage: RealtimeWorkflowStage.Reviewing,
       progress: 50,
-      status: 'waiting_for_review',
+      status: "waiting_for_review",
       timestamp: new Date().toISOString(),
       eventType: WorkflowEventType.WorkflowWaitingForReview,
       metadata: metrics ? { metrics } : {},
@@ -164,23 +179,25 @@ export class WorkflowEventService {
 
   public mapNodeToStage(nodeName: string): RealtimeWorkflowStage {
     switch (nodeName) {
-      case 'RepositoryAnalyzer':
-      case 'DocumentationLocator':
+      case "RepositoryAnalyzer":
+      case "DocumentationLocator":
         return RealtimeWorkflowStage.Analyzing;
-      case 'TechnicalWriter':
+      case "TechnicalWriter":
         return RealtimeWorkflowStage.Writing;
-      case 'DocumentationCritic':
+      case "DocumentationCritic":
         return RealtimeWorkflowStage.Reviewing;
-      case 'GitCommit':
-      case 'PushBranch':
-      case 'CreatePullRequest':
+      case "GitCommit":
+      case "PushBranch":
+      case "CreatePullRequest":
         return RealtimeWorkflowStage.CreatingPR;
       default:
         return RealtimeWorkflowStage.Analyzing;
     }
   }
 
-  private mapQueueStatusToStage(queueStatus: QueueEventStatus): RealtimeWorkflowStage {
+  private mapQueueStatusToStage(
+    queueStatus: QueueEventStatus,
+  ): RealtimeWorkflowStage {
     switch (queueStatus) {
       case QueueEventStatus.Active:
         return RealtimeWorkflowStage.Cloning;
@@ -199,39 +216,42 @@ export class WorkflowEventService {
   private mapQueueStatusToStatus(queueStatus: QueueEventStatus): string {
     switch (queueStatus) {
       case QueueEventStatus.Completed:
-        return 'completed';
+        return "completed";
       case QueueEventStatus.Failed:
-        return 'failed';
+        return "failed";
       case QueueEventStatus.Stalled:
-        return 'cancelled';
+        return "cancelled";
       case QueueEventStatus.Waiting:
-        return 'waiting';
+        return "waiting";
       case QueueEventStatus.Queued:
-        return 'queued';
+        return "queued";
       case QueueEventStatus.Active:
       default:
-        return 'running';
+        return "running";
     }
   }
 
-  public calculateNodeProgress(nodeName: string, status: 'started' | 'completed' | 'failed'): number {
-    if (status === 'failed') return 0;
-    const isCompleted = status === 'completed';
+  public calculateNodeProgress(
+    nodeName: string,
+    status: "started" | "completed" | "failed",
+  ): number {
+    if (status === "failed") return 0;
+    const isCompleted = status === "completed";
 
     switch (nodeName) {
-      case 'RepositoryAnalyzer':
+      case "RepositoryAnalyzer":
         return isCompleted ? 25 : 15;
-      case 'DocumentationLocator':
+      case "DocumentationLocator":
         return isCompleted ? 40 : 30;
-      case 'TechnicalWriter':
+      case "TechnicalWriter":
         return isCompleted ? 60 : 50;
-      case 'DocumentationCritic':
+      case "DocumentationCritic":
         return isCompleted ? 75 : 65;
-      case 'GitCommit':
+      case "GitCommit":
         return isCompleted ? 85 : 80;
-      case 'PushBranch':
+      case "PushBranch":
         return isCompleted ? 95 : 90;
-      case 'CreatePullRequest':
+      case "CreatePullRequest":
         return isCompleted ? 100 : 95;
       default:
         return 50;

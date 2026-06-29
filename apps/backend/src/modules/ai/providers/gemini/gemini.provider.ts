@@ -1,22 +1,25 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import {
   GoogleGenAI,
   type GenerateContentConfig,
   type GenerateContentResponse,
-} from '@google/genai';
+} from "@google/genai";
 
-import type { GeminiConfig } from '@/config';
-import { AIConfigurationException } from '../../exceptions/ai-configuration.exception';
-import { LlmException } from '../../errors/llm-exception';
-import { GeminiErrorMapper } from './gemini-error-mapper';
-import type { ILlmProvider, LlmProviderDescriptor } from '../../interfaces/llm-provider.interface';
+import type { GeminiConfig } from "@/config";
+import { AIConfigurationException } from "../../exceptions/ai-configuration.exception";
+import { LlmException } from "../../errors/llm-exception";
+import { GeminiErrorMapper } from "./gemini-error-mapper";
+import type {
+  ILlmProvider,
+  LlmProviderDescriptor,
+} from "../../interfaces/llm-provider.interface";
 import type {
   GenerationOptions,
   LlmResponse,
   StreamGenerationOptions,
   StructuredGenerationOptions,
-} from '../../types/llm.types';
+} from "../../types/llm.types";
 
 @Injectable()
 export class GeminiProvider implements ILlmProvider, OnModuleInit {
@@ -24,8 +27,8 @@ export class GeminiProvider implements ILlmProvider, OnModuleInit {
   private readonly mapper = new GeminiErrorMapper();
 
   public readonly descriptor: LlmProviderDescriptor = {
-    id: 'gemini',
-    displayName: 'Gemini',
+    id: "gemini",
+    displayName: "Gemini",
     supportsStreaming: true,
     supportsStructuredOutput: true,
     supportsVision: false,
@@ -42,17 +45,17 @@ export class GeminiProvider implements ILlmProvider, OnModuleInit {
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
   onModuleInit(): void {
-    const config = this.configService.get<GeminiConfig>('gemini');
+    const config = this.configService.get<GeminiConfig>("gemini");
 
     if (!config) {
       throw new AIConfigurationException(
-        'Gemini configuration is missing. Ensure GEMINI_API_KEY is set and the gemini config namespace is registered.',
+        "Gemini configuration is missing. Ensure GEMINI_API_KEY is set and the gemini config namespace is registered.",
       );
     }
 
     if (!config.apiKey) {
       throw new AIConfigurationException(
-        'GEMINI_API_KEY is not set. Cannot initialise GeminiProvider.',
+        "GEMINI_API_KEY is not set. Cannot initialise GeminiProvider.",
       );
     }
 
@@ -76,17 +79,19 @@ export class GeminiProvider implements ILlmProvider, OnModuleInit {
 
       return this.normaliseResponse(response);
     } catch (error) {
-      throw this.wrapError('generateText', error);
+      throw this.wrapError("generateText", error);
     }
   }
 
-  async generateStructured(options: StructuredGenerationOptions): Promise<LlmResponse> {
+  async generateStructured(
+    options: StructuredGenerationOptions,
+  ): Promise<LlmResponse> {
     this.logger.debug(`generateStructured: model=${this.model}`);
 
     try {
       const config: GenerateContentConfig = {
         ...this.buildConfig(options),
-        responseMimeType: 'application/json',
+        responseMimeType: "application/json",
         responseSchema: options.responseSchema as unknown,
       };
 
@@ -98,11 +103,13 @@ export class GeminiProvider implements ILlmProvider, OnModuleInit {
 
       return this.normaliseResponse(response);
     } catch (error) {
-      throw this.wrapError('generateStructured', error);
+      throw this.wrapError("generateStructured", error);
     }
   }
 
-  async *streamText(options: StreamGenerationOptions): AsyncGenerator<LlmResponse> {
+  async *streamText(
+    options: StreamGenerationOptions,
+  ): AsyncGenerator<LlmResponse> {
     this.logger.debug(`streamText: model=${this.model}`);
 
     let stream: AsyncGenerator<GenerateContentResponse>;
@@ -114,14 +121,14 @@ export class GeminiProvider implements ILlmProvider, OnModuleInit {
         config: this.buildConfig(options),
       });
     } catch (error) {
-      throw this.wrapError('streamText (init)', error);
+      throw this.wrapError("streamText (init)", error);
     }
 
     for await (const chunk of stream) {
       try {
         yield this.normaliseResponse(chunk);
       } catch (error) {
-        throw this.wrapError('streamText (chunk)', error);
+        throw this.wrapError("streamText (chunk)", error);
       }
     }
   }
@@ -151,8 +158,10 @@ export class GeminiProvider implements ILlmProvider, OnModuleInit {
 
     if (text === undefined || text === null) {
       throw this.wrapError(
-        'normaliseResponse',
-        new Error('Gemini returned an empty response. The prompt may have been blocked by safety filters.'),
+        "normaliseResponse",
+        new Error(
+          "Gemini returned an empty response. The prompt may have been blocked by safety filters.",
+        ),
       );
     }
 

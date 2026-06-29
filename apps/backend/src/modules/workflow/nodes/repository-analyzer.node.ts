@@ -1,9 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { WorkflowGraphState } from '../graph/graph.types';
-import { RepositoryAnalysisService } from '../../repository-analysis/services/repository-analysis.service';
-import { RepositoryCloneService } from '../../git-operations/services/repository-clone.service';
-import { WorkspaceLifecycleService } from '../../git-operations/services/workspace-lifecycle.service';
-import { PrismaService } from '@/database';
+import { Injectable } from "@nestjs/common";
+import { WorkflowGraphState } from "../graph/graph.types";
+import { RepositoryAnalysisService } from "../../repository-analysis/services/repository-analysis.service";
+import { RepositoryCloneService } from "../../git-operations/services/repository-clone.service";
+import { WorkspaceLifecycleService } from "../../git-operations/services/workspace-lifecycle.service";
+import { PrismaService } from "@/database";
 
 @Injectable()
 export class RepositoryAnalyzerNode {
@@ -14,7 +14,9 @@ export class RepositoryAnalyzerNode {
     private readonly prisma: PrismaService,
   ) {}
 
-  public async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
+  public async invoke(
+    state: WorkflowGraphState,
+  ): Promise<Partial<WorkflowGraphState>> {
     const repositoryId = state.repositoryId;
     if (!repositoryId) {
       return {};
@@ -28,7 +30,8 @@ export class RepositoryAnalyzerNode {
       throw new Error(`Repository not found: ${repositoryId}`);
     }
 
-    const exists = await this.workspaceLifecycleService.workspaceExists(repositoryId);
+    const exists =
+      await this.workspaceLifecycleService.workspaceExists(repositoryId);
     if (!exists) {
       await this.repositoryCloneService.cloneRepository({
         id: repoRecord.id,
@@ -37,9 +40,11 @@ export class RepositoryAnalyzerNode {
       });
     }
 
-    const workspacePath = this.workspaceLifecycleService.getWorkspacePath(repositoryId);
+    const workspacePath =
+      this.workspaceLifecycleService.getWorkspacePath(repositoryId);
 
-    const repository = await this.repositoryAnalysisService.analyzeRepository(workspacePath);
+    const repository =
+      await this.repositoryAnalysisService.analyzeRepository(workspacePath);
 
     return {
       workspacePath,
@@ -49,7 +54,9 @@ export class RepositoryAnalyzerNode {
       } as any,
       metadata: {
         ...(state.metadata ?? {}),
-        installationId: repoRecord.installation?.installationId ?? state.metadata?.installationId,
+        installationId:
+          repoRecord.installation?.installationId ??
+          state.metadata?.installationId,
         owner: repoRecord.repositoryOwner,
       },
     };

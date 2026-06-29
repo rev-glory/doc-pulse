@@ -1,5 +1,8 @@
-import { WorkflowStage } from '../../../domain/workflow';
-import { QueueEventStatus, RealtimeWorkflowStage } from '@docpulse/shared-types';
+import { WorkflowStage } from "../../../domain/workflow";
+import {
+  QueueEventStatus,
+  RealtimeWorkflowStage,
+} from "@docpulse/shared-types";
 
 export interface WorkflowProgressEvent {
   jobId: string;

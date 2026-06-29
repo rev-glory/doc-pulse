@@ -1,17 +1,20 @@
-import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { BullModule } from '@nestjs/bullmq';
+import { Module } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { BullModule } from "@nestjs/bullmq";
 
-import { WORKFLOW_EXECUTION_QUEUE, WORKFLOW_DLQ_QUEUE } from './constants/queue.constants';
-import { WorkflowQueueService } from './services/workflow-queue.service';
-import { WorkflowProcessor } from './processors/workflow.processor';
-import { QueueMetricsService } from './services/queue-metrics.service';
-import { QueueProgressPublisherService } from './services/queue-progress-publisher.service';
-import { DeadLetterService } from './dead-letter/dead-letter.service';
-import { DeadLetterProcessor } from './dead-letter/dead-letter.processor';
-import { WorkflowModule } from '../workflow/workflow.module';
-import type { RedisConfig } from '../../config/redis.config';
-import type { QueueConfig } from '../../config/queue.config';
+import {
+  WORKFLOW_EXECUTION_QUEUE,
+  WORKFLOW_DLQ_QUEUE,
+} from "./constants/queue.constants";
+import { WorkflowQueueService } from "./services/workflow-queue.service";
+import { WorkflowProcessor } from "./processors/workflow.processor";
+import { QueueMetricsService } from "./services/queue-metrics.service";
+import { QueueProgressPublisherService } from "./services/queue-progress-publisher.service";
+import { DeadLetterService } from "./dead-letter/dead-letter.service";
+import { DeadLetterProcessor } from "./dead-letter/dead-letter.processor";
+import { WorkflowModule } from "../workflow/workflow.module";
+import type { RedisConfig } from "../../config/redis.config";
+import type { QueueConfig } from "../../config/queue.config";
 
 @Module({
   imports: [
@@ -19,10 +22,10 @@ import type { QueueConfig } from '../../config/queue.config';
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const redis = configService.get<RedisConfig>('redis');
+        const redis = configService.get<RedisConfig>("redis");
 
         if (!redis?.url) {
-          throw new Error('Redis configuration is missing');
+          throw new Error("Redis configuration is missing");
         }
 
         try {
@@ -30,7 +33,7 @@ import type { QueueConfig } from '../../config/queue.config';
           const portNumber = Number(parsedUrl.port);
 
           if (!parsedUrl.hostname || !portNumber || Number.isNaN(portNumber)) {
-            throw new Error('Redis URL must contain a valid hostname and port');
+            throw new Error("Redis URL must contain a valid hostname and port");
           }
 
           return {
@@ -51,7 +54,7 @@ import type { QueueConfig } from '../../config/queue.config';
       name: WORKFLOW_EXECUTION_QUEUE,
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => {
-        const queueCfg = configService.get<QueueConfig>('queue');
+        const queueCfg = configService.get<QueueConfig>("queue");
         return {
           defaultJobOptions: queueCfg
             ? {

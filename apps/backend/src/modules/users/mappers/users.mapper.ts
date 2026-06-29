@@ -1,18 +1,22 @@
-import type { User } from '@/generated/prisma/client';
-import type { UserResponseDto } from '../dto/user-response.dto';
-import type { SettingsResponseDto } from '../dto/settings-response.dto';
-import type { UserSettings } from '../types/users.types';
+import type { User } from "@/generated/prisma/client";
+import type { UserResponseDto } from "../dto/user-response.dto";
+import type { SettingsResponseDto } from "../dto/settings-response.dto";
+import type { UserSettings } from "../types/users.types";
 
 const DEFAULT_SETTINGS: UserSettings = {
-  theme: 'system',
+  theme: "system",
   notifications: { email: true },
-  ai: { provider: 'openai' },
+  ai: { provider: "openai" },
 };
 
 function deepMerge(target: any, source: any): any {
   const result = { ...target };
   for (const key in source) {
-    if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+    if (
+      source[key] &&
+      typeof source[key] === "object" &&
+      !Array.isArray(source[key])
+    ) {
       result[key] = deepMerge(result[key], source[key]);
     } else {
       result[key] = source[key];

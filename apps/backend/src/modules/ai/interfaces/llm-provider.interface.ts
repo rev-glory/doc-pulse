@@ -1,10 +1,10 @@
-import { LlmException } from '../errors/llm-exception';
+import { LlmException } from "../errors/llm-exception";
 import type {
   GenerationOptions,
   LlmResponse,
   StreamGenerationOptions,
   StructuredGenerationOptions,
-} from '../types/llm.types';
+} from "../types/llm.types";
 
 export interface LlmProviderDescriptor {
   id: string;
@@ -52,7 +52,9 @@ export interface ILlmProvider {
    * @returns Normalised LLM response where `text` is a JSON string.
    * @throws {LlmException} When the underlying SDK call fails.
    */
-  generateStructured(options: StructuredGenerationOptions): Promise<LlmResponse>;
+  generateStructured(
+    options: StructuredGenerationOptions,
+  ): Promise<LlmResponse>;
 
   /**
    * Stream a text response as an async generator of partial chunks.

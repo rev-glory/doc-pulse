@@ -11,4 +11,4 @@
 // without touching any service that consumes LlmService.
 // ---------------------------------------------------------------------------
 
-export const LLM_PROVIDER = 'LLM_PROVIDER' as const;
+export const LLM_PROVIDER = "LLM_PROVIDER" as const;

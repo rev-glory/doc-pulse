@@ -1,12 +1,16 @@
-import { Injectable } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { Injectable } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "@nestjs/jwt";
 
-import { PrismaService } from '@/database';
-import { UsersMapper } from '@/modules/users/mappers/users.mapper';
-import type { JwtConfig } from '@/config';
-import type { GithubProfile, AuthJwtPayload, Tokens } from '../types/auth.types';
-import type { User } from '@/generated/prisma/client';
+import { PrismaService } from "@/database";
+import { UsersMapper } from "@/modules/users/mappers/users.mapper";
+import type { JwtConfig } from "@/config";
+import type {
+  GithubProfile,
+  AuthJwtPayload,
+  Tokens,
+} from "../types/auth.types";
+import type { User } from "@/generated/prisma/client";
 
 @Injectable()
 export class AuthService {
@@ -17,7 +21,8 @@ export class AuthService {
   ) {}
 
   async upsertUser(githubProfile: GithubProfile): Promise<User> {
-    const { githubId, githubLogin, displayName, githubAvatarUrl, email } = githubProfile;
+    const { githubId, githubLogin, displayName, githubAvatarUrl, email } =
+      githubProfile;
     const defaultSettings = UsersMapper.getDefaultSettings();
 
     return this.prisma.user.upsert({
@@ -40,10 +45,10 @@ export class AuthService {
   }
 
   async generateTokens(user: User): Promise<Tokens> {
-    const jwtCfg = this.configService.get<JwtConfig>('jwt');
+    const jwtCfg = this.configService.get<JwtConfig>("jwt");
 
     if (!jwtCfg) {
-      throw new Error('JWT config not found');
+      throw new Error("JWT config not found");
     }
 
     const payload: AuthJwtPayload = { sub: user.id, githubId: user.githubId };

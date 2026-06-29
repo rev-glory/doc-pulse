@@ -9,7 +9,7 @@ export interface UserProfile {
 }
 
 export interface UserSettings {
-  theme: 'system' | 'light' | 'dark';
+  theme: "system" | "light" | "dark";
   notifications: {
     email: boolean;
   };

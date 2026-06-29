@@ -1,8 +1,12 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
-import { RealtimeEventPayload, RealtimeWorkflowStage, WorkflowEventType } from '@docpulse/shared-types';
+import { useEffect, useState, useRef, useCallback } from "react";
+import { io, Socket } from "socket.io-client";
+import {
+  RealtimeEventPayload,
+  RealtimeWorkflowStage,
+  WorkflowEventType,
+} from "@docpulse/shared-types";
 
 export interface WorkflowSocketOptions {
   workflowId?: string;
@@ -22,14 +26,16 @@ export interface WorkflowSocketState {
   queueStatus?: string;
 }
 
-export function useWorkflowSocket(options: WorkflowSocketOptions): WorkflowSocketState {
+export function useWorkflowSocket(
+  options: WorkflowSocketOptions,
+): WorkflowSocketState {
   const { workflowId, repositoryId, runId, autoConnect = true } = options;
 
   const [state, setState] = useState<WorkflowSocketState>({
     isConnected: false,
     stage: RealtimeWorkflowStage.Queued,
     progress: 0,
-    status: 'pending',
+    status: "pending",
     history: [],
   });
 
@@ -39,7 +45,10 @@ export function useWorkflowSocket(options: WorkflowSocketOptions): WorkflowSocke
     setState((prev) => {
       const nextHistory = [payload, ...prev.history].slice(0, 50); // keep last 50 events
       const errorMsg =
-        payload.status === 'failed' && payload.metadata && typeof payload.metadata === 'object' && 'error' in payload.metadata
+        payload.status === "failed" &&
+        payload.metadata &&
+        typeof payload.metadata === "object" &&
+        "error" in payload.metadata
           ? String(payload.metadata.error)
           : prev.error;
 
@@ -60,27 +69,27 @@ export function useWorkflowSocket(options: WorkflowSocketOptions): WorkflowSocke
       return;
     }
 
-    const wsUrl = process.env['NEXT_PUBLIC_WS_URL'] || 'http://localhost:3001';
+    const wsUrl = process.env["NEXT_PUBLIC_WS_URL"] || "http://localhost:3001";
     const socket = io(wsUrl, {
       reconnection: true,
       reconnectionAttempts: Infinity,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      transports: ['websocket', 'polling'],
+      transports: ["websocket", "polling"],
     });
 
     socketRef.current = socket;
 
-    socket.on('connect', () => {
+    socket.on("connect", () => {
       setState((prev) => ({ ...prev, isConnected: true }));
-      socket.emit('subscribe', { workflowId, repositoryId, runId });
+      socket.emit("subscribe", { workflowId, repositoryId, runId });
     });
 
-    socket.on('disconnect', () => {
+    socket.on("disconnect", () => {
       setState((prev) => ({ ...prev, isConnected: false }));
     });
 
-    socket.on('connect_error', (err) => {
+    socket.on("connect_error", (err) => {
       setState((prev) => ({ ...prev, isConnected: false, error: err.message }));
     });
 
@@ -96,7 +105,7 @@ export function useWorkflowSocket(options: WorkflowSocketOptions): WorkflowSocke
       WorkflowEventType.WorkflowCancelled,
       WorkflowEventType.WorkflowWaitingForReview,
       WorkflowEventType.QueueEvent,
-      'workflow.event',
+      "workflow.event",
     ];
 
     eventNames.forEach((evt) => {
@@ -104,7 +113,7 @@ export function useWorkflowSocket(options: WorkflowSocketOptions): WorkflowSocke
     });
 
     return () => {
-      socket.emit('unsubscribe', { workflowId, repositoryId, runId });
+      socket.emit("unsubscribe", { workflowId, repositoryId, runId });
       socket.disconnect();
       socketRef.current = null;
     };

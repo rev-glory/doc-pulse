@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 // ---------------------------------------------------------------------------
 // Queue Configuration (BullMQ)
@@ -18,11 +18,11 @@ import type { Env } from './env.validation';
 // ---------------------------------------------------------------------------
 
 export const QUEUE_NAMES = {
-  DOCUMENTATION_SYNC: 'documentation-sync',
-  PR_CREATION: 'pr-creation',
-  NOTIFICATIONS: 'notifications',
-  WORKFLOW_EXECUTION: 'workflow-execution',
-  WORKFLOW_DLQ: 'workflow-dlq',
+  DOCUMENTATION_SYNC: "documentation-sync",
+  PR_CREATION: "pr-creation",
+  NOTIFICATIONS: "notifications",
+  WORKFLOW_EXECUTION: "workflow-execution",
+  WORKFLOW_DLQ: "workflow-dlq",
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
@@ -33,7 +33,7 @@ export interface QueueRateLimitConfig {
 }
 
 export interface QueueBackoffConfig {
-  type: 'exponential' | 'fixed';
+  type: "exponential" | "fixed";
   delay: number;
 }
 
@@ -56,17 +56,20 @@ export interface QueueConfig {
   names: typeof QUEUE_NAMES;
 }
 
-export const queueConfig = registerAs('queue', (): QueueConfig => {
+export const queueConfig = registerAs("queue", (): QueueConfig => {
   const env = process.env as unknown as Env;
 
-  const rateLimitMax = env.QUEUE_RATE_LIMIT_MAX !== undefined ? Number(env.QUEUE_RATE_LIMIT_MAX) : undefined;
+  const rateLimitMax =
+    env.QUEUE_RATE_LIMIT_MAX !== undefined
+      ? Number(env.QUEUE_RATE_LIMIT_MAX)
+      : undefined;
 
   return {
     concurrency: Number(env.QUEUE_CONCURRENCY),
     maxRetries: Number(env.QUEUE_MAX_RETRIES),
     retryDelayMs: Number(env.QUEUE_RETRY_DELAY_MS),
     backoff: {
-      type: env.QUEUE_BACKOFF_TYPE as 'exponential' | 'fixed',
+      type: env.QUEUE_BACKOFF_TYPE as "exponential" | "fixed",
       delay: Number(env.QUEUE_RETRY_DELAY_MS),
     },
     backoffMultiplier: Number(env.QUEUE_BACKOFF_MULTIPLIER),

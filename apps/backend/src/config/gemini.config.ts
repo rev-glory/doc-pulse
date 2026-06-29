@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 // ---------------------------------------------------------------------------
 // Gemini Configuration
@@ -36,7 +36,7 @@ export interface GeminiConfig {
   temperature: number;
 }
 
-export const geminiConfig = registerAs('gemini', (): GeminiConfig => {
+export const geminiConfig = registerAs("gemini", (): GeminiConfig => {
   const env = process.env as unknown as Env;
 
   return {

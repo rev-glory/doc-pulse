@@ -1,39 +1,39 @@
 export enum RealtimeWorkflowStage {
-  Queued = 'Queued',
-  Cloning = 'Cloning',
-  Analyzing = 'Analyzing',
-  Writing = 'Writing',
-  Reviewing = 'Reviewing',
-  CreatingPR = 'CreatingPR',
-  Completed = 'Completed',
-  Failed = 'Failed',
+  Queued = "Queued",
+  Cloning = "Cloning",
+  Analyzing = "Analyzing",
+  Writing = "Writing",
+  Reviewing = "Reviewing",
+  CreatingPR = "CreatingPR",
+  Completed = "Completed",
+  Failed = "Failed",
 }
 
 export enum WorkflowEventType {
-  WorkflowStarted = 'workflow.started',
-  WorkflowProgress = 'workflow.progress',
-  WorkflowStageChanged = 'workflow.stage.changed',
-  WorkflowNodeStarted = 'workflow.node.started',
-  WorkflowNodeCompleted = 'workflow.node.completed',
-  WorkflowCompleted = 'workflow.completed',
-  WorkflowFailed = 'workflow.failed',
-  WorkflowCancelled = 'workflow.cancelled',
-  WorkflowWaitingForReview = 'workflow.waiting_for_review',
-  QueueEvent = 'queue.event',
+  WorkflowStarted = "workflow.started",
+  WorkflowProgress = "workflow.progress",
+  WorkflowStageChanged = "workflow.stage.changed",
+  WorkflowNodeStarted = "workflow.node.started",
+  WorkflowNodeCompleted = "workflow.node.completed",
+  WorkflowCompleted = "workflow.completed",
+  WorkflowFailed = "workflow.failed",
+  WorkflowCancelled = "workflow.cancelled",
+  WorkflowWaitingForReview = "workflow.waiting_for_review",
+  QueueEvent = "queue.event",
 }
 
 export enum QueueEventStatus {
-  Queued = 'queued',
-  Waiting = 'waiting',
-  Active = 'active',
-  Completed = 'completed',
-  Failed = 'failed',
-  Stalled = 'stalled',
+  Queued = "queued",
+  Waiting = "waiting",
+  Active = "active",
+  Completed = "completed",
+  Failed = "failed",
+  Stalled = "stalled",
 }
 
 export interface NodeExecutionEventMetadata {
   nodeName: string;
-  status: 'started' | 'completed' | 'failed';
+  status: "started" | "completed" | "failed";
   startedAt: string;
   completedAt?: string;
   duration?: number;

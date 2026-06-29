@@ -1,14 +1,14 @@
-import { RealtimeWorkflowStage } from '../events/workflow-events.js';
-import { GeneratedDocument, CriticReview } from './review.types.js';
+import { RealtimeWorkflowStage } from "../events/workflow-events.js";
+import { GeneratedDocument, CriticReview } from "./review.types.js";
 
 export enum RunStatus {
-  QUEUED = 'QUEUED',
-  RUNNING = 'RUNNING',
-  CHECKPOINTED = 'CHECKPOINTED',
-  COMPLETED = 'COMPLETED',
-  FAILED = 'FAILED',
-  CANCELLED = 'CANCELLED',
-  WAITING_FOR_REVIEW = 'WAITING_FOR_REVIEW',
+  QUEUED = "QUEUED",
+  RUNNING = "RUNNING",
+  CHECKPOINTED = "CHECKPOINTED",
+  COMPLETED = "COMPLETED",
+  FAILED = "FAILED",
+  CANCELLED = "CANCELLED",
+  WAITING_FOR_REVIEW = "WAITING_FOR_REVIEW",
 }
 
 export interface WorkflowRunSummary {

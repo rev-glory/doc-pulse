@@ -1,11 +1,11 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import { deleteDirectoryIfExists } from '../utils/fs.util';
+import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import * as fs from "fs/promises";
+import * as path from "path";
+import { deleteDirectoryIfExists } from "../utils/fs.util";
 
-import type { StorageConfig } from '@/config';
-import type { RepositoryWorkspace } from '../types';
+import type { StorageConfig } from "@/config";
+import type { RepositoryWorkspace } from "../types";
 
 @Injectable()
 export class WorkspaceService implements OnModuleInit {
@@ -15,9 +15,16 @@ export class WorkspaceService implements OnModuleInit {
   private readonly resolvedClonesDir: string;
 
   constructor(private readonly configService: ConfigService) {
-    this.storageConfig = this.configService.getOrThrow<StorageConfig>('storage');
-    this.resolvedStorageRoot = path.resolve(process.cwd(), this.storageConfig.root);
-    this.resolvedClonesDir = path.join(this.resolvedStorageRoot, this.storageConfig.clonesDir);
+    this.storageConfig =
+      this.configService.getOrThrow<StorageConfig>("storage");
+    this.resolvedStorageRoot = path.resolve(
+      process.cwd(),
+      this.storageConfig.root,
+    );
+    this.resolvedClonesDir = path.join(
+      this.resolvedStorageRoot,
+      this.storageConfig.clonesDir,
+    );
   }
 
   async onModuleInit(): Promise<void> {
@@ -25,17 +32,14 @@ export class WorkspaceService implements OnModuleInit {
   }
 
   async initializeStorage(): Promise<void> {
-    const directories = [
-      this.resolvedStorageRoot,
-      this.resolvedClonesDir,
-    ];
+    const directories = [this.resolvedStorageRoot, this.resolvedClonesDir];
 
     for (const dir of directories) {
       await fs.mkdir(dir, { recursive: true });
       this.logger.debug(`Ensured storage directory: ${dir}`);
     }
 
-    this.logger.log('Storage directories initialized successfully');
+    this.logger.log("Storage directories initialized successfully");
   }
 
   getWorkspace(repositoryId: string): RepositoryWorkspace {
@@ -48,10 +52,7 @@ export class WorkspaceService implements OnModuleInit {
   }
 
   getRepositoryPath(repositoryId: string): string {
-    return path.join(
-      this.resolvedClonesDir,
-      repositoryId,
-    );
+    return path.join(this.resolvedClonesDir, repositoryId);
   }
 
   getClonePath(repositoryId: string): string {
@@ -59,15 +60,22 @@ export class WorkspaceService implements OnModuleInit {
   }
 
   getWorkspacePath(repositoryId: string): string {
-    return path.join(this.getRepositoryPath(repositoryId), this.storageConfig.workspaceDir);
+    return path.join(
+      this.getRepositoryPath(repositoryId),
+      this.storageConfig.workspaceDir,
+    );
   }
 
   getArtifactsPath(repositoryId: string): string {
-    return path.join(this.getRepositoryPath(repositoryId), this.storageConfig.artifactsDir);
+    return path.join(
+      this.getRepositoryPath(repositoryId),
+      this.storageConfig.artifactsDir,
+    );
   }
 
   async ensureDirectories(repositoryId: string): Promise<void> {
-    const { repositoryPath, workspacePath, artifactsPath } = this.getWorkspace(repositoryId);
+    const { repositoryPath, workspacePath, artifactsPath } =
+      this.getWorkspace(repositoryId);
 
     await fs.mkdir(repositoryPath, { recursive: true });
     await fs.mkdir(workspacePath, { recursive: true });
@@ -85,7 +93,9 @@ export class WorkspaceService implements OnModuleInit {
     const repoPath = this.getRepositoryPath(repositoryId);
 
     if (!this.isPathWithinStorageRoot(repoPath)) {
-      this.logger.warn(`Attempted to remove repository outside storage root: ${repoPath}`);
+      this.logger.warn(
+        `Attempted to remove repository outside storage root: ${repoPath}`,
+      );
       return;
     }
 
@@ -93,7 +103,9 @@ export class WorkspaceService implements OnModuleInit {
       await deleteDirectoryIfExists(repoPath);
       this.logger.log(`Removed repository ${repositoryId} from storage`);
     } catch (error: any) {
-      this.logger.error(`Failed to remove repository ${repositoryId} from storage: ${error.message}`);
+      this.logger.error(
+        `Failed to remove repository ${repositoryId} from storage: ${error.message}`,
+      );
     }
   }
 
@@ -102,9 +114,9 @@ export class WorkspaceService implements OnModuleInit {
       await fs.access(this.resolvedClonesDir);
       await fs.rm(this.resolvedClonesDir, { recursive: true, force: true });
       await fs.mkdir(this.resolvedClonesDir, { recursive: true });
-      this.logger.log('Cleared all workspaces');
+      this.logger.log("Cleared all workspaces");
     } catch {
-      this.logger.debug('Clones directory does not exist, nothing to clear');
+      this.logger.debug("Clones directory does not exist, nothing to clear");
     }
   }
 
@@ -112,7 +124,9 @@ export class WorkspaceService implements OnModuleInit {
     const workspacePath = this.getWorkspacePath(repositoryId);
 
     if (!this.isPathWithinStorageRoot(workspacePath)) {
-      this.logger.warn(`Attempted to cleanup workspace outside storage root: ${workspacePath}`);
+      this.logger.warn(
+        `Attempted to cleanup workspace outside storage root: ${workspacePath}`,
+      );
       return;
     }
 
@@ -131,7 +145,7 @@ export class WorkspaceService implements OnModuleInit {
     const workspacePath = this.getWorkspacePath(repositoryId);
     try {
       await fs.access(workspacePath);
-      const gitPath = path.join(workspacePath, '.git');
+      const gitPath = path.join(workspacePath, ".git");
       await fs.access(gitPath);
       return true;
     } catch {
@@ -142,7 +156,9 @@ export class WorkspaceService implements OnModuleInit {
   async getClonedRepositoryIds(): Promise<string[]> {
     try {
       await fs.access(this.resolvedClonesDir);
-      const entries = await fs.readdir(this.resolvedClonesDir, { withFileTypes: true });
+      const entries = await fs.readdir(this.resolvedClonesDir, {
+        withFileTypes: true,
+      });
       return entries
         .filter((entry) => entry.isDirectory())
         .map((entry) => entry.name);

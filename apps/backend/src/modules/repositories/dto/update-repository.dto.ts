@@ -1,7 +1,13 @@
-import { IsOptional, IsArray, IsBoolean, IsEnum, IsString } from 'class-validator';
-import { BranchStrategy } from '@/generated/prisma/client';
-import { IsGitBranchName } from '../validators/branch-name.validator';
-import { IsDocumentationDirectory } from '../validators/documentation-directory.validator';
+import {
+  IsOptional,
+  IsArray,
+  IsBoolean,
+  IsEnum,
+  IsString,
+} from "class-validator";
+import { BranchStrategy } from "@/generated/prisma/client";
+import { IsGitBranchName } from "../validators/branch-name.validator";
+import { IsDocumentationDirectory } from "../validators/documentation-directory.validator";
 
 export class UpdateRepositoryDto {
   @IsArray()

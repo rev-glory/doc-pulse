@@ -1,8 +1,11 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
-import * as fs from 'fs/promises';
+import { Inject, Injectable, Logger } from "@nestjs/common";
+import * as fs from "fs/promises";
 
-import { GIT_PROVIDER, IGitProvider } from '../interfaces/git-provider.interface';
-import { GitStatus } from '../types/git-types';
+import {
+  GIT_PROVIDER,
+  IGitProvider,
+} from "../interfaces/git-provider.interface";
+import { GitStatus } from "../types/git-types";
 
 @Injectable()
 export class GitService {
@@ -53,11 +56,18 @@ export class GitService {
     return this.provider.branchList(repositoryPath);
   }
 
-  async checkoutLocalBranch(repositoryPath: string, branchName: string): Promise<void> {
+  async checkoutLocalBranch(
+    repositoryPath: string,
+    branchName: string,
+  ): Promise<void> {
     await this.provider.checkoutLocalBranch(repositoryPath, branchName);
   }
 
-  async deleteLocalBranch(repositoryPath: string, branchName: string, force = false): Promise<void> {
+  async deleteLocalBranch(
+    repositoryPath: string,
+    branchName: string,
+    force = false,
+  ): Promise<void> {
     await this.provider.deleteLocalBranch(repositoryPath, branchName, force);
   }
 
@@ -69,7 +79,12 @@ export class GitService {
     return this.provider.commit(repositoryPath, message);
   }
 
-  async push(repositoryPath: string, remote: string, branch: string, options: string[] = []): Promise<void> {
+  async push(
+    repositoryPath: string,
+    remote: string,
+    branch: string,
+    options: string[] = [],
+  ): Promise<void> {
     await this.provider.push(repositoryPath, remote, branch, options);
   }
 
@@ -81,19 +96,32 @@ export class GitService {
     return this.provider.getRepositoryRoot(repositoryPath);
   }
 
-  async getRemoteUrl(repositoryPath: string, remoteName: string): Promise<string> {
+  async getRemoteUrl(
+    repositoryPath: string,
+    remoteName: string,
+  ): Promise<string> {
     return this.provider.getRemoteUrl(repositoryPath, remoteName);
   }
 
-  async setRemoteUrl(repositoryPath: string, remoteName: string, url: string): Promise<void> {
+  async setRemoteUrl(
+    repositoryPath: string,
+    remoteName: string,
+    url: string,
+  ): Promise<void> {
     await this.provider.setRemoteUrl(repositoryPath, remoteName, url);
   }
 
-  async getModifiedFiles(repositoryPath: string, commitSha: string): Promise<string[]> {
+  async getModifiedFiles(
+    repositoryPath: string,
+    commitSha: string,
+  ): Promise<string[]> {
     return this.provider.getModifiedFiles(repositoryPath, commitSha);
   }
 
-  async getCommitMessage(repositoryPath: string, commitSha: string): Promise<string> {
+  async getCommitMessage(
+    repositoryPath: string,
+    commitSha: string,
+  ): Promise<string> {
     return this.provider.getCommitMessage(repositoryPath, commitSha);
   }
 

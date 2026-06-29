@@ -1,6 +1,6 @@
-import { registerAs } from '@nestjs/config';
+import { registerAs } from "@nestjs/config";
 
-import type { Env } from './env.validation';
+import type { Env } from "./env.validation";
 
 // ---------------------------------------------------------------------------
 // Notification Configuration (SMTP / Email)
@@ -29,7 +29,7 @@ export interface NotificationConfig {
 }
 
 export const notificationConfig = registerAs(
-  'notification',
+  "notification",
   (): NotificationConfig => {
     const env = process.env as unknown as Env;
 

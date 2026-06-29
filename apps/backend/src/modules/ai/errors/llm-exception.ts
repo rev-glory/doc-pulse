@@ -1,5 +1,5 @@
-import { LlmErrorCode } from './llm-error-code';
-import { LlmErrorClassifier } from './llm-error-classifier';
+import { LlmErrorCode } from "./llm-error-code";
+import { LlmErrorClassifier } from "./llm-error-classifier";
 
 export interface LlmProviderMetadata {
   provider: string;
@@ -7,7 +7,7 @@ export interface LlmProviderMetadata {
 }
 
 export class LlmException extends Error {
-  public override readonly name = 'LlmException';
+  public override readonly name = "LlmException";
 
   constructor(
     public readonly code: LlmErrorCode,

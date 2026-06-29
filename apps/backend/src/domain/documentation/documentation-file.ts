@@ -1,4 +1,4 @@
-import { DocumentationType } from './enums';
+import { DocumentationType } from "./enums";
 
 export interface DocumentationFile {
   fileName: string;

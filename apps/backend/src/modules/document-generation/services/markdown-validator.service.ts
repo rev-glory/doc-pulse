@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
 export interface MarkdownWarning {
   line?: number;
@@ -29,11 +29,11 @@ export class MarkdownValidatorService {
       return {
         valid: false,
         warnings: [],
-        errors: [{ message: 'Document content is completely empty' }],
+        errors: [{ message: "Document content is completely empty" }],
       };
     }
 
-    const lines = markdown.split('\n');
+    const lines = markdown.split("\n");
     let hasHeading = false;
     let codeFenceCount = 0;
     const seenHeadings = new Set<string>();
@@ -44,7 +44,7 @@ export class MarkdownValidatorService {
       if (rawLine === undefined) continue;
       const line = rawLine.trim();
 
-      if (line.startsWith('```')) {
+      if (line.startsWith("```")) {
         codeFenceCount++;
         continue;
       }
@@ -78,7 +78,7 @@ export class MarkdownValidatorService {
             continue;
           }
           const nextLine = rawNext.trim();
-          if (nextLine.startsWith('```')) {
+          if (nextLine.startsWith("```")) {
             isSectionEmpty = false;
             break;
           }
@@ -102,11 +102,15 @@ export class MarkdownValidatorService {
     }
 
     if (!hasHeading) {
-      errors.push({ message: 'Document contains no Markdown headings (H1-H6)' });
+      errors.push({
+        message: "Document contains no Markdown headings (H1-H6)",
+      });
     }
 
     if (codeFenceCount % 2 !== 0) {
-      errors.push({ message: `Unclosed Markdown code fence (found ${codeFenceCount} backtick fences)` });
+      errors.push({
+        message: `Unclosed Markdown code fence (found ${codeFenceCount} backtick fences)`,
+      });
     }
 
     return {

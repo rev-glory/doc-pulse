@@ -1,9 +1,12 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { RepositoryScannerService } from './repository-scanner.service';
-import { TypeScriptAnalyzerService } from './language-analyzers/typescript-analyzer.service';
-import { DependencyAnalyzerService } from './analyzers/dependency-analyzer.service';
-import { ArchitectureAnalyzerService } from './analyzers/architecture-analyzer.service';
-import { SourceCodeAnalysis, ComplexityMetrics } from '../../../domain/source-code-analysis/source-code-analysis';
+import { Injectable, Logger } from "@nestjs/common";
+import { RepositoryScannerService } from "./repository-scanner.service";
+import { TypeScriptAnalyzerService } from "./language-analyzers/typescript-analyzer.service";
+import { DependencyAnalyzerService } from "./analyzers/dependency-analyzer.service";
+import { ArchitectureAnalyzerService } from "./analyzers/architecture-analyzer.service";
+import {
+  SourceCodeAnalysis,
+  ComplexityMetrics,
+} from "../../../domain/source-code-analysis/source-code-analysis";
 
 @Injectable()
 export class SourceCodeAnalysisService {
@@ -16,15 +19,15 @@ export class SourceCodeAnalysisService {
     private readonly archAnalyzer: ArchitectureAnalyzerService,
   ) {}
 
-  public async analyzeRepository(rootPath: string): Promise<SourceCodeAnalysis> {
-    this.logger.log(`Starting source codebase static analysis orchestration for: ${rootPath}`);
+  public async analyzeRepository(
+    rootPath: string,
+  ): Promise<SourceCodeAnalysis> {
+    this.logger.log(
+      `Starting source codebase static analysis orchestration for: ${rootPath}`,
+    );
     const index = await this.scanner.buildIndex(rootPath);
 
-    const analyzers = [
-      this.tsAnalyzer,
-      this.depAnalyzer,
-      this.archAnalyzer,
-    ];
+    const analyzers = [this.tsAnalyzer, this.depAnalyzer, this.archAnalyzer];
 
     let merged: Partial<SourceCodeAnalysis> = {
       analysisVersion: 1,
@@ -53,20 +56,44 @@ export class SourceCodeAnalysisService {
     // 1. Merge architecture
     if (source.architecture) {
       result.architecture = {
-        style: source.architecture.style || target.architecture?.style || 'Generic App',
-        patterns: this.mergeStringArrays(target.architecture?.patterns, source.architecture.patterns),
-        layers: this.mergeStringArrays(target.architecture?.layers, source.architecture.layers),
-        moduleStructure: this.mergeStringArrays(target.architecture?.moduleStructure, source.architecture.moduleStructure),
+        style:
+          source.architecture.style ||
+          target.architecture?.style ||
+          "Generic App",
+        patterns: this.mergeStringArrays(
+          target.architecture?.patterns,
+          source.architecture.patterns,
+        ),
+        layers: this.mergeStringArrays(
+          target.architecture?.layers,
+          source.architecture.layers,
+        ),
+        moduleStructure: this.mergeStringArrays(
+          target.architecture?.moduleStructure,
+          source.architecture.moduleStructure,
+        ),
       };
     }
 
     // 2. Merge dependencies
     if (source.dependencies) {
       result.dependencies = {
-        production: this.mergeStringArrays(target.dependencies?.production, source.dependencies.production),
-        development: this.mergeStringArrays(target.dependencies?.development, source.dependencies.development),
-        frameworks: this.mergeStringArrays(target.dependencies?.frameworks, source.dependencies.frameworks),
-        databases: this.mergeStringArrays(target.dependencies?.databases, source.dependencies.databases),
+        production: this.mergeStringArrays(
+          target.dependencies?.production,
+          source.dependencies.production,
+        ),
+        development: this.mergeStringArrays(
+          target.dependencies?.development,
+          source.dependencies.development,
+        ),
+        frameworks: this.mergeStringArrays(
+          target.dependencies?.frameworks,
+          source.dependencies.frameworks,
+        ),
+        databases: this.mergeStringArrays(
+          target.dependencies?.databases,
+          source.dependencies.databases,
+        ),
       };
     }
 
@@ -74,7 +101,7 @@ export class SourceCodeAnalysisService {
     if (source.technologies) {
       const existing = target.technologies || [];
       const incoming = source.technologies;
-      const mergedTechMap = new Map<string, typeof incoming[0]>();
+      const mergedTechMap = new Map<string, (typeof incoming)[0]>();
       for (const t of [...existing, ...incoming]) {
         // Keep highest confidence for duplicates
         const prev = mergedTechMap.get(t.name);
@@ -86,19 +113,44 @@ export class SourceCodeAnalysisService {
     }
 
     // 4. Merge string lists
-    if (source.modules) result.modules = this.mergeStringArrays(target.modules, source.modules);
-    if (source.services) result.services = this.mergeStringArrays(target.services, source.services);
-    if (source.database) result.database = this.mergeStringArrays(target.database, source.database);
-    if (source.entryPoints) result.entryPoints = this.mergeStringArrays(target.entryPoints, source.entryPoints);
-    if (source.configurationFiles) result.configurationFiles = this.mergeStringArrays(target.configurationFiles, source.configurationFiles);
-    if (source.importantDirectories) result.importantDirectories = this.mergeStringArrays(target.importantDirectories, source.importantDirectories);
+    if (source.modules)
+      result.modules = this.mergeStringArrays(target.modules, source.modules);
+    if (source.services)
+      result.services = this.mergeStringArrays(
+        target.services,
+        source.services,
+      );
+    if (source.database)
+      result.database = this.mergeStringArrays(
+        target.database,
+        source.database,
+      );
+    if (source.entryPoints)
+      result.entryPoints = this.mergeStringArrays(
+        target.entryPoints,
+        source.entryPoints,
+      );
+    if (source.configurationFiles)
+      result.configurationFiles = this.mergeStringArrays(
+        target.configurationFiles,
+        source.configurationFiles,
+      );
+    if (source.importantDirectories)
+      result.importantDirectories = this.mergeStringArrays(
+        target.importantDirectories,
+        source.importantDirectories,
+      );
 
     // 5. Merge ApiEndpoints
     if (source.apiEndpoints) {
       const existing = target.apiEndpoints || [];
       const mergedApis = [...existing];
       for (const ep of source.apiEndpoints) {
-        if (!mergedApis.some((ex) => ex.method === ep.method && ex.path === ep.path)) {
+        if (
+          !mergedApis.some(
+            (ex) => ex.method === ep.method && ex.path === ep.path,
+          )
+        ) {
           mergedApis.push(ep);
         }
       }
@@ -129,12 +181,30 @@ export class SourceCodeAnalysisService {
         testCount: 0,
       };
       result.metrics = {
-        totalSourceFiles: Math.max(targetMetrics.totalSourceFiles, source.metrics.totalSourceFiles),
-        controllerCount: Math.max(targetMetrics.controllerCount, source.metrics.controllerCount),
-        serviceCount: Math.max(targetMetrics.serviceCount, source.metrics.serviceCount),
-        moduleCount: Math.max(targetMetrics.moduleCount, source.metrics.moduleCount),
-        interfaceCount: Math.max(targetMetrics.interfaceCount, source.metrics.interfaceCount),
-        classCount: Math.max(targetMetrics.classCount, source.metrics.classCount),
+        totalSourceFiles: Math.max(
+          targetMetrics.totalSourceFiles,
+          source.metrics.totalSourceFiles,
+        ),
+        controllerCount: Math.max(
+          targetMetrics.controllerCount,
+          source.metrics.controllerCount,
+        ),
+        serviceCount: Math.max(
+          targetMetrics.serviceCount,
+          source.metrics.serviceCount,
+        ),
+        moduleCount: Math.max(
+          targetMetrics.moduleCount,
+          source.metrics.moduleCount,
+        ),
+        interfaceCount: Math.max(
+          targetMetrics.interfaceCount,
+          source.metrics.interfaceCount,
+        ),
+        classCount: Math.max(
+          targetMetrics.classCount,
+          source.metrics.classCount,
+        ),
         testCount: Math.max(targetMetrics.testCount, source.metrics.testCount),
       };
     }
@@ -147,9 +217,12 @@ export class SourceCodeAnalysisService {
     return Array.from(set);
   }
 
-  private finalizeAndEnforceLimits(partial: Partial<SourceCodeAnalysis>, indexedFileCount: number): SourceCodeAnalysis {
+  private finalizeAndEnforceLimits(
+    partial: Partial<SourceCodeAnalysis>,
+    indexedFileCount: number,
+  ): SourceCodeAnalysis {
     const finalArch = partial.architecture || {
-      style: 'Generic App',
+      style: "Generic App",
       patterns: [],
       layers: [],
       moduleStructure: [],
@@ -173,7 +246,11 @@ export class SourceCodeAnalysisService {
     };
 
     // Calculate moduleCount from architecture directories and modules list
-    finalMetrics.moduleCount = Math.max(finalMetrics.moduleCount, partial.modules?.length || 0, finalArch.moduleStructure.length);
+    finalMetrics.moduleCount = Math.max(
+      finalMetrics.moduleCount,
+      partial.modules?.length || 0,
+      finalArch.moduleStructure.length,
+    );
 
     // Build finalized bounded-size arrays matching constraints
     return {

@@ -1,8 +1,8 @@
-import { Inject, Injectable, OnModuleInit, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { ILlmProvider } from '../interfaces/llm-provider.interface';
+import { Inject, Injectable, OnModuleInit, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { ILlmProvider } from "../interfaces/llm-provider.interface";
 
-export const LLM_PROVIDERS = Symbol('LLM_PROVIDERS');
+export const LLM_PROVIDERS = Symbol("LLM_PROVIDERS");
 
 @Injectable()
 export class LlmProviderRegistry implements OnModuleInit {
@@ -17,39 +17,46 @@ export class LlmProviderRegistry implements OnModuleInit {
   ) {}
 
   public onModuleInit(): void {
-    this.logger.log('Initializing LlmProviderRegistry...');
+    this.logger.log("Initializing LlmProviderRegistry...");
 
     // 1. Register providers and validate duplicates
     for (const provider of this.providerList) {
       const desc = provider.descriptor;
       if (!desc || !desc.id) {
-        throw new Error('LLM Provider missing valid descriptor metadata.');
+        throw new Error("LLM Provider missing valid descriptor metadata.");
       }
 
       const id = desc.id.toLowerCase();
       if (this.providers.has(id)) {
-        throw new Error(`Duplicate LLM provider registration detected: ${desc.id}`);
+        throw new Error(
+          `Duplicate LLM provider registration detected: ${desc.id}`,
+        );
       }
       this.providers.set(id, provider);
     }
 
     // Print startup registry log details
-    this.logger.log('Registered Providers:');
+    this.logger.log("Registered Providers:");
     for (const provider of this.providers.values()) {
-      const isPlaceholder = provider.constructor.name.toLowerCase().includes('placeholder');
-      const suffix = isPlaceholder ? ' (placeholder)' : '';
+      const isPlaceholder = provider.constructor.name
+        .toLowerCase()
+        .includes("placeholder");
+      const suffix = isPlaceholder ? " (placeholder)" : "";
       this.logger.log(`- ${provider.descriptor.displayName}${suffix}`);
     }
 
     // 2. Resolve default provider from configuration
-    const configDefault = this.configService.get<string>('DEFAULT_LLM_PROVIDER') || 'gemini';
+    const configDefault =
+      this.configService.get<string>("DEFAULT_LLM_PROVIDER") || "gemini";
     this.defaultProviderId = configDefault.toLowerCase();
 
     this.logger.log(`Default Provider: ${this.defaultProviderId}`);
 
     // Validate configured default exists in the registry
     if (!this.providers.has(this.defaultProviderId)) {
-      throw new Error(`Unknown DEFAULT_LLM_PROVIDER configured: ${this.defaultProviderId}`);
+      throw new Error(
+        `Unknown DEFAULT_LLM_PROVIDER configured: ${this.defaultProviderId}`,
+      );
     }
   }
 

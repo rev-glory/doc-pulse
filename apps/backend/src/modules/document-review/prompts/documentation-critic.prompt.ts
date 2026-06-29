@@ -33,46 +33,49 @@ Evaluate strictly across these 10 core quality criteria:
 Return your evaluation strictly conforming to the JSON schema. Provide a quality score from 0 to 100 assessing overall documentation excellence. List specific review issues with severity (CRITICAL, MAJOR, MINOR), category, message, and optional location. Provide actionable suggestions for improvement.`;
 
 export const DOCUMENTATION_CRITIC_SCHEMA: Record<string, unknown> = {
-  type: 'object',
+  type: "object",
   properties: {
     score: {
-      type: 'number',
-      description: 'Overall quality score from 0 to 100 assessing documentation rigor and production readiness',
+      type: "number",
+      description:
+        "Overall quality score from 0 to 100 assessing documentation rigor and production readiness",
     },
     issues: {
-      type: 'array',
+      type: "array",
       items: {
-        type: 'object',
+        type: "object",
         properties: {
           severity: {
-            type: 'string',
-            enum: ['CRITICAL', 'MAJOR', 'MINOR'],
-            description: 'Severity level of the issue',
+            type: "string",
+            enum: ["CRITICAL", "MAJOR", "MINOR"],
+            description: "Severity level of the issue",
           },
           category: {
-            type: 'string',
-            description: 'Quality criteria category (e.g., Completeness, Accuracy, Markdown quality)',
+            type: "string",
+            description:
+              "Quality criteria category (e.g., Completeness, Accuracy, Markdown quality)",
           },
           message: {
-            type: 'string',
-            description: 'Detailed explanation of the identified deficiency',
+            type: "string",
+            description: "Detailed explanation of the identified deficiency",
           },
           location: {
-            type: 'string',
-            description: 'Optional line number or heading reference where the issue occurred',
+            type: "string",
+            description:
+              "Optional line number or heading reference where the issue occurred",
           },
         },
-        required: ['severity', 'category', 'message'],
+        required: ["severity", "category", "message"],
       },
-      description: 'List of identified issues and deficiencies',
+      description: "List of identified issues and deficiencies",
     },
     suggestions: {
-      type: 'array',
-      items: { type: 'string' },
-      description: 'List of actionable suggestions for document refinement',
+      type: "array",
+      items: { type: "string" },
+      description: "List of actionable suggestions for document refinement",
     },
   },
-  required: ['score', 'issues', 'suggestions'],
+  required: ["score", "issues", "suggestions"],
 };
 
 export const BATCH_DOCUMENTATION_CRITIC_USER_PROMPT_TEMPLATE = `Evaluate the following generated documentation batch against the repository context and guidelines.
@@ -99,59 +102,64 @@ Evaluate each document strictly across these 10 core quality criteria:
 Return your evaluation strictly conforming to the JSON schema. You must return an array of review results under 'reviews', with one entry per generated document evaluated. For each document, identify its 'documentType', provide a quality score from 0 to 100 assessing overall documentation excellence, list specific review issues with severity (CRITICAL, MAJOR, MINOR), category, message, and optional location, and provide actionable suggestions for improvement.`;
 
 export const BATCH_DOCUMENTATION_CRITIC_SCHEMA: Record<string, unknown> = {
-  type: 'object',
+  type: "object",
   properties: {
     reviews: {
-      type: 'array',
+      type: "array",
       items: {
-        type: 'object',
+        type: "object",
         properties: {
           documentType: {
-            type: 'string',
-            description: 'The type of the generated document evaluated (e.g. README, ARCHITECTURE, API, INSTALLATION, DEPLOYMENT, CONTRIBUTING)',
+            type: "string",
+            description:
+              "The type of the generated document evaluated (e.g. README, ARCHITECTURE, API, INSTALLATION, DEPLOYMENT, CONTRIBUTING)",
           },
           score: {
-            type: 'number',
-            description: 'Overall quality score from 0 to 100 assessing documentation rigor and production readiness',
+            type: "number",
+            description:
+              "Overall quality score from 0 to 100 assessing documentation rigor and production readiness",
           },
           issues: {
-            type: 'array',
+            type: "array",
             items: {
-              type: 'object',
+              type: "object",
               properties: {
                 severity: {
-                  type: 'string',
-                  enum: ['CRITICAL', 'MAJOR', 'MINOR'],
-                  description: 'Severity level of the issue',
+                  type: "string",
+                  enum: ["CRITICAL", "MAJOR", "MINOR"],
+                  description: "Severity level of the issue",
                 },
                 category: {
-                  type: 'string',
-                  description: 'Quality criteria category (e.g., Completeness, Accuracy, Markdown quality)',
+                  type: "string",
+                  description:
+                    "Quality criteria category (e.g., Completeness, Accuracy, Markdown quality)",
                 },
                 message: {
-                  type: 'string',
-                  description: 'Detailed explanation of the identified deficiency',
+                  type: "string",
+                  description:
+                    "Detailed explanation of the identified deficiency",
                 },
                 location: {
-                  type: 'string',
-                  description: 'Optional line number or heading reference where the issue occurred',
+                  type: "string",
+                  description:
+                    "Optional line number or heading reference where the issue occurred",
                 },
               },
-              required: ['severity', 'category', 'message'],
+              required: ["severity", "category", "message"],
             },
-            description: 'List of identified issues and deficiencies',
+            description: "List of identified issues and deficiencies",
           },
           suggestions: {
-            type: 'array',
-            items: { type: 'string' },
-            description: 'List of actionable suggestions for document refinement',
+            type: "array",
+            items: { type: "string" },
+            description:
+              "List of actionable suggestions for document refinement",
           },
         },
-        required: ['documentType', 'score', 'issues', 'suggestions'],
+        required: ["documentType", "score", "issues", "suggestions"],
       },
-      description: 'List of evaluation results for all reviewed documents',
+      description: "List of evaluation results for all reviewed documents",
     },
   },
-  required: ['reviews'],
+  required: ["reviews"],
 };
-

@@ -1,10 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
-import * as fs from 'fs/promises';
-import * as path from 'path';
+import { Injectable, Logger } from "@nestjs/common";
+import * as fs from "fs/promises";
+import * as path from "path";
 
-import type { GeneratedDocument } from '@/domain/workflow';
-import { normalizeDocumentationDirectory } from '../../repositories/validators/documentation-directory.validator';
-import { DOCPULSE_GENERATION_MARKER } from '../../workflow/constants/docpulse-marker.constants';
+import type { GeneratedDocument } from "@/domain/workflow";
+import { normalizeDocumentationDirectory } from "../../repositories/validators/documentation-directory.validator";
+import { DOCPULSE_GENERATION_MARKER } from "../../workflow/constants/docpulse-marker.constants";
 
 @Injectable()
 export class DocumentationWriterService {
@@ -19,13 +19,15 @@ export class DocumentationWriterService {
     workspacePath: string,
     runId: string,
     documents: GeneratedDocument[],
-    documentationDirectory: string = 'docs',
+    documentationDirectory: string = "docs",
   ): Promise<{ writtenFiles: string[]; durationMs: number }> {
     const startTime = Date.now();
-    const tmpDirName = `.docpulse_tmp_${runId.replace(/[^a-zA-Z0-9_-]/g, '_')}`;
+    const tmpDirName = `.docpulse_tmp_${runId.replace(/[^a-zA-Z0-9_-]/g, "_")}`;
     const stagingDir = path.join(workspacePath, tmpDirName);
 
-    this.logger.debug(`Initiating transactional doc write for run [${runId}] in [${workspacePath}]...`);
+    this.logger.debug(
+      `Initiating transactional doc write for run [${runId}] in [${workspacePath}]...`,
+    );
 
     try {
       // 1. Ensure clean staging dir
@@ -37,11 +39,12 @@ export class DocumentationWriterService {
 
       // 2. Write all generated docs to staging dir
       for (const doc of documents) {
-        const canonicalContent = doc.markdown ?? doc.content ?? '';
+        const canonicalContent = doc.markdown ?? doc.content ?? "";
         if (!doc.path) continue;
 
-        const cleanDocPath = doc.path.replace(/^(\.\/|\/)+/, ''); // sanitize relative path
-        const cleanRelPath = cleanDir === '.' ? cleanDocPath : path.join(cleanDir, cleanDocPath);
+        const cleanDocPath = doc.path.replace(/^(\.\/|\/)+/, ""); // sanitize relative path
+        const cleanRelPath =
+          cleanDir === "." ? cleanDocPath : path.join(cleanDir, cleanDocPath);
         const targetStagingPath = path.join(stagingDir, cleanRelPath);
 
         // Prepend the generation marker so the locator can detect DocPulse-generated files
@@ -49,7 +52,7 @@ export class DocumentationWriterService {
         const markedContent = `${DOCPULSE_GENERATION_MARKER}\n${canonicalContent}`;
 
         await fs.mkdir(path.dirname(targetStagingPath), { recursive: true });
-        await fs.writeFile(targetStagingPath, markedContent, 'utf8');
+        await fs.writeFile(targetStagingPath, markedContent, "utf8");
         stagedRelPaths.push(cleanRelPath);
       }
 
@@ -57,7 +60,9 @@ export class DocumentationWriterService {
       for (const relPath of stagedRelPaths) {
         const stat = await fs.stat(path.join(stagingDir, relPath));
         if (!stat.isFile()) {
-          throw new Error(`Staging validation failed: ${relPath} is not a valid file.`);
+          throw new Error(
+            `Staging validation failed: ${relPath} is not a valid file.`,
+          );
         }
       }
 
@@ -76,10 +81,15 @@ export class DocumentationWriterService {
       await fs.rm(stagingDir, { recursive: true, force: true });
 
       const durationMs = Date.now() - startTime;
-      this.logger.log(`Successfully wrote ${writtenFiles.length} documentation files transactionally (${durationMs}ms).`);
+      this.logger.log(
+        `Successfully wrote ${writtenFiles.length} documentation files transactionally (${durationMs}ms).`,
+      );
       return { writtenFiles, durationMs };
     } catch (error) {
-      this.logger.error(`Transactional documentation write failed for run [${runId}]. Rolling back staging files...`, (error as Error).stack);
+      this.logger.error(
+        `Transactional documentation write failed for run [${runId}]. Rolling back staging files...`,
+        (error as Error).stack,
+      );
       await fs.rm(stagingDir, { recursive: true, force: true }).catch(() => {});
       throw error;
     }

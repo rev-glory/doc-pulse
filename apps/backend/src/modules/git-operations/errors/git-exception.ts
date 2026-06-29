@@ -1,6 +1,6 @@
-import { GitErrorCode } from './git-error-code';
-import { GitErrorClassifier } from './git-error-classifier';
-import { GitErrorSanitizer } from './git-error-sanitizer';
+import { GitErrorCode } from "./git-error-code";
+import { GitErrorClassifier } from "./git-error-classifier";
+import { GitErrorSanitizer } from "./git-error-sanitizer";
 
 export interface GitProviderMetadata {
   provider: string;
@@ -9,7 +9,7 @@ export interface GitProviderMetadata {
 }
 
 export class GitException extends Error {
-  public override readonly name = 'GitException';
+  public override readonly name = "GitException";
 
   constructor(
     public readonly code: GitErrorCode,

@@ -1,8 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
-import { PrismaService } from '@/database';
-import type { User } from '@/generated/prisma/client';
-import type { IUsersRepository } from '../interfaces/users.interfaces';
+import { PrismaService } from "@/database";
+import type { User } from "@/generated/prisma/client";
+import type { IUsersRepository } from "../interfaces/users.interfaces";
 
 @Injectable()
 export class UsersRepository implements IUsersRepository {
@@ -20,7 +20,10 @@ export class UsersRepository implements IUsersRepository {
     });
   }
 
-  async updateProfile(userId: string, data: { displayName?: string | null }): Promise<User> {
+  async updateProfile(
+    userId: string,
+    data: { displayName?: string | null },
+  ): Promise<User> {
     return this.prisma.user.update({
       where: { id: userId },
       data,

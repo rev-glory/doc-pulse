@@ -1,4 +1,4 @@
-import type { Repository, BranchStrategy } from '@/generated/prisma/client';
+import type { Repository, BranchStrategy } from "@/generated/prisma/client";
 
 export interface SyncUpsertRepositoryData {
   githubRepositoryId: number;
@@ -55,7 +55,9 @@ export interface IRepositoriesRepository {
 
   findById(id: string): Promise<Repository | null>;
 
-  findByGithubRepositoryId(githubRepositoryId: number): Promise<Repository | null>;
+  findByGithubRepositoryId(
+    githubRepositoryId: number,
+  ): Promise<Repository | null>;
 
   listRepositories(ownerId: string): Promise<Repository[]>;
 }

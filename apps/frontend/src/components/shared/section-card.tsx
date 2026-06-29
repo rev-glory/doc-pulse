@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface SectionCardProps {
   title: string;
@@ -13,45 +13,55 @@ export const SectionCard: React.FC<SectionCardProps> = ({
   description,
   children,
   actions,
-  className = '',
+  className = "",
 }) => {
   return (
     <section
       className={className}
       style={{
-        background: 'var(--bg-surface)',
-        border: '1px solid var(--border)',
-        borderRadius: 'var(--radius-lg)',
-        overflow: 'hidden',
-        transition: 'border-color 0.2s ease',
+        background: "var(--bg-surface)",
+        border: "1px solid var(--border)",
+        borderRadius: "var(--radius-lg)",
+        overflow: "hidden",
+        transition: "border-color 0.2s ease",
       }}
-      onMouseEnter={(e) => { e.currentTarget.style.borderColor = 'var(--border-hover)'; }}
-      onMouseLeave={(e) => { e.currentTarget.style.borderColor = 'var(--border)'; }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.borderColor = "var(--border-hover)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.borderColor = "var(--border)";
+      }}
     >
       {/* Card header */}
       <div
         style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '1.1rem 1.5rem',
-          borderBottom: '1px solid var(--border)',
-          background: 'rgba(255,255,255,0.02)',
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          padding: "1.1rem 1.5rem",
+          borderBottom: "1px solid var(--border)",
+          background: "rgba(255,255,255,0.02)",
         }}
       >
         <div>
           <h2
             style={{
-              fontSize: '0.9rem',
+              fontSize: "0.9rem",
               fontWeight: 600,
-              color: 'var(--text-primary)',
-              letterSpacing: '-0.01em',
+              color: "var(--text-primary)",
+              letterSpacing: "-0.01em",
             }}
           >
             {title}
           </h2>
           {description && (
-            <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+            <p
+              style={{
+                fontSize: "0.75rem",
+                color: "var(--text-muted)",
+                marginTop: "2px",
+              }}
+            >
               {description}
             </p>
           )}
@@ -60,9 +70,7 @@ export const SectionCard: React.FC<SectionCardProps> = ({
       </div>
 
       {/* Card body */}
-      <div style={{ padding: '1.25rem 1.5rem' }}>
-        {children}
-      </div>
+      <div style={{ padding: "1.25rem 1.5rem" }}>{children}</div>
     </section>
   );
 };

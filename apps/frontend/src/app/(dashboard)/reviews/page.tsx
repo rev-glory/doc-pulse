@@ -1,19 +1,19 @@
-'use client';
+"use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { useApiQuery } from '@/lib/query/use-api-query';
-import { ReviewsApi } from '@/lib/api/services/reviews.api';
-import { PageHeader } from '@/components/shared/page-header';
-import { SectionCard } from '@/components/shared/section-card';
-import { LoadingState } from '@/components/feedback/loading-state';
-import { ErrorState } from '@/components/feedback/error-state';
-import { EmptyState } from '@/components/feedback/empty-state';
-import { WorkflowStatusBadge } from '@/components/workflow';
+import React from "react";
+import Link from "next/link";
+import { useApiQuery } from "@/lib/query/use-api-query";
+import { ReviewsApi } from "@/lib/api/services/reviews.api";
+import { PageHeader } from "@/components/shared/page-header";
+import { SectionCard } from "@/components/shared/section-card";
+import { LoadingState } from "@/components/feedback/loading-state";
+import { ErrorState } from "@/components/feedback/error-state";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { WorkflowStatusBadge } from "@/components/workflow";
 
 export default function ReviewsListPage(): React.JSX.Element {
   const { data, isLoading, error, refetch } = useApiQuery({
-    queryKey: ['reviews', 'list'],
+    queryKey: ["reviews", "list"],
     queryFn: ReviewsApi.listReviews,
   });
 
@@ -30,7 +30,10 @@ export default function ReviewsListPage(): React.JSX.Element {
     return (
       <div>
         <PageHeader title="Human Reviews" />
-        <ErrorState message={error?.message || 'Failed to load reviews.'} retry={refetch} />
+        <ErrorState
+          message={error?.message || "Failed to load reviews."}
+          retry={refetch}
+        />
       </div>
     );
   }
@@ -42,7 +45,10 @@ export default function ReviewsListPage(): React.JSX.Element {
         description="Inspect and approve generated documentation files before they are pushed to GitHub."
       />
 
-      <SectionCard title="Active Review Queue" description="Pipeline checkpoints awaiting reviewer decisions.">
+      <SectionCard
+        title="Active Review Queue"
+        description="Pipeline checkpoints awaiting reviewer decisions."
+      >
         {data.length === 0 ? (
           <EmptyState
             title="No reviews pending"
@@ -63,14 +69,22 @@ export default function ReviewsListPage(): React.JSX.Element {
               </thead>
               <tbody className="divide-y divide-zinc-250 dark:divide-zinc-800 text-zinc-700 dark:text-zinc-300">
                 {data.map((review) => (
-                  <tr key={review.id} className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-all">
+                  <tr
+                    key={review.id}
+                    className="hover:bg-zinc-50/50 dark:hover:bg-zinc-900/30 transition-all"
+                  >
                     <td className="px-5 py-4 font-bold text-zinc-900 dark:text-white">
                       {review.repositoryOwner}/{review.repositoryName}
                     </td>
-                    <td className="px-5 py-4 font-mono text-zinc-500">{review.branch}</td>
-                    <td className="px-5 py-4 font-mono text-zinc-400">{review.commitSha.slice(0, 7)}</td>
+                    <td className="px-5 py-4 font-mono text-zinc-500">
+                      {review.branch}
+                    </td>
+                    <td className="px-5 py-4 font-mono text-zinc-400">
+                      {review.commitSha.slice(0, 7)}
+                    </td>
                     <td className="px-5 py-4 text-zinc-400">
-                      {new Date(review.createdAt).toLocaleDateString()} {new Date(review.createdAt).toLocaleTimeString()}
+                      {new Date(review.createdAt).toLocaleDateString()}{" "}
+                      {new Date(review.createdAt).toLocaleTimeString()}
                     </td>
                     <td className="px-5 py-4">
                       <WorkflowStatusBadge status={review.status} />

@@ -16,7 +16,7 @@
 export class AIConfigurationException extends Error {
   constructor(message: string, cause?: unknown) {
     super(message);
-    this.name = 'AIConfigurationException';
+    this.name = "AIConfigurationException";
     this.cause = cause;
 
     // Maintains proper stack trace in V8 (Node.js).

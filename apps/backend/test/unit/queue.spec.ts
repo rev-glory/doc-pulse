@@ -1,16 +1,22 @@
-import { describe, it, beforeEach, mock } from 'node:test';
-import assert from 'node:assert/strict';
-import { BadRequestException } from '@nestjs/common';
-import { QueueEventStatus, RealtimeWorkflowStage } from '@docpulse/shared-types';
+import { describe, it, beforeEach, mock } from "node:test";
+import assert from "node:assert/strict";
+import { BadRequestException } from "@nestjs/common";
+import {
+  QueueEventStatus,
+  RealtimeWorkflowStage,
+} from "@docpulse/shared-types";
 
-import { WorkflowQueueService } from '../../src/modules/queue/services/workflow-queue.service';
-import { WorkflowProcessor } from '../../src/modules/queue/processors/workflow.processor';
-import { RUN_WORKFLOW_JOB, WORKFLOW_EXECUTION_QUEUE } from '../../src/modules/queue/constants/queue.constants';
-import type { WorkflowJobPayload } from '../../src/modules/queue/interfaces/workflow-job.interface';
-import { WorkflowStatus } from '../../src/domain/workflow';
+import { WorkflowQueueService } from "../../src/modules/queue/services/workflow-queue.service";
+import { WorkflowProcessor } from "../../src/modules/queue/processors/workflow.processor";
+import {
+  RUN_WORKFLOW_JOB,
+  WORKFLOW_EXECUTION_QUEUE,
+} from "../../src/modules/queue/constants/queue.constants";
+import type { WorkflowJobPayload } from "../../src/modules/queue/interfaces/workflow-job.interface";
+import { WorkflowStatus } from "../../src/domain/workflow";
 
-describe('Queue Module Infrastructure Verification', () => {
-  describe('WorkflowQueueService Producer', () => {
+describe("Queue Module Infrastructure Verification", () => {
+  describe("WorkflowQueueService Producer", () => {
     let service: WorkflowQueueService;
     let mockQueue: { add: any };
 
@@ -19,30 +25,43 @@ describe('Queue Module Infrastructure Verification', () => {
       service = new WorkflowQueueService(mockQueue as any);
     });
 
-    it('should throw BadRequestException when payload is malformed or missing required properties', async () => {
-      await assert.rejects(() => service.enqueueWorkflow(null as any), BadRequestException);
+    it("should throw BadRequestException when payload is malformed or missing required properties", async () => {
       await assert.rejects(
-        () => service.enqueueWorkflow({ repositoryId: '', repositoryPath: '/path', runId: 'run-1' }),
+        () => service.enqueueWorkflow(null as any),
         BadRequestException,
       );
       await assert.rejects(
-        () => service.enqueueWorkflow({ repositoryId: 'repo-1', repositoryPath: '', runId: 'run-1' }),
+        () =>
+          service.enqueueWorkflow({
+            repositoryId: "",
+            repositoryPath: "/path",
+            runId: "run-1",
+          }),
+        BadRequestException,
+      );
+      await assert.rejects(
+        () =>
+          service.enqueueWorkflow({
+            repositoryId: "repo-1",
+            repositoryPath: "",
+            runId: "run-1",
+          }),
         BadRequestException,
       );
     });
 
-    it('should enqueue job into BullMQ and return job metadata', async () => {
+    it("should enqueue job into BullMQ and return job metadata", async () => {
       const payload: WorkflowJobPayload = {
-        repositoryId: 'repo-123',
-        repositoryPath: '/repos/doc-pulse',
-        runId: 'run-456',
+        repositoryId: "repo-123",
+        repositoryPath: "/repos/doc-pulse",
+        runId: "run-456",
       };
 
       mockQueue.add.mock.mockImplementation(async (name: string, data: any) => {
         assert.equal(name, RUN_WORKFLOW_JOB);
         assert.deepEqual(data, payload);
         return {
-          id: 'job-789',
+          id: "job-789",
           name: RUN_WORKFLOW_JOB,
           queueName: WORKFLOW_EXECUTION_QUEUE,
           timestamp: 1600000000000,
@@ -51,7 +70,7 @@ describe('Queue Module Infrastructure Verification', () => {
 
       const metadata = await service.enqueueWorkflow(payload);
 
-      assert.equal(metadata.id, 'job-789');
+      assert.equal(metadata.id, "job-789");
       assert.equal(metadata.name, RUN_WORKFLOW_JOB);
       assert.equal(metadata.queueName, WORKFLOW_EXECUTION_QUEUE);
       assert.equal(metadata.timestamp, 1600000000000);
@@ -59,31 +78,38 @@ describe('Queue Module Infrastructure Verification', () => {
     });
   });
 
-  describe('WorkflowProcessor Consumer', () => {
+  describe("WorkflowProcessor Consumer", () => {
     let processor: WorkflowProcessor;
     let mockWorkflowService: { run: any };
     let mockProgressPublisher: { publishJobProgress: any };
 
     beforeEach(() => {
       mockWorkflowService = { run: mock.fn() };
-      mockProgressPublisher = { publishJobProgress: mock.fn(async () => undefined) };
-      processor = new WorkflowProcessor(mockWorkflowService as any, mockProgressPublisher as any);
+      mockProgressPublisher = {
+        publishJobProgress: mock.fn(async () => undefined),
+      };
+      processor = new WorkflowProcessor(
+        mockWorkflowService as any,
+        mockProgressPublisher as any,
+      );
     });
 
-    it('should consume job, construct initial WorkflowState, and invoke WorkflowService.run()', async () => {
+    it("should consume job, construct initial WorkflowState, and invoke WorkflowService.run()", async () => {
       const payload: WorkflowJobPayload = {
-        repositoryId: 'repo-123',
-        repositoryPath: '/repos/doc-pulse',
-        runId: 'run-456',
+        repositoryId: "repo-123",
+        repositoryPath: "/repos/doc-pulse",
+        runId: "run-456",
       };
 
-      const mockJob = { id: 'job-999', data: payload, attemptsMade: 0 } as any;
-      const expectedFinalState = { executionStatus: WorkflowStatus.Completed } as any;
+      const mockJob = { id: "job-999", data: payload, attemptsMade: 0 } as any;
+      const expectedFinalState = {
+        executionStatus: WorkflowStatus.Completed,
+      } as any;
 
       mockWorkflowService.run.mock.mockImplementation(async (input: any) => {
-        assert.equal(input.runId, 'run-456');
-        assert.equal(input.repositoryId, 'repo-123');
-        assert.equal(input.workspacePath, '/repos/doc-pulse');
+        assert.equal(input.runId, "run-456");
+        assert.equal(input.repositoryId, "repo-123");
+        assert.equal(input.workspacePath, "/repos/doc-pulse");
         return expectedFinalState;
       });
 
@@ -91,18 +117,29 @@ describe('Queue Module Infrastructure Verification', () => {
 
       assert.equal(result, expectedFinalState);
       assert.equal(mockWorkflowService.run.mock.calls.length, 1);
-      assert.equal(mockProgressPublisher.publishJobProgress.mock.calls.length, 2);
+      assert.equal(
+        mockProgressPublisher.publishJobProgress.mock.calls.length,
+        2,
+      );
 
-      const terminalEvent = mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
+      const terminalEvent =
+        mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
       assert.equal(terminalEvent.queueStatus, QueueEventStatus.Completed);
-      assert.equal(terminalEvent.realtimeStatus, 'completed');
-      assert.equal(terminalEvent.realtimeStage, RealtimeWorkflowStage.Completed);
+      assert.equal(terminalEvent.realtimeStatus, "completed");
+      assert.equal(
+        terminalEvent.realtimeStage,
+        RealtimeWorkflowStage.Completed,
+      );
     });
 
-    it('should publish waiting-for-review queue progress when executor suspends for human review', async () => {
+    it("should publish waiting-for-review queue progress when executor suspends for human review", async () => {
       const mockJob = {
-        id: 'job-review',
-        data: { repositoryId: 'r-2', repositoryPath: '/repo', runId: 'run-review' },
+        id: "job-review",
+        data: {
+          repositoryId: "r-2",
+          repositoryPath: "/repo",
+          runId: "run-review",
+        },
         attemptsMade: 0,
       } as any;
 
@@ -112,16 +149,24 @@ describe('Queue Module Infrastructure Verification', () => {
 
       await processor.process(mockJob);
 
-      const terminalEvent = mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
+      const terminalEvent =
+        mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
       assert.equal(terminalEvent.queueStatus, QueueEventStatus.Waiting);
-      assert.equal(terminalEvent.realtimeStatus, 'waiting_for_review');
-      assert.equal(terminalEvent.realtimeStage, RealtimeWorkflowStage.Reviewing);
+      assert.equal(terminalEvent.realtimeStatus, "waiting_for_review");
+      assert.equal(
+        terminalEvent.realtimeStage,
+        RealtimeWorkflowStage.Reviewing,
+      );
     });
 
-    it('should publish failed queue progress when executor returns a failed review outcome', async () => {
+    it("should publish failed queue progress when executor returns a failed review outcome", async () => {
       const mockJob = {
-        id: 'job-review-failed',
-        data: { repositoryId: 'r-3', repositoryPath: '/repo', runId: 'run-review-failed' },
+        id: "job-review-failed",
+        data: {
+          repositoryId: "r-3",
+          repositoryPath: "/repo",
+          runId: "run-review-failed",
+        },
         attemptsMade: 0,
       } as any;
 
@@ -131,30 +176,32 @@ describe('Queue Module Infrastructure Verification', () => {
 
       await processor.process(mockJob);
 
-      const terminalEvent = mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
+      const terminalEvent =
+        mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
       assert.equal(terminalEvent.queueStatus, QueueEventStatus.Failed);
-      assert.equal(terminalEvent.realtimeStatus, 'failed');
+      assert.equal(terminalEvent.realtimeStatus, "failed");
       assert.equal(terminalEvent.realtimeStage, RealtimeWorkflowStage.Failed);
     });
 
-    it('should log and rethrow errors when WorkflowService execution fails', async () => {
+    it("should log and rethrow errors when WorkflowService execution fails", async () => {
       const mockJob = {
-        id: 'job-error',
-        data: { repositoryId: 'r-1', repositoryPath: '/p', runId: 'run-err' },
+        id: "job-error",
+        data: { repositoryId: "r-1", repositoryPath: "/p", runId: "run-err" },
         attemptsMade: 0,
       } as any;
 
       mockWorkflowService.run.mock.mockImplementation(async () => {
-        throw new Error('Node failure');
+        throw new Error("Node failure");
       });
 
       await assert.rejects(() => processor.process(mockJob), {
-        message: 'Node failure',
+        message: "Node failure",
       });
 
-      const terminalEvent = mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
+      const terminalEvent =
+        mockProgressPublisher.publishJobProgress.mock.calls[1]!.arguments[1];
       assert.equal(terminalEvent.queueStatus, QueueEventStatus.Failed);
-      assert.equal(terminalEvent.realtimeStatus, 'failed');
+      assert.equal(terminalEvent.realtimeStatus, "failed");
       assert.equal(terminalEvent.realtimeStage, RealtimeWorkflowStage.Failed);
     });
   });

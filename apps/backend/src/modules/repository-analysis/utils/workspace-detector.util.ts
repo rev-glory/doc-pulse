@@ -1,10 +1,12 @@
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import { REPOSITORY_ANALYSIS_CONSTANTS } from '../constants/repository-analysis.constants';
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import { REPOSITORY_ANALYSIS_CONSTANTS } from "../constants/repository-analysis.constants";
 
-export async function detectPackageManager(rootPath: string): Promise<string | null> {
+export async function detectPackageManager(
+  rootPath: string,
+): Promise<string | null> {
   const entries = await fs.readdir(rootPath).catch(() => [] as string[]);
-  
+
   for (const pm of REPOSITORY_ANALYSIS_CONSTANTS.PACKAGE_MANAGERS) {
     if (entries.includes(pm.lockfile)) {
       return pm.name;
@@ -14,7 +16,9 @@ export async function detectPackageManager(rootPath: string): Promise<string | n
   return null;
 }
 
-export async function detectMonorepoTools(rootPath: string): Promise<{ isMonorepo: boolean; tools: string[] }> {
+export async function detectMonorepoTools(
+  rootPath: string,
+): Promise<{ isMonorepo: boolean; tools: string[] }> {
   const tools: string[] = [];
   const entries = await fs.readdir(rootPath).catch(() => [] as string[]);
 
@@ -45,7 +49,7 @@ export async function detectDockerFiles(rootPath: string): Promise<string[]> {
 
 export async function detectCiCd(rootPath: string): Promise<string[]> {
   const ciCdPaths: string[] = [];
-  
+
   for (const ciPath of REPOSITORY_ANALYSIS_CONSTANTS.CI_CD_DIRECTORIES) {
     const fullPath = path.join(rootPath, ciPath);
     try {
@@ -61,9 +65,11 @@ export async function detectCiCd(rootPath: string): Promise<string[]> {
   return ciCdPaths;
 }
 
-export async function detectWorkspaceFolders(rootPath: string): Promise<string[]> {
+export async function detectWorkspaceFolders(
+  rootPath: string,
+): Promise<string[]> {
   const folders: string[] = [];
-  
+
   for (const folder of REPOSITORY_ANALYSIS_CONSTANTS.WORKSPACE_FOLDERS) {
     const fullPath = path.join(rootPath, folder);
     try {

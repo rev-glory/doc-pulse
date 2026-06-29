@@ -1,13 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import * as path from 'path';
-import simpleGit, { SimpleGit, SimpleGitOptions } from 'simple-git';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import * as path from "path";
+import simpleGit, { SimpleGit, SimpleGitOptions } from "simple-git";
 
-import type { StorageConfig } from '@/config';
-import { IGitProvider } from '../../interfaces/git-provider.interface';
-import { GitStatus } from '../../types/git-types';
-import { SimpleGitErrorMapper } from '../../errors/simple-git-error-mapper';
-import { GitException } from '../../errors/git-exception';
+import type { StorageConfig } from "@/config";
+import { IGitProvider } from "../../interfaces/git-provider.interface";
+import { GitStatus } from "../../types/git-types";
+import { SimpleGitErrorMapper } from "../../errors/simple-git-error-mapper";
+import { GitException } from "../../errors/git-exception";
 
 @Injectable()
 export class SimpleGitProvider implements IGitProvider {
@@ -16,14 +16,15 @@ export class SimpleGitProvider implements IGitProvider {
   private readonly gitTimeoutMs: number;
 
   constructor(private readonly configService: ConfigService) {
-    const storageConfig = this.configService.getOrThrow<StorageConfig>('storage');
+    const storageConfig =
+      this.configService.getOrThrow<StorageConfig>("storage");
     this.gitTimeoutMs = storageConfig.gitTimeoutMs;
   }
 
   private createGitClient(baseDir: string): SimpleGit {
     const options: Partial<SimpleGitOptions> = {
       baseDir,
-      binary: 'git',
+      binary: "git",
       maxConcurrentProcesses: 6,
       timeout: {
         block: this.gitTimeoutMs,
@@ -32,7 +33,12 @@ export class SimpleGitProvider implements IGitProvider {
     return simpleGit(options);
   }
 
-  private wrapError(operation: string, error: unknown, repository?: string, branch?: string): GitException {
+  private wrapError(
+    operation: string,
+    error: unknown,
+    repository?: string,
+    branch?: string,
+  ): GitException {
     return this.mapper.mapError({ operation, error, repository, branch });
   }
 
@@ -41,7 +47,7 @@ export class SimpleGitProvider implements IGitProvider {
       const git = this.createGitClient(path.dirname(destinationPath));
       await git.clone(repositoryUrl, path.basename(destinationPath));
     } catch (error) {
-      throw this.wrapError('clone', error, repositoryUrl);
+      throw this.wrapError("clone", error, repositoryUrl);
     }
   }
 
@@ -50,7 +56,7 @@ export class SimpleGitProvider implements IGitProvider {
       const git = this.createGitClient(repositoryPath);
       await git.fetch();
     } catch (error) {
-      throw this.wrapError('fetch', error, repositoryPath);
+      throw this.wrapError("fetch", error, repositoryPath);
     }
   }
 
@@ -59,7 +65,7 @@ export class SimpleGitProvider implements IGitProvider {
       const git = this.createGitClient(repositoryPath);
       await git.pull();
     } catch (error) {
-      throw this.wrapError('pull', error, repositoryPath);
+      throw this.wrapError("pull", error, repositoryPath);
     }
   }
 
@@ -68,7 +74,7 @@ export class SimpleGitProvider implements IGitProvider {
       const git = this.createGitClient(repositoryPath);
       await git.checkout(ref);
     } catch (error) {
-      throw this.wrapError('checkout', error, repositoryPath, ref);
+      throw this.wrapError("checkout", error, repositoryPath, ref);
     }
   }
 
@@ -78,35 +84,35 @@ export class SimpleGitProvider implements IGitProvider {
       const branch = await git.branch();
       return branch.current;
     } catch (error) {
-      throw this.wrapError('currentBranch', error, repositoryPath);
+      throw this.wrapError("currentBranch", error, repositoryPath);
     }
   }
 
   async currentCommit(repositoryPath: string): Promise<string> {
     try {
       const git = this.createGitClient(repositoryPath);
-      const res = await git.revparse('HEAD');
-      return typeof res === 'string' ? res.trim() : '';
+      const res = await git.revparse("HEAD");
+      return typeof res === "string" ? res.trim() : "";
     } catch (error) {
-      throw this.wrapError('currentCommit', error, repositoryPath);
+      throw this.wrapError("currentCommit", error, repositoryPath);
     }
   }
 
   async resetHard(repositoryPath: string, ref?: string): Promise<void> {
     try {
       const git = this.createGitClient(repositoryPath);
-      await git.reset(['--hard', ref || 'HEAD']);
+      await git.reset(["--hard", ref || "HEAD"]);
     } catch (error) {
-      throw this.wrapError('resetHard', error, repositoryPath, ref);
+      throw this.wrapError("resetHard", error, repositoryPath, ref);
     }
   }
 
   async clean(repositoryPath: string): Promise<void> {
     try {
       const git = this.createGitClient(repositoryPath);
-      await git.clean('f', ['-d']);
+      await git.clean("f", ["-d"]);
     } catch (error) {
-      throw this.wrapError('clean', error, repositoryPath);
+      throw this.wrapError("clean", error, repositoryPath);
     }
   }
 
@@ -126,7 +132,7 @@ export class SimpleGitProvider implements IGitProvider {
           (res.created || []).length > 0,
       };
     } catch (error) {
-      throw this.wrapError('status', error, repositoryPath);
+      throw this.wrapError("status", error, repositoryPath);
     }
   }
 
@@ -136,25 +142,42 @@ export class SimpleGitProvider implements IGitProvider {
       const summary = await git.branchLocal();
       return summary.all;
     } catch (error) {
-      throw this.wrapError('branchList', error, repositoryPath);
+      throw this.wrapError("branchList", error, repositoryPath);
     }
   }
 
-  async checkoutLocalBranch(repositoryPath: string, branchName: string): Promise<void> {
+  async checkoutLocalBranch(
+    repositoryPath: string,
+    branchName: string,
+  ): Promise<void> {
     try {
       const git = this.createGitClient(repositoryPath);
       await git.checkoutLocalBranch(branchName);
     } catch (error) {
-      throw this.wrapError('checkoutLocalBranch', error, repositoryPath, branchName);
+      throw this.wrapError(
+        "checkoutLocalBranch",
+        error,
+        repositoryPath,
+        branchName,
+      );
     }
   }
 
-  async deleteLocalBranch(repositoryPath: string, branchName: string, force = false): Promise<void> {
+  async deleteLocalBranch(
+    repositoryPath: string,
+    branchName: string,
+    force = false,
+  ): Promise<void> {
     try {
       const git = this.createGitClient(repositoryPath);
       await git.deleteLocalBranch(branchName, force);
     } catch (error) {
-      throw this.wrapError('deleteLocalBranch', error, repositoryPath, branchName);
+      throw this.wrapError(
+        "deleteLocalBranch",
+        error,
+        repositoryPath,
+        branchName,
+      );
     }
   }
 
@@ -163,7 +186,7 @@ export class SimpleGitProvider implements IGitProvider {
       const git = this.createGitClient(repositoryPath);
       await git.add(files);
     } catch (error) {
-      throw this.wrapError('add', error, repositoryPath);
+      throw this.wrapError("add", error, repositoryPath);
     }
   }
 
@@ -171,18 +194,23 @@ export class SimpleGitProvider implements IGitProvider {
     try {
       const git = this.createGitClient(repositoryPath);
       const result = await git.commit(message);
-      return result.commit || '';
+      return result.commit || "";
     } catch (error) {
-      throw this.wrapError('commit', error, repositoryPath);
+      throw this.wrapError("commit", error, repositoryPath);
     }
   }
 
-  async push(repositoryPath: string, remote: string, branch: string, options: string[] = []): Promise<void> {
+  async push(
+    repositoryPath: string,
+    remote: string,
+    branch: string,
+    options: string[] = [],
+  ): Promise<void> {
     try {
       const git = this.createGitClient(repositoryPath);
       await git.push(remote, branch, options);
     } catch (error) {
-      throw this.wrapError('push', error, repositoryPath, branch);
+      throw this.wrapError("push", error, repositoryPath, branch);
     }
   }
 
@@ -191,62 +219,79 @@ export class SimpleGitProvider implements IGitProvider {
       const git = this.createGitClient(repositoryPath);
       return await git.diff(options);
     } catch (error) {
-      throw this.wrapError('diff', error, repositoryPath);
+      throw this.wrapError("diff", error, repositoryPath);
     }
   }
 
   async getRepositoryRoot(repositoryPath: string): Promise<string> {
     try {
       const git = this.createGitClient(repositoryPath);
-      const root = await git.revparse(['--show-toplevel']);
-      return typeof root === 'string' ? root.trim() : '';
+      const root = await git.revparse(["--show-toplevel"]);
+      return typeof root === "string" ? root.trim() : "";
     } catch (error) {
-      throw this.wrapError('getRepositoryRoot', error, repositoryPath);
+      throw this.wrapError("getRepositoryRoot", error, repositoryPath);
     }
   }
 
-  async getRemoteUrl(repositoryPath: string, remoteName: string): Promise<string> {
+  async getRemoteUrl(
+    repositoryPath: string,
+    remoteName: string,
+  ): Promise<string> {
     try {
       const git = this.createGitClient(repositoryPath);
-      const res = await git.remote(['get-url', remoteName]);
-      return typeof res === 'string' ? res.trim() : '';
+      const res = await git.remote(["get-url", remoteName]);
+      return typeof res === "string" ? res.trim() : "";
     } catch (error) {
-      throw this.wrapError('getRemoteUrl', error, repositoryPath);
+      throw this.wrapError("getRemoteUrl", error, repositoryPath);
     }
   }
 
-  async setRemoteUrl(repositoryPath: string, remoteName: string, url: string): Promise<void> {
+  async setRemoteUrl(
+    repositoryPath: string,
+    remoteName: string,
+    url: string,
+  ): Promise<void> {
     try {
       const git = this.createGitClient(repositoryPath);
-      await git.remote(['set-url', remoteName, url]);
+      await git.remote(["set-url", remoteName, url]);
     } catch (error) {
-      throw this.wrapError('setRemoteUrl', error, repositoryPath);
+      throw this.wrapError("setRemoteUrl", error, repositoryPath);
     }
   }
 
-  async getModifiedFiles(repositoryPath: string, commitSha: string): Promise<string[]> {
+  async getModifiedFiles(
+    repositoryPath: string,
+    commitSha: string,
+  ): Promise<string[]> {
     try {
       const git = this.createGitClient(repositoryPath);
-      const res = await git.show(['--name-only', '--pretty=format:', commitSha]);
-      if (typeof res === 'string') {
+      const res = await git.show([
+        "--name-only",
+        "--pretty=format:",
+        commitSha,
+      ]);
+      if (typeof res === "string") {
         return res
-          .split('\n')
+          .split("\n")
           .map((l) => l.trim())
           .filter((l) => l.length > 0);
       }
       return [];
     } catch (error) {
-      throw this.wrapError('getModifiedFiles', error, repositoryPath);
+      throw this.wrapError("getModifiedFiles", error, repositoryPath);
     }
   }
 
-  async getCommitMessage(repositoryPath: string, commitSha: string): Promise<string> {
+  async getCommitMessage(
+    repositoryPath: string,
+    commitSha: string,
+  ): Promise<string> {
     try {
       const git = this.createGitClient(repositoryPath);
-      const res = await git.show(['--format=%B', '-s', commitSha]);
-      return typeof res === 'string' ? res.trim() : '';
+      const res = await git.show(["--format=%B", "-s", commitSha]);
+      return typeof res === "string" ? res.trim() : "";
     } catch (error) {
-      throw this.wrapError('getCommitMessage', error, repositoryPath);
+      throw this.wrapError("getCommitMessage", error, repositoryPath);
     }
   }
 }

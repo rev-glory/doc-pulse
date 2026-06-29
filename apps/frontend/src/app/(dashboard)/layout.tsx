@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useEffect } from 'react';
-import { useAuth } from '@/features/auth/providers/auth-provider';
-import { useRouter } from 'next/navigation';
-import { DashboardLayout } from '@/components/layout/dashboard-layout';
+import React, { useEffect } from "react";
+import { useAuth } from "@/features/auth/providers/auth-provider";
+import { useRouter } from "next/navigation";
+import { DashboardLayout } from "@/components/layout/dashboard-layout";
 
 export default function AppDashboardRouteLayout({
   children,
@@ -15,7 +15,7 @@ export default function AppDashboardRouteLayout({
 
   useEffect(() => {
     if (!loading && !isAuthenticated) {
-      router.push('/login');
+      router.push("/login");
     }
   }, [isAuthenticated, loading, router]);
 

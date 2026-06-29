@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { Octokit } from '@octokit/rest';
+import { Injectable, Logger } from "@nestjs/common";
+import { Octokit } from "@octokit/rest";
 
-import { GitHubAuthService } from './github-auth.service';
+import { GitHubAuthService } from "./github-auth.service";
 
 // ---------------------------------------------------------------------------
 // GitHubApiService
@@ -40,7 +40,8 @@ export class GitHubApiService {
    * The token is cached by GitHubAuthService until near expiry.
    */
   async getInstallationClient(installationId: number): Promise<Octokit> {
-    const token = await this.gitHubAuthService.getInstallationAccessToken(installationId);
+    const token =
+      await this.gitHubAuthService.getInstallationAccessToken(installationId);
     return new Octokit({ auth: token });
   }
 
@@ -51,7 +52,7 @@ export class GitHubApiService {
     installationId: number,
     owner: string,
     repo: string,
-  ): Promise<Awaited<ReturnType<Octokit['rest']['repos']['get']>>['data']> {
+  ): Promise<Awaited<ReturnType<Octokit["rest"]["repos"]["get"]>>["data"]> {
     const octokit = await this.getInstallationClient(installationId);
     const response = await octokit.repos.get({ owner, repo });
     return response.data;

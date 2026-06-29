@@ -1,28 +1,31 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useApiQuery } from '@/lib/query/use-api-query';
-import { DashboardApi } from '@/lib/api/services/dashboard.api';
-import { PageHeader } from '@/components/shared/page-header';
-import { MetricCard } from '@/components/shared/metric-card';
-import { SectionCard } from '@/components/shared/section-card';
-import { LoadingState } from '@/components/feedback/loading-state';
-import { ErrorState } from '@/components/feedback/error-state';
-import { EmptyState } from '@/components/feedback/empty-state';
-import { QueueStatus } from '@/components/workflow/queue-status';
-import { WorkflowRunsTable } from '@/features/runs/components/workflow-runs-table';
-import { RecentPullRequests } from '@/features/pull-requests/components/recent-pull-requests';
+import React from "react";
+import { useApiQuery } from "@/lib/query/use-api-query";
+import { DashboardApi } from "@/lib/api/services/dashboard.api";
+import { PageHeader } from "@/components/shared/page-header";
+import { MetricCard } from "@/components/shared/metric-card";
+import { SectionCard } from "@/components/shared/section-card";
+import { LoadingState } from "@/components/feedback/loading-state";
+import { ErrorState } from "@/components/feedback/error-state";
+import { EmptyState } from "@/components/feedback/empty-state";
+import { QueueStatus } from "@/components/workflow/queue-status";
+import { WorkflowRunsTable } from "@/features/runs/components/workflow-runs-table";
+import { RecentPullRequests } from "@/features/pull-requests/components/recent-pull-requests";
 
 export default function DashboardOverviewPage(): React.JSX.Element {
   const { data, isLoading, error, refetch } = useApiQuery({
-    queryKey: ['dashboard', 'stats'],
+    queryKey: ["dashboard", "stats"],
     queryFn: DashboardApi.getStats,
   });
 
   if (isLoading) {
     return (
       <div>
-        <PageHeader title="Overview" description="Real-time AI documentation engine status." />
+        <PageHeader
+          title="Overview"
+          description="Real-time AI documentation engine status."
+        />
         <LoadingState message="Aggregating workspace telemetry..." rows={5} />
       </div>
     );
@@ -32,7 +35,10 @@ export default function DashboardOverviewPage(): React.JSX.Element {
     return (
       <div>
         <PageHeader title="Overview" />
-        <ErrorState message={error?.message || 'Failed to load dashboard metrics.'} retry={refetch} />
+        <ErrorState
+          message={error?.message || "Failed to load dashboard metrics."}
+          retry={refetch}
+        />
       </div>
     );
   }
@@ -47,25 +53,25 @@ export default function DashboardOverviewPage(): React.JSX.Element {
             type="button"
             onClick={refetch}
             style={{
-              padding: '0.45rem 1rem',
-              background: 'var(--accent)',
-              color: '#fff',
-              fontSize: '0.78rem',
+              padding: "0.45rem 1rem",
+              background: "var(--accent)",
+              color: "#fff",
+              fontSize: "0.78rem",
               fontWeight: 600,
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              cursor: 'pointer',
-              transition: 'all 0.18s ease',
-              boxShadow: 'var(--shadow-accent)',
-              letterSpacing: '0.02em',
+              borderRadius: "var(--radius-md)",
+              border: "none",
+              cursor: "pointer",
+              transition: "all 0.18s ease",
+              boxShadow: "var(--shadow-accent)",
+              letterSpacing: "0.02em",
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--accent-light)';
-              e.currentTarget.style.transform = 'translateY(-1px)';
+              e.currentTarget.style.background = "var(--accent-light)";
+              e.currentTarget.style.transform = "translateY(-1px)";
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'var(--accent)';
-              e.currentTarget.style.transform = 'translateY(0)';
+              e.currentTarget.style.background = "var(--accent)";
+              e.currentTarget.style.transform = "translateY(0)";
             }}
           >
             ↻ Refresh Feed
@@ -84,8 +90,8 @@ export default function DashboardOverviewPage(): React.JSX.Element {
           title="Active Workflows"
           value={data.activeWorkflows || 0}
           subtitle="Currently running AI agents"
-          status={data.activeWorkflows > 0 ? 'success' : 'default'}
-          trend={data.activeWorkflows > 0 ? 'Live Processing' : undefined}
+          status={data.activeWorkflows > 0 ? "success" : "default"}
+          trend={data.activeWorkflows > 0 ? "Live Processing" : undefined}
         />
         <MetricCard
           title="Completed Runs"
@@ -97,41 +103,57 @@ export default function DashboardOverviewPage(): React.JSX.Element {
           title="Failed Executions"
           value={data.failedWorkflows || 0}
           subtitle="Requiring manual inspection"
-          status={data.failedWorkflows > 0 ? 'danger' : 'default'}
+          status={data.failedWorkflows > 0 ? "danger" : "default"}
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         <div className="lg:col-span-2 space-y-8">
-          <SectionCard title="Recent Workflow Runs" description="Realtime AI execution trajectory log.">
+          <SectionCard
+            title="Recent Workflow Runs"
+            description="Realtime AI execution trajectory log."
+          >
             {data.recentRuns && data.recentRuns.length > 0 ? (
               <WorkflowRunsTable runs={data.recentRuns} />
             ) : (
-              <EmptyState title="No executions recorded" description="Push a commit to a synced repository to trigger AI analysis." />
+              <EmptyState
+                title="No executions recorded"
+                description="Push a commit to a synced repository to trigger AI analysis."
+              />
             )}
           </SectionCard>
         </div>
 
         <div className="space-y-8">
-          <SectionCard title="BullMQ Queue Status" description="Background job processor throughput.">
+          <SectionCard
+            title="BullMQ Queue Status"
+            description="Background job processor throughput."
+          >
             <QueueStatus
-              status={data.queueStatus?.status || 'idle'}
+              status={data.queueStatus?.status || "idle"}
               position={data.queueStatus?.waitingJobs || 0}
               progress={data.activeWorkflows > 0 ? 50 : 100}
             />
             <div className="mt-4 grid grid-cols-2 gap-2 text-center pt-4 border-t border-zinc-100 dark:border-zinc-800 text-xs">
               <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded">
                 <span className="block text-zinc-400">Active</span>
-                <span className="font-bold text-emerald-600">{data.queueStatus?.activeJobs || 0}</span>
+                <span className="font-bold text-emerald-600">
+                  {data.queueStatus?.activeJobs || 0}
+                </span>
               </div>
               <div className="p-2 bg-zinc-50 dark:bg-zinc-950 rounded">
                 <span className="block text-zinc-400">Waiting</span>
-                <span className="font-bold text-amber-600">{data.queueStatus?.waitingJobs || 0}</span>
+                <span className="font-bold text-amber-600">
+                  {data.queueStatus?.waitingJobs || 0}
+                </span>
               </div>
             </div>
           </SectionCard>
 
-          <SectionCard title="Generated Pull Requests" description="Documentation updates delivered to GitHub.">
+          <SectionCard
+            title="Generated Pull Requests"
+            description="Documentation updates delivered to GitHub."
+          >
             <RecentPullRequests pullRequests={data.recentPullRequests || []} />
           </SectionCard>
         </div>

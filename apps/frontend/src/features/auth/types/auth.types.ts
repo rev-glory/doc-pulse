@@ -1,4 +1,3 @@
-
 export interface User {
   id: string;
   githubId: string;
@@ -17,4 +16,3 @@ export interface AuthState {
   isAuthenticated: boolean;
   error: string | null;
 }
-

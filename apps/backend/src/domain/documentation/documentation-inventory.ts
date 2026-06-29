@@ -1,4 +1,4 @@
-import { DocumentationFile } from './documentation-file';
+import { DocumentationFile } from "./documentation-file";
 
 export interface DocumentationInventory {
   /** Developer-authored documentation files (no DocPulse marker). */

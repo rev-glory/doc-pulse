@@ -1,6 +1,6 @@
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import { Dependency, DependencyType } from '../../../domain/repository';
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import { Dependency, DependencyType } from "../../../domain/repository";
 
 export async function parsePackageJson(rootPath: string): Promise<{
   name: string;
@@ -8,8 +8,8 @@ export async function parsePackageJson(rootPath: string): Promise<{
   scripts: Record<string, string>;
 } | null> {
   try {
-    const packageJsonPath = path.join(rootPath, 'package.json');
-    const content = await fs.readFile(packageJsonPath, 'utf8');
+    const packageJsonPath = path.join(rootPath, "package.json");
+    const content = await fs.readFile(packageJsonPath, "utf8");
     const parsed = JSON.parse(content);
 
     return {
@@ -20,16 +20,20 @@ export async function parsePackageJson(rootPath: string): Promise<{
           version: String(version),
           type: DependencyType.dependency,
         })),
-        ...Object.entries(parsed.devDependencies || {}).map(([name, version]) => ({
-          name,
-          version: String(version),
-          type: DependencyType.devDependency,
-        })),
-        ...Object.entries(parsed.peerDependencies || {}).map(([name, version]) => ({
-          name,
-          version: String(version),
-          type: DependencyType.peerDependency,
-        })),
+        ...Object.entries(parsed.devDependencies || {}).map(
+          ([name, version]) => ({
+            name,
+            version: String(version),
+            type: DependencyType.devDependency,
+          }),
+        ),
+        ...Object.entries(parsed.peerDependencies || {}).map(
+          ([name, version]) => ({
+            name,
+            version: String(version),
+            type: DependencyType.peerDependency,
+          }),
+        ),
       ],
       scripts: parsed.scripts || {},
     };

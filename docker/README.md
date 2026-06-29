@@ -8,10 +8,10 @@ The `docker-compose.yml` at the **project root** orchestrates all infrastructure
 
 ## Services
 
-| Service | Image | Port | Purpose |
-|---|---|---|---|
-| `postgres` | `postgres:16-alpine` | `5432` | Primary relational data store (Prisma) |
-| `redis` | `redis:7-alpine` | `6379` | BullMQ job queues + LangGraph checkpoints |
+| Service    | Image                | Port   | Purpose                                   |
+| ---------- | -------------------- | ------ | ----------------------------------------- |
+| `postgres` | `postgres:16-alpine` | `5432` | Primary relational data store (Prisma)    |
+| `redis`    | `redis:7-alpine`     | `6379` | BullMQ job queues + LangGraph checkpoints |
 
 > Application containers (`backend`, `worker`, `frontend`) run **outside** Docker during local development via `pnpm dev`. Only infrastructure services run here.
 
@@ -130,6 +130,7 @@ docker volume rm docpulse_postgres_data docpulse_redis_data
 After `docker compose up -d`, connect to services at:
 
 **PostgreSQL**
+
 ```
 Host:     localhost
 Port:     5432  (or $POSTGRES_PORT)
@@ -140,6 +141,7 @@ URL:      postgresql://docpulse:docpulse_dev_password@localhost:5432/docpulse_de
 ```
 
 **Redis**
+
 ```
 Host:     localhost
 Port:     6379  (or $REDIS_PORT)
@@ -153,10 +155,10 @@ URL:      redis://:docpulse_dev_password@localhost:6379
 
 Named Docker volumes are used so that data persists across `docker compose down` restarts:
 
-| Volume | Purpose |
-|---|---|
+| Volume                   | Purpose                   |
+| ------------------------ | ------------------------- |
 | `docpulse_postgres_data` | PostgreSQL data directory |
-| `docpulse_redis_data` | Redis RDB snapshot files |
+| `docpulse_redis_data`    | Redis RDB snapshot files  |
 
 Volumes are **not** bind-mounted to the host filesystem and are excluded from git via `.gitignore`.
 
@@ -197,6 +199,7 @@ docker compose logs redis
 ```
 
 Common causes:
+
 - Wrong `POSTGRES_PASSWORD` format (avoid `@`, `#`, `$` without quoting)
 - Disk space exhausted
 - Existing volume from a different Postgres major version (run `docker compose down -v`)

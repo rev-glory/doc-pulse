@@ -13,31 +13,33 @@
  *  8. Checkpoint hydration restores previousGeneratedDocumentation
  */
 
-import { describe, it, before, after } from 'node:test';
-import assert from 'node:assert/strict';
-import * as fs from 'node:fs/promises';
-import * as path from 'node:path';
-import * as os from 'node:os';
+import { describe, it, before, after } from "node:test";
+import assert from "node:assert/strict";
+import * as fs from "node:fs/promises";
+import * as path from "node:path";
+import * as os from "node:os";
 
-import { buildDocumentationInventory } from '../../src/modules/repository-analysis/utils/documentation-detector.util';
-import { DOCPULSE_GENERATION_MARKER } from '../../src/modules/workflow/constants/docpulse-marker.constants';
-import { PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION } from '../../src/modules/document-generation/prompts/technical-writer.prompt';
-import { PromptBuilderService } from '../../src/modules/document-generation/services/prompt-builder.service';
-import { WorkflowNodeExecutionWrapper } from '../../src/modules/workflow/graph/workflow-node-execution.wrapper';
-import { WorkflowNodeName } from '../../src/domain/workflow';
+import { buildDocumentationInventory } from "../../src/modules/repository-analysis/utils/documentation-detector.util";
+import { DOCPULSE_GENERATION_MARKER } from "../../src/modules/workflow/constants/docpulse-marker.constants";
+import { PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION } from "../../src/modules/document-generation/prompts/technical-writer.prompt";
+import { PromptBuilderService } from "../../src/modules/document-generation/services/prompt-builder.service";
+import { WorkflowNodeExecutionWrapper } from "../../src/modules/workflow/graph/workflow-node-execution.wrapper";
+import { WorkflowNodeName } from "../../src/domain/workflow";
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 /** Creates a real temporary docs directory with controlled file contents. */
-async function createTempDocsDir(files: Record<string, string>): Promise<{ rootPath: string; cleanup: () => Promise<void> }> {
-  const rootPath = await fs.mkdtemp(path.join(os.tmpdir(), 'docpulse-test-'));
-  const docsDir = path.join(rootPath, 'docs');
+async function createTempDocsDir(
+  files: Record<string, string>,
+): Promise<{ rootPath: string; cleanup: () => Promise<void> }> {
+  const rootPath = await fs.mkdtemp(path.join(os.tmpdir(), "docpulse-test-"));
+  const docsDir = path.join(rootPath, "docs");
   await fs.mkdir(docsDir, { recursive: true });
 
   for (const [filename, content] of Object.entries(files)) {
-    await fs.writeFile(path.join(docsDir, filename), content, 'utf8');
+    await fs.writeFile(path.join(docsDir, filename), content, "utf8");
   }
 
   return {
@@ -64,20 +66,20 @@ function makePromptBuilder(): PromptBuilderService {
 /** Minimal context for PromptBuilderService — only fields relevant to this feature. */
 function makeContext(overrides: Partial<any> = {}): any {
   return {
-    repositoryName: 'test-repo',
-    rootPath: '/tmp/test',
-    languages: ['TypeScript'],
-    frameworks: ['NestJS'],
+    repositoryName: "test-repo",
+    rootPath: "/tmp/test",
+    languages: ["TypeScript"],
+    frameworks: ["NestJS"],
     dependencies: {},
     existingDocs: [],
     missingDocs: [],
     architectureFiles: [],
     apiDocs: [],
-    formattedSummary: 'Repository: test-repo\nLanguages: TypeScript',
+    formattedSummary: "Repository: test-repo\nLanguages: TypeScript",
     generationIteration: 1,
-    formattedSourceAnalysis: '',
+    formattedSourceAnalysis: "",
     previousGeneratedDocs: [],
-    formattedPreviousGenDocs: '',
+    formattedPreviousGenDocs: "",
     ...overrides,
   };
 }
@@ -86,7 +88,7 @@ function makeContext(overrides: Partial<any> = {}): any {
 // Suite 1: Inventory Classification
 // ---------------------------------------------------------------------------
 
-describe('DocumentationInventory — classification', () => {
+describe("DocumentationInventory — classification", () => {
   let rootPath: string;
   let cleanup: () => Promise<void>;
 
@@ -95,8 +97,8 @@ describe('DocumentationInventory — classification', () => {
     const devContent = `# Contributing\n\nHow to contribute to this project.`;
 
     ({ rootPath, cleanup } = await createTempDocsDir({
-      'architecture.md': markedContent,
-      'contributing.md': devContent,
+      "architecture.md": markedContent,
+      "contributing.md": devContent,
     }));
   });
 
@@ -104,29 +106,44 @@ describe('DocumentationInventory — classification', () => {
     await cleanup();
   });
 
-  it('files with DOCPULSE_GENERATION_MARKER go into previousGeneratedDocumentation', async () => {
+  it("files with DOCPULSE_GENERATION_MARKER go into previousGeneratedDocumentation", async () => {
     const inventory = await buildDocumentationInventory(rootPath);
-    const paths = inventory.previousGeneratedDocumentation.map(f => f.fileName);
-    assert.ok(paths.includes('architecture.md'), `Expected architecture.md in previousGeneratedDocumentation, got: ${JSON.stringify(paths)}`);
+    const paths = inventory.previousGeneratedDocumentation.map(
+      (f) => f.fileName,
+    );
+    assert.ok(
+      paths.includes("architecture.md"),
+      `Expected architecture.md in previousGeneratedDocumentation, got: ${JSON.stringify(paths)}`,
+    );
   });
 
-  it('files without the marker remain in documentationFiles', async () => {
+  it("files without the marker remain in documentationFiles", async () => {
     const inventory = await buildDocumentationInventory(rootPath);
-    const paths = inventory.documentationFiles.map(f => f.fileName);
-    assert.ok(paths.includes('contributing.md'), `Expected contributing.md in documentationFiles, got: ${JSON.stringify(paths)}`);
+    const paths = inventory.documentationFiles.map((f) => f.fileName);
+    assert.ok(
+      paths.includes("contributing.md"),
+      `Expected contributing.md in documentationFiles, got: ${JSON.stringify(paths)}`,
+    );
   });
 
-  it('classified DocPulse file has isDocPulseGenerated=true', async () => {
+  it("classified DocPulse file has isDocPulseGenerated=true", async () => {
     const inventory = await buildDocumentationInventory(rootPath);
-    const arch = inventory.previousGeneratedDocumentation.find(f => f.fileName === 'architecture.md');
-    assert.ok(arch, 'architecture.md not found in previousGeneratedDocumentation');
+    const arch = inventory.previousGeneratedDocumentation.find(
+      (f) => f.fileName === "architecture.md",
+    );
+    assert.ok(
+      arch,
+      "architecture.md not found in previousGeneratedDocumentation",
+    );
     assert.equal(arch!.isDocPulseGenerated, true);
   });
 
-  it('developer-authored file does NOT have isDocPulseGenerated=true', async () => {
+  it("developer-authored file does NOT have isDocPulseGenerated=true", async () => {
     const inventory = await buildDocumentationInventory(rootPath);
-    const contrib = inventory.documentationFiles.find(f => f.fileName === 'contributing.md');
-    assert.ok(contrib, 'contributing.md not found in documentationFiles');
+    const contrib = inventory.documentationFiles.find(
+      (f) => f.fileName === "contributing.md",
+    );
+    assert.ok(contrib, "contributing.md not found in documentationFiles");
     assert.ok(!contrib!.isDocPulseGenerated);
   });
 });
@@ -135,32 +152,44 @@ describe('DocumentationInventory — classification', () => {
 // Suite 2: Marker Stripping
 // ---------------------------------------------------------------------------
 
-describe('Marker stripping — marker never reaches downstream', () => {
+describe("Marker stripping — marker never reaches downstream", () => {
   let rootPath: string;
   let cleanup: () => Promise<void>;
 
   before(async () => {
     const content = `${DOCPULSE_GENERATION_MARKER}\n# API Reference\n\nEndpoints go here.`;
-    ({ rootPath, cleanup } = await createTempDocsDir({ 'api.md': content }));
+    ({ rootPath, cleanup } = await createTempDocsDir({ "api.md": content }));
   });
 
-  after(async () => { await cleanup(); });
+  after(async () => {
+    await cleanup();
+  });
 
-  it('content stored in previousGeneratedDocumentation does NOT contain the marker', async () => {
+  it("content stored in previousGeneratedDocumentation does NOT contain the marker", async () => {
     const inventory = await buildDocumentationInventory(rootPath);
-    const api = inventory.previousGeneratedDocumentation.find(f => f.fileName === 'api.md');
-    assert.ok(api, 'api.md not found in previousGeneratedDocumentation');
+    const api = inventory.previousGeneratedDocumentation.find(
+      (f) => f.fileName === "api.md",
+    );
+    assert.ok(api, "api.md not found in previousGeneratedDocumentation");
     assert.ok(
       !api!.content?.includes(DOCPULSE_GENERATION_MARKER),
-      'DOCPULSE_GENERATION_MARKER must not appear in stored content',
+      "DOCPULSE_GENERATION_MARKER must not appear in stored content",
     );
   });
 
-  it('original content body is preserved after stripping', async () => {
+  it("original content body is preserved after stripping", async () => {
     const inventory = await buildDocumentationInventory(rootPath);
-    const api = inventory.previousGeneratedDocumentation.find(f => f.fileName === 'api.md');
-    assert.ok(api!.content?.includes('# API Reference'), 'Document body must be preserved after stripping');
-    assert.ok(api!.content?.includes('Endpoints go here.'), 'Document detail must be preserved');
+    const api = inventory.previousGeneratedDocumentation.find(
+      (f) => f.fileName === "api.md",
+    );
+    assert.ok(
+      api!.content?.includes("# API Reference"),
+      "Document body must be preserved after stripping",
+    );
+    assert.ok(
+      api!.content?.includes("Endpoints go here."),
+      "Document detail must be preserved",
+    );
   });
 });
 
@@ -168,66 +197,81 @@ describe('Marker stripping — marker never reaches downstream', () => {
 // Suite 3: Prompt Builder
 // ---------------------------------------------------------------------------
 
-describe('PromptBuilderService — previous docs section injection', () => {
+describe("PromptBuilderService — previous docs section injection", () => {
   const promptBuilder = makePromptBuilder();
 
   it('appends "## Previous DocPulse Documentation" section when previous docs exist', async () => {
     const previousDoc = {
-      fileName: 'readme.md',
-      path: 'docs/readme.md',
-      type: 'README' as any,
+      fileName: "readme.md",
+      path: "docs/readme.md",
+      type: "README" as any,
       exists: true,
       isDocPulseGenerated: true,
-      content: '# My Project\n\nPreviously generated readme.',
+      content: "# My Project\n\nPreviously generated readme.",
     };
 
     const formattedPreviousGenDocs = `### docs/readme.md\n\n${previousDoc.content}`;
-    const context = makeContext({ previousGeneratedDocs: [previousDoc], formattedPreviousGenDocs });
+    const context = makeContext({
+      previousGeneratedDocs: [previousDoc],
+      formattedPreviousGenDocs,
+    });
 
-    const compiled = await promptBuilder.buildPrompt('README' as any, context);
+    const compiled = await promptBuilder.buildPrompt("README" as any, context);
     assert.ok(
-      compiled.userPrompt.includes('## Previous DocPulse Documentation'),
+      compiled.userPrompt.includes("## Previous DocPulse Documentation"),
       'Prompt must include "## Previous DocPulse Documentation" section',
     );
   });
 
-  it('omits the section entirely when no previous docs exist', async () => {
-    const context = makeContext({ previousGeneratedDocs: [], formattedPreviousGenDocs: '' });
-    const compiled = await promptBuilder.buildPrompt('README' as any, context);
+  it("omits the section entirely when no previous docs exist", async () => {
+    const context = makeContext({
+      previousGeneratedDocs: [],
+      formattedPreviousGenDocs: "",
+    });
+    const compiled = await promptBuilder.buildPrompt("README" as any, context);
     assert.ok(
-      !compiled.userPrompt.includes('## Previous DocPulse Documentation'),
-      'Section must be omitted when there are no previous generated docs',
+      !compiled.userPrompt.includes("## Previous DocPulse Documentation"),
+      "Section must be omitted when there are no previous generated docs",
     );
   });
 
-  it('prompt explicitly states the source code is the authoritative source of truth', async () => {
+  it("prompt explicitly states the source code is the authoritative source of truth", async () => {
     const formattedPreviousGenDocs = `### docs/architecture.md\n\nSome architecture content.`;
     const context = makeContext({ formattedPreviousGenDocs });
-    const compiled = await promptBuilder.buildPrompt('ARCHITECTURE' as any, context);
+    const compiled = await promptBuilder.buildPrompt(
+      "ARCHITECTURE" as any,
+      context,
+    );
     assert.ok(
-      compiled.userPrompt.includes('authoritative source of truth') ||
-      compiled.userPrompt.includes('source of truth'),
-      'Prompt must explicitly state the source code is authoritative',
+      compiled.userPrompt.includes("authoritative source of truth") ||
+        compiled.userPrompt.includes("source of truth"),
+      "Prompt must explicitly state the source code is authoritative",
     );
   });
 
-  it('DOCPULSE_GENERATION_MARKER never appears in the compiled prompt', async () => {
+  it("DOCPULSE_GENERATION_MARKER never appears in the compiled prompt", async () => {
     const formattedPreviousGenDocs = `### docs/api.md\n\n# API\n\nSome content without the marker.`;
     const context = makeContext({ formattedPreviousGenDocs });
-    const compiled = await promptBuilder.buildPrompt('API' as any, context);
+    const compiled = await promptBuilder.buildPrompt("API" as any, context);
     assert.ok(
       !compiled.userPrompt.includes(DOCPULSE_GENERATION_MARKER),
       `DOCPULSE_GENERATION_MARKER must never appear in the prompt. Found in: ${compiled.userPrompt.slice(0, 200)}`,
     );
   });
 
-  it('previous docs section constant has correct structure', () => {
-    assert.ok(PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION.includes('## Previous DocPulse Documentation'));
-    assert.ok(PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION.includes('{previousDocumentation}'));
+  it("previous docs section constant has correct structure", () => {
     assert.ok(
-      PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION.includes('source of truth') ||
-      PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION.includes('authoritative'),
-      'Section constant must mention source code authority',
+      PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION.includes(
+        "## Previous DocPulse Documentation",
+      ),
+    );
+    assert.ok(
+      PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION.includes("{previousDocumentation}"),
+    );
+    assert.ok(
+      PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION.includes("source of truth") ||
+        PREVIOUS_DOCPULSE_DOCS_PROMPT_SECTION.includes("authoritative"),
+      "Section constant must mention source code authority",
     );
   });
 });
@@ -236,25 +280,28 @@ describe('PromptBuilderService — previous docs section injection', () => {
 // Suite 4: Checkpoint Persistence
 // ---------------------------------------------------------------------------
 
-describe('Checkpoint persistence — previousGeneratedDocumentation survives serialization', () => {
+describe("Checkpoint persistence — previousGeneratedDocumentation survives serialization", () => {
   const mockCheckpointRepo = {} as any;
   const mockPrisma = {} as any;
 
-  it('constructLightweightSnapshot includes previousGeneratedDocumentation', () => {
-    const wrapper = new WorkflowNodeExecutionWrapper(mockCheckpointRepo, mockPrisma);
+  it("constructLightweightSnapshot includes previousGeneratedDocumentation", () => {
+    const wrapper = new WorkflowNodeExecutionWrapper(
+      mockCheckpointRepo,
+      mockPrisma,
+    );
     const previousDoc = {
-      fileName: 'api.md',
-      path: 'docs/api.md',
-      type: 'API' as any,
+      fileName: "api.md",
+      path: "docs/api.md",
+      type: "API" as any,
       exists: true,
       isDocPulseGenerated: true,
-      content: '# API\n\nEndpoints.',
+      content: "# API\n\nEndpoints.",
     };
 
     const mockState = {
-      runId: 'run-1',
-      repositoryId: 'repo-1',
-      workspacePath: '/tmp',
+      runId: "run-1",
+      repositoryId: "repo-1",
+      workspacePath: "/tmp",
       previousGeneratedDocumentation: [previousDoc],
       metadata: {},
     } as any;
@@ -265,17 +312,23 @@ describe('Checkpoint persistence — previousGeneratedDocumentation survives ser
       [WorkflowNodeName.DocumentationLocator],
     );
 
-    assert.ok(Array.isArray(snapshot.previousGeneratedDocumentation), 'previousGeneratedDocumentation must be an array in snapshot');
+    assert.ok(
+      Array.isArray(snapshot.previousGeneratedDocumentation),
+      "previousGeneratedDocumentation must be an array in snapshot",
+    );
     assert.equal(snapshot.previousGeneratedDocumentation.length, 1);
-    assert.equal(snapshot.previousGeneratedDocumentation[0].fileName, 'api.md');
+    assert.equal(snapshot.previousGeneratedDocumentation[0].fileName, "api.md");
   });
 
-  it('snapshot previousGeneratedDocumentation is undefined when state has none', () => {
-    const wrapper = new WorkflowNodeExecutionWrapper(mockCheckpointRepo, mockPrisma);
+  it("snapshot previousGeneratedDocumentation is undefined when state has none", () => {
+    const wrapper = new WorkflowNodeExecutionWrapper(
+      mockCheckpointRepo,
+      mockPrisma,
+    );
     const mockState = {
-      runId: 'run-1',
-      repositoryId: 'repo-1',
-      workspacePath: '/tmp',
+      runId: "run-1",
+      repositoryId: "repo-1",
+      workspacePath: "/tmp",
       previousGeneratedDocumentation: undefined,
       metadata: {},
     } as any;
@@ -286,6 +339,10 @@ describe('Checkpoint persistence — previousGeneratedDocumentation survives ser
       [WorkflowNodeName.DocumentationLocator],
     );
 
-    assert.ok(snapshot.previousGeneratedDocumentation === undefined || snapshot.previousGeneratedDocumentation === null || !snapshot.previousGeneratedDocumentation);
+    assert.ok(
+      snapshot.previousGeneratedDocumentation === undefined ||
+        snapshot.previousGeneratedDocumentation === null ||
+        !snapshot.previousGeneratedDocumentation,
+    );
   });
 });

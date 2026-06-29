@@ -40,6 +40,8 @@ yarn-error.log*
 # ==========================================================
 prisma/dev.db
 prisma/dev.db-journal
+apps/backend/src/generated/prisma/
+
 
 # ==========================================================
 # Docker

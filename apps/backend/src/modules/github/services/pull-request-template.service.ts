@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import type { WorkflowState } from '@/domain/workflow';
+import { Injectable } from "@nestjs/common";
+import type { WorkflowState } from "@/domain/workflow";
 
 @Injectable()
 export class PullRequestTemplateService {
@@ -7,7 +7,7 @@ export class PullRequestTemplateService {
    * Generates the standard conventional commit Pull Request title.
    */
   generateTitle(state: WorkflowState): string {
-    const runId = state.runId || 'automated';
+    const runId = state.runId || "automated";
     return `docs(docpulse): update automated documentation [${runId}]`;
   }
 
@@ -15,19 +15,21 @@ export class PullRequestTemplateService {
    * Generates formatted markdown body for the Pull Request.
    */
   generateBody(state: WorkflowState): string {
-    const runId = state.runId || 'N/A';
-    const repoName = state.repository?.name || 'Repository';
-    const score = state.criticReview?.score ?? 'N/A';
+    const runId = state.runId || "N/A";
+    const repoName = state.repository?.name || "Repository";
+    const score = state.criticReview?.score ?? "N/A";
     const approvedCount = state.criticReview?.approvedCount ?? 0;
-    const totalDocs = state.criticReview?.totalDocuments ?? (state.generatedDocuments?.length || 0);
+    const totalDocs =
+      state.criticReview?.totalDocuments ??
+      (state.generatedDocuments?.length || 0);
 
-    let docTableRows = '';
+    let docTableRows = "";
     if (state.generatedDocuments && state.generatedDocuments.length > 0) {
       for (const doc of state.generatedDocuments) {
-        docTableRows += `| \`${doc.path}\` | ${doc.summary || 'AI-generated documentation'} |\n`;
+        docTableRows += `| \`${doc.path}\` | ${doc.summary || "AI-generated documentation"} |\n`;
       }
     } else {
-      docTableRows = '| N/A | No documentation generated |\n';
+      docTableRows = "| N/A | No documentation generated |\n";
     }
 
     return `## 🤖 Automated Documentation Update

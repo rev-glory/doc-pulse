@@ -1,4 +1,4 @@
-import { GeneratedDocumentType } from '../../../domain/workflow';
+import { GeneratedDocumentType } from "../../../domain/workflow";
 
 export const TECHNICAL_WRITER_PROMPT_VERSION = 1;
 
@@ -26,15 +26,24 @@ export const DOCUMENT_TYPE_GUIDELINES: Record<GeneratedDocumentType, string> = {
 };
 
 export const DOCUMENT_OUTPUT_SCHEMA: Record<string, unknown> = {
-  type: 'OBJECT',
-  description: 'Structured documentation generation output schema',
+  type: "OBJECT",
+  description: "Structured documentation generation output schema",
   properties: {
-    title: { type: 'STRING', description: 'Document title' },
-    path: { type: 'STRING', description: 'Relative file path (e.g., README.md or docs/API.md)' },
-    markdown: { type: 'STRING', description: 'Full generated Markdown content' },
-    summary: { type: 'STRING', description: 'Brief 1-2 sentence summary of document contents' },
+    title: { type: "STRING", description: "Document title" },
+    path: {
+      type: "STRING",
+      description: "Relative file path (e.g., README.md or docs/API.md)",
+    },
+    markdown: {
+      type: "STRING",
+      description: "Full generated Markdown content",
+    },
+    summary: {
+      type: "STRING",
+      description: "Brief 1-2 sentence summary of document contents",
+    },
   },
-  required: ['title', 'path', 'markdown', 'summary'],
+  required: ["title", "path", "markdown", "summary"],
 };
 
 /**
@@ -61,4 +70,3 @@ Never copy outdated implementation details from this section.
 
 {previousDocumentation}
 `;
-

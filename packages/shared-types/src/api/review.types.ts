@@ -1,7 +1,7 @@
-import { RunStatus } from './workflow.types.js';
+import { RunStatus } from "./workflow.types.js";
 
 export interface CriticIssue {
-  severity: 'CRITICAL' | 'MAJOR' | 'MINOR';
+  severity: "CRITICAL" | "MAJOR" | "MINOR";
   category: string;
   message: string;
   location?: string;
@@ -47,7 +47,7 @@ export interface GeneratedDocument {
 
 export interface ReviewDetail {
   id: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'CHANGES_REQUESTED';
+  status: "PENDING" | "APPROVED" | "REJECTED" | "CHANGES_REQUESTED";
   comment: string | null;
   reviewer: string | null;
   reviewedAt: string | null;

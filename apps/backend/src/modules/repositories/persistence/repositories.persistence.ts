@@ -1,8 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from "@nestjs/common";
 
-import { PrismaService } from '@/database';
-import type { Repository, Prisma, BranchStrategy } from '@/generated/prisma/client';
-import type { IRepositoriesRepository, SyncUpsertRepositoryData } from '../interfaces/repositories.interfaces';
+import { PrismaService } from "@/database";
+import type {
+  Repository,
+  Prisma,
+  BranchStrategy,
+} from "@/generated/prisma/client";
+import type {
+  IRepositoriesRepository,
+  SyncUpsertRepositoryData,
+} from "../interfaces/repositories.interfaces";
 
 @Injectable()
 export class RepositoriesPersistence implements IRepositoriesRepository {
@@ -69,9 +76,9 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
         isActive: true,
         ownerId: data.ownerId,
         lastSyncedAt: now,
-        branchStrategy: 'DOCUMENTATION_BRANCH',
-        documentationBranchName: 'docpulse/docs',
-        documentationDirectory: 'docs',
+        branchStrategy: "DOCUMENTATION_BRANCH",
+        documentationBranchName: "docpulse/docs",
+        documentationDirectory: "docs",
       },
       update: {
         // Refresh all GitHub-sourced metadata that can change over time.
@@ -123,7 +130,7 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
         where: { id },
       });
     } catch (error: any) {
-      if (error.code !== 'P2025') {
+      if (error.code !== "P2025") {
         throw error;
       }
     }
@@ -135,7 +142,9 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
     });
   }
 
-  async findByGithubRepositoryId(githubRepositoryId: number): Promise<Repository | null> {
+  async findByGithubRepositoryId(
+    githubRepositoryId: number,
+  ): Promise<Repository | null> {
     return this.prisma.repository.findUnique({
       where: { githubRepositoryId },
     });

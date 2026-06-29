@@ -1,17 +1,17 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useApiQuery } from '@/lib/query/use-api-query';
-import { WorkflowApi } from '@/lib/api/services/workflow.api';
-import { PageHeader } from '@/components/shared/page-header';
-import { SectionCard } from '@/components/shared/section-card';
-import { LoadingState } from '@/components/feedback/loading-state';
-import { ErrorState } from '@/components/feedback/error-state';
-import { WorkflowRunsTable } from '@/features/runs/components/workflow-runs-table';
+import React from "react";
+import { useApiQuery } from "@/lib/query/use-api-query";
+import { WorkflowApi } from "@/lib/api/services/workflow.api";
+import { PageHeader } from "@/components/shared/page-header";
+import { SectionCard } from "@/components/shared/section-card";
+import { LoadingState } from "@/components/feedback/loading-state";
+import { ErrorState } from "@/components/feedback/error-state";
+import { WorkflowRunsTable } from "@/features/runs/components/workflow-runs-table";
 
 export default function WorkflowRunsListPage(): React.JSX.Element {
   const { data, isLoading, error, refetch } = useApiQuery({
-    queryKey: ['workflow', 'runs'],
+    queryKey: ["workflow", "runs"],
     queryFn: WorkflowApi.listRuns,
   });
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export interface PageHeaderProps {
   title: string;
@@ -6,28 +6,32 @@ export interface PageHeaderProps {
   actions?: React.ReactNode;
 }
 
-export const PageHeader: React.FC<PageHeaderProps> = ({ title, description, actions }) => {
+export const PageHeader: React.FC<PageHeaderProps> = ({
+  title,
+  description,
+  actions,
+}) => {
   return (
     <div
       style={{
-        display: 'flex',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        paddingBottom: '1.5rem',
-        marginBottom: '2rem',
-        borderBottom: '1px solid var(--border)',
-        gap: '1rem',
-        flexWrap: 'wrap',
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        paddingBottom: "1.5rem",
+        marginBottom: "2rem",
+        borderBottom: "1px solid var(--border)",
+        gap: "1rem",
+        flexWrap: "wrap",
       }}
     >
       <div>
         <h1
           className="text-gradient-warm"
           style={{
-            fontSize: '1.5rem',
+            fontSize: "1.5rem",
             fontWeight: 800,
-            letterSpacing: '-0.04em',
+            letterSpacing: "-0.04em",
             lineHeight: 1.2,
           }}
         >
@@ -36,9 +40,9 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, description, acti
         {description && (
           <p
             style={{
-              fontSize: '0.82rem',
-              color: 'var(--text-secondary)',
-              marginTop: '0.35rem',
+              fontSize: "0.82rem",
+              color: "var(--text-secondary)",
+              marginTop: "0.35rem",
               lineHeight: 1.5,
             }}
           >
@@ -48,7 +52,14 @@ export const PageHeader: React.FC<PageHeaderProps> = ({ title, description, acti
       </div>
 
       {actions && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexShrink: 0 }}>
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            flexShrink: 0,
+          }}
+        >
           {actions}
         </div>
       )}

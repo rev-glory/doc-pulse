@@ -1,7 +1,13 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { CodebaseAnalyzer } from '../../interfaces/analyzer.interface';
-import { RepositoryIndex, RepositoryScannerService } from '../repository-scanner.service';
-import { SourceCodeAnalysis, ApiEndpoint } from '../../../../domain/source-code-analysis/source-code-analysis';
+import { Injectable, Logger } from "@nestjs/common";
+import { CodebaseAnalyzer } from "../../interfaces/analyzer.interface";
+import {
+  RepositoryIndex,
+  RepositoryScannerService,
+} from "../repository-scanner.service";
+import {
+  SourceCodeAnalysis,
+  ApiEndpoint,
+} from "../../../../domain/source-code-analysis/source-code-analysis";
 
 @Injectable()
 export class TypeScriptAnalyzerService implements CodebaseAnalyzer {
@@ -13,15 +19,17 @@ export class TypeScriptAnalyzerService implements CodebaseAnalyzer {
     // Supports if there are .ts, .tsx, .js, or package.json files
     return index.files.some(
       (f) =>
-        f.extension === '.ts' ||
-        f.extension === '.tsx' ||
-        f.extension === '.js' ||
-        f.relativePath === 'package.json',
+        f.extension === ".ts" ||
+        f.extension === ".tsx" ||
+        f.extension === ".js" ||
+        f.relativePath === "package.json",
     );
   }
 
-  public async analyze(index: RepositoryIndex): Promise<Partial<SourceCodeAnalysis>> {
-    this.logger.debug('Starting TypeScript static analysis...');
+  public async analyze(
+    index: RepositoryIndex,
+  ): Promise<Partial<SourceCodeAnalysis>> {
+    this.logger.debug("Starting TypeScript static analysis...");
 
     const apiEndpoints: ApiEndpoint[] = [];
     const services: string[] = [];
@@ -40,10 +48,19 @@ export class TypeScriptAnalyzerService implements CodebaseAnalyzer {
     ];
 
     for (const file of index.files) {
-      if (file.extension === '.ts' || file.extension === '.tsx' || file.extension === '.js') {
+      if (
+        file.extension === ".ts" ||
+        file.extension === ".tsx" ||
+        file.extension === ".js"
+      ) {
         totalSourceFiles++;
 
-        if (commonEntryPatterns.some((pattern) => pattern.test(file.relativePath)) && entryPoints.length < 20) {
+        if (
+          commonEntryPatterns.some((pattern) =>
+            pattern.test(file.relativePath),
+          ) &&
+          entryPoints.length < 20
+        ) {
           entryPoints.push(file.relativePath);
         }
 
@@ -52,31 +69,43 @@ export class TypeScriptAnalyzerService implements CodebaseAnalyzer {
           const content = await this.scanner.readFile(index, file.relativePath);
 
           // NestJS Decorator matching
-          const controllerMatch = content.match(/@Controller\s*\(\s*['"`](.*?)['"`]\s*\)/);
+          const controllerMatch = content.match(
+            /@Controller\s*\(\s*['"`](.*?)['"`]\s*\)/,
+          );
           if (controllerMatch) {
-            const basePath = controllerMatch[1] || '';
-            const routeMatches = content.matchAll(/@(Get|Post|Put|Delete|Patch)\s*\(\s*(?:['"`](.*?)['"`])?\s*\)/g);
+            const basePath = controllerMatch[1] || "";
+            const routeMatches = content.matchAll(
+              /@(Get|Post|Put|Delete|Patch)\s*\(\s*(?:['"`](.*?)['"`])?\s*\)/g,
+            );
             for (const rMatch of routeMatches) {
               if (apiEndpoints.length >= 50) break;
               const method = rMatch[1]!.toUpperCase();
-              const subPath = rMatch[2] || '';
-              const path = `/${basePath}/${subPath}`.replace(/\/+/g, '/').replace(/\/$/, '');
+              const subPath = rMatch[2] || "";
+              const path = `/${basePath}/${subPath}`
+                .replace(/\/+/g, "/")
+                .replace(/\/$/, "");
               apiEndpoints.push({
                 method,
-                path: path || '/',
+                path: path || "/",
                 controller: file.relativePath,
               });
             }
           }
 
           // Express Router matching
-          const expressRouteMatches = content.matchAll(/(?:app|router|route)\.(get|post|put|delete|patch)\s*\(\s*['"`](.*?)['"`]/g);
+          const expressRouteMatches = content.matchAll(
+            /(?:app|router|route)\.(get|post|put|delete|patch)\s*\(\s*['"`](.*?)['"`]/g,
+          );
           for (const exMatch of expressRouteMatches) {
             if (apiEndpoints.length >= 50) break;
             const method = exMatch[1]!.toUpperCase();
-            const path = exMatch[2] || '/';
+            const path = exMatch[2] || "/";
             // Avoid duplicate endpoints
-            if (!apiEndpoints.some((ep) => ep.method === method && ep.path === path)) {
+            if (
+              !apiEndpoints.some(
+                (ep) => ep.method === method && ep.path === path,
+              )
+            ) {
               apiEndpoints.push({
                 method,
                 path,
@@ -89,7 +118,7 @@ export class TypeScriptAnalyzerService implements CodebaseAnalyzer {
           const classMatches = content.matchAll(/class\s+([A-Z]\w+)/g);
           for (const cMatch of classMatches) {
             const className = cMatch[1]!;
-            if (className.endsWith('Service') && services.length < 50) {
+            if (className.endsWith("Service") && services.length < 50) {
               services.push(className);
             }
             if (classes.length < 50 && !classes.includes(className)) {
@@ -107,10 +136,16 @@ export class TypeScriptAnalyzerService implements CodebaseAnalyzer {
           }
 
           // Extract functions
-          const functionMatches = content.matchAll(/(?:function|const)\s+(\w+)\s*=\s*(?:async\s*)?\(/g);
+          const functionMatches = content.matchAll(
+            /(?:function|const)\s+(\w+)\s*=\s*(?:async\s*)?\(/g,
+          );
           for (const fMatch of functionMatches) {
             const funcName = fMatch[1]!;
-            if (functions.length < 50 && !functions.includes(funcName) && funcName.length > 2) {
+            if (
+              functions.length < 50 &&
+              !functions.includes(funcName) &&
+              funcName.length > 2
+            ) {
               functions.push(funcName);
             }
           }
@@ -129,7 +164,11 @@ export class TypeScriptAnalyzerService implements CodebaseAnalyzer {
         moduleCount: 0, // Injected by other parts/aggregators if needed
         interfaceCount: interfaces.length,
         classCount: classes.length,
-        testCount: index.files.filter((f) => f.relativePath.includes('.spec.') || f.relativePath.includes('.test.')).length,
+        testCount: index.files.filter(
+          (f) =>
+            f.relativePath.includes(".spec.") ||
+            f.relativePath.includes(".test."),
+        ).length,
       },
     };
   }

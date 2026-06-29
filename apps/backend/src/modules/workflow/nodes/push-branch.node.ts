@@ -1,8 +1,8 @@
-import { Injectable, Logger, Optional } from '@nestjs/common';
-import { GitOperationsService } from '../../git-operations/services/git-operations.service';
-import { GitOperationStatus } from '../../../domain/workflow';
-import { PrismaService } from '@/database';
-import type { WorkflowGraphState } from '../graph/graph.types';
+import { Injectable, Logger, Optional } from "@nestjs/common";
+import { GitOperationsService } from "../../git-operations/services/git-operations.service";
+import { GitOperationStatus } from "../../../domain/workflow";
+import { PrismaService } from "@/database";
+import type { WorkflowGraphState } from "../graph/graph.types";
 
 @Injectable()
 export class PushBranchNode {
@@ -13,15 +13,21 @@ export class PushBranchNode {
     @Optional() private readonly prisma?: PrismaService,
   ) {}
 
-  async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
-    const runId = state.runId || 'automated';
-    const repoPath = state.workspacePath || state.repository?.rootPath || '';
-    const targetBranch = state.targetBranch || '';
+  async invoke(
+    state: WorkflowGraphState,
+  ): Promise<Partial<WorkflowGraphState>> {
+    const runId = state.runId || "automated";
+    const repoPath = state.workspacePath || state.repository?.rootPath || "";
+    const targetBranch = state.targetBranch || "";
 
-    this.logger.debug(`Executing PushBranchNode for run [${runId}] pushing [${targetBranch}]...`);
+    this.logger.debug(
+      `Executing PushBranchNode for run [${runId}] pushing [${targetBranch}]...`,
+    );
 
     if (!repoPath || !targetBranch) {
-      throw new Error(`PushBranchNode error: Missing workspacePath or targetBranch in workflow state.`);
+      throw new Error(
+        `PushBranchNode error: Missing workspacePath or targetBranch in workflow state.`,
+      );
     }
 
     // Extract installation metadata (fallback to 0 or metadata)

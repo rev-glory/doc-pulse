@@ -1,7 +1,13 @@
-import { Injectable, Logger, NotFoundException, ForbiddenException, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  NotFoundException,
+  ForbiddenException,
+  InternalServerErrorException,
+} from "@nestjs/common";
 
-import { GitHubApiService } from './github-api.service';
-import type { GitHubRepositoryMetadata } from '../types/github.types';
+import { GitHubApiService } from "./github-api.service";
+import type { GitHubRepositoryMetadata } from "../types/github.types";
 
 // ---------------------------------------------------------------------------
 // GitHubRepositoryService
@@ -46,10 +52,13 @@ export class GitHubRepositoryService {
     owner: string,
     repo: string,
   ): Promise<GitHubRepositoryMetadata> {
-    this.logger.debug(`Fetching repository metadata: ${owner}/${repo} (installation: ${installationId})`);
+    this.logger.debug(
+      `Fetching repository metadata: ${owner}/${repo} (installation: ${installationId})`,
+    );
 
     try {
-      const octokit = await this.gitHubApiService.getInstallationClient(installationId);
+      const octokit =
+        await this.gitHubApiService.getInstallationClient(installationId);
       const { data } = await octokit.repos.get({ owner, repo });
 
       return {
@@ -57,28 +66,37 @@ export class GitHubRepositoryService {
         owner: data.owner.login,
         name: data.name,
         fullName: data.full_name,
-        defaultBranch: data.default_branch || 'main',
+        defaultBranch: data.default_branch || "main",
         isPrivate: data.private,
         description: data.description ?? null,
         language: data.language ?? null,
         cloneUrl: data.clone_url,
         htmlUrl: data.html_url,
-        visibility: data.visibility ?? (data.private ? 'private' : 'public'),
+        visibility: data.visibility ?? (data.private ? "private" : "public"),
       };
     } catch (error) {
       const err = error as { status?: number };
 
       if (err.status === 404) {
         this.logger.warn(`Repository not found on GitHub: ${owner}/${repo}`);
-        throw new NotFoundException(`Repository ${owner}/${repo} not found on GitHub`);
+        throw new NotFoundException(
+          `Repository ${owner}/${repo} not found on GitHub`,
+        );
       }
 
       if (err.status === 403) {
-        this.logger.warn(`Installation ${installationId} lacks access to ${owner}/${repo}`);
-        throw new ForbiddenException(`Installation does not have access to ${owner}/${repo}`);
+        this.logger.warn(
+          `Installation ${installationId} lacks access to ${owner}/${repo}`,
+        );
+        throw new ForbiddenException(
+          `Installation does not have access to ${owner}/${repo}`,
+        );
       }
 
-      this.logger.error(`Failed to fetch repository metadata: ${owner}/${repo}`, error);
+      this.logger.error(
+        `Failed to fetch repository metadata: ${owner}/${repo}`,
+        error,
+      );
       throw error;
     }
   }
@@ -95,10 +113,13 @@ export class GitHubRepositoryService {
   async listInstallationRepositories(
     installationId: number,
   ): Promise<GitHubRepositoryMetadata[]> {
-    this.logger.debug(`Listing repositories for installation ${installationId}`);
+    this.logger.debug(
+      `Listing repositories for installation ${installationId}`,
+    );
 
     try {
-      const octokit = await this.gitHubApiService.getInstallationClient(installationId);
+      const octokit =
+        await this.gitHubApiService.getInstallationClient(installationId);
 
       const PAGE_SIZE = 100; // GitHub's maximum per-page for this endpoint
       const repositories: GitHubRepositoryMetadata[] = [];
@@ -118,13 +139,14 @@ export class GitHubRepositoryService {
             owner: repo.owner.login,
             name: repo.name,
             fullName: repo.full_name,
-            defaultBranch: repo.default_branch || 'main',
+            defaultBranch: repo.default_branch || "main",
             isPrivate: repo.private,
             description: repo.description ?? null,
             language: repo.language ?? null,
             cloneUrl: repo.clone_url,
             htmlUrl: repo.html_url,
-            visibility: repo.visibility ?? (repo.private ? 'private' : 'public'),
+            visibility:
+              repo.visibility ?? (repo.private ? "private" : "public"),
           });
         }
 
@@ -144,8 +166,12 @@ export class GitHubRepositoryService {
       const err = error as { status?: number };
 
       if (err.status === 401) {
-        this.logger.error(`Installation ${installationId} token is invalid or expired`);
-        throw new InternalServerErrorException('GitHub installation token is invalid');
+        this.logger.error(
+          `Installation ${installationId} token is invalid or expired`,
+        );
+        throw new InternalServerErrorException(
+          "GitHub installation token is invalid",
+        );
       }
 
       this.logger.error(

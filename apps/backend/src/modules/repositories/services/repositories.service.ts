@@ -7,21 +7,24 @@ import {
   BadRequestException,
   Inject,
   forwardRef,
-} from '@nestjs/common';
-import { plainToInstance, ClassTransformer } from 'class-transformer';
+} from "@nestjs/common";
+import { plainToInstance, ClassTransformer } from "class-transformer";
 
-import { GitHubRepositoryService } from '@/modules/github/services/github-repository.service';
-import { InstallationsPersistence } from '@/modules/github/persistence/installations.persistence';
-import { PrismaService } from '@/database';
-import type { User, Repository } from '@/generated/prisma/client';
-import { WorkspaceLifecycleService } from '@/modules/git-operations/services/workspace-lifecycle.service';
+import { GitHubRepositoryService } from "@/modules/github/services/github-repository.service";
+import { InstallationsPersistence } from "@/modules/github/persistence/installations.persistence";
+import { PrismaService } from "@/database";
+import type { User, Repository } from "@/generated/prisma/client";
+import { WorkspaceLifecycleService } from "@/modules/git-operations/services/workspace-lifecycle.service";
 
-import { ConnectRepositoryDto } from '../dto/connect-repository.dto';
-import { UpdateRepositoryDto } from '../dto/update-repository.dto';
-import { RepositoryResponseDto } from '../dto/repository-response.dto';
-import { RepositoriesPersistence } from '../persistence/repositories.persistence';
-import { isValidGitBranchName } from '../validators/branch-name.validator';
-import { isValidDocumentationDirectory, normalizeDocumentationDirectory } from '../validators/documentation-directory.validator';
+import { ConnectRepositoryDto } from "../dto/connect-repository.dto";
+import { UpdateRepositoryDto } from "../dto/update-repository.dto";
+import { RepositoryResponseDto } from "../dto/repository-response.dto";
+import { RepositoriesPersistence } from "../persistence/repositories.persistence";
+import { isValidGitBranchName } from "../validators/branch-name.validator";
+import {
+  isValidDocumentationDirectory,
+  normalizeDocumentationDirectory,
+} from "../validators/documentation-directory.validator";
 
 @Injectable()
 export class RepositoriesService {
@@ -39,21 +42,27 @@ export class RepositoriesService {
 
   // --- Helper Methods ---
 
-  private async findOwnedRepository(id: string, userId: string): Promise<Repository> {
+  private async findOwnedRepository(
+    id: string,
+    userId: string,
+  ): Promise<Repository> {
     const repository = await this.repositoriesPersistence.findById(id);
     if (!repository) {
-      throw new NotFoundException('Repository not found');
+      throw new NotFoundException("Repository not found");
     }
     this.assertRepositoryOwnership(repository, userId);
     return repository;
   }
 
-  private assertRepositoryOwnership(repository: Repository, userId: string): void {
+  private assertRepositoryOwnership(
+    repository: Repository,
+    userId: string,
+  ): void {
     if (repository.ownerId !== userId) {
       this.logger.warn(
         `User ${userId} attempted to access repository ${repository.id} which they don't own`,
       );
-      throw new ForbiddenException('Not authorized to access this repository');
+      throw new ForbiddenException("Not authorized to access this repository");
     }
   }
 
@@ -62,10 +71,10 @@ export class RepositoriesService {
       where: { id: installationId },
     });
     if (!installation) {
-      throw new NotFoundException('Installation not found');
+      throw new NotFoundException("Installation not found");
     }
     if (installation.userId !== userId) {
-      throw new ForbiddenException('Not authorized to use this installation');
+      throw new ForbiddenException("Not authorized to use this installation");
     }
     return installation;
   }
@@ -80,11 +89,16 @@ export class RepositoriesService {
 
   async listRepositories(user: User): Promise<RepositoryResponseDto[]> {
     this.logger.log(`Listing repositories for user ${user.id}`);
-    const repositories = await this.repositoriesPersistence.listRepositories(user.id);
+    const repositories = await this.repositoriesPersistence.listRepositories(
+      user.id,
+    );
     return repositories.map((repo) => this.toResponseDto(repo));
   }
 
-  async getRepositoryById(id: string, user: User): Promise<RepositoryResponseDto> {
+  async getRepositoryById(
+    id: string,
+    user: User,
+  ): Promise<RepositoryResponseDto> {
     this.logger.log(`Getting repository ${id} for user ${user.id}`);
     const repository = await this.findOwnedRepository(id, user.id);
     return this.toResponseDto(repository);
@@ -96,9 +110,11 @@ export class RepositoriesService {
    * @param installation - The installation record from the database
    * @returns A summary of the sync operation
    */
-  private async syncInstallationRepositoriesInternal(
-    installation: { id: string; installationId: number; userId: string },
-  ): Promise<{
+  private async syncInstallationRepositoriesInternal(installation: {
+    id: string;
+    installationId: number;
+    userId: string;
+  }): Promise<{
     installationId: number;
     synced: number;
     created: number;
@@ -108,27 +124,30 @@ export class RepositoriesService {
     const logCtx = { githubInstallationId: installation.installationId };
     const startedAt = Date.now();
 
-    this.logger.log('Starting repository sync for installation', logCtx);
+    this.logger.log("Starting repository sync for installation", logCtx);
 
     let githubRepos: any[] = [];
     try {
-      githubRepos = await this.gitHubRepositoryService.listInstallationRepositories(
-        installation.installationId,
-      );
+      githubRepos =
+        await this.gitHubRepositoryService.listInstallationRepositories(
+          installation.installationId,
+        );
     } catch (error: any) {
       const status = error?.status;
       if (
         status === 401 ||
         status === 403 ||
         status === 404 ||
-        error?.message?.includes('token is invalid') ||
-        error?.message?.includes('not found')
+        error?.message?.includes("token is invalid") ||
+        error?.message?.includes("not found")
       ) {
         this.logger.warn(
           `Installation ${installation.installationId} is revoked or inaccessible on GitHub. Marking installation and repositories inactive.`,
           { error: error?.message || error },
         );
-        await this.installationsPersistence.deactivateInstallation(installation.installationId);
+        await this.installationsPersistence.deactivateInstallation(
+          installation.installationId,
+        );
         return {
           installationId: installation.installationId,
           synced: 0,
@@ -139,10 +158,10 @@ export class RepositoriesService {
       throw error;
     }
 
-    this.logger.log(
-      `Fetched ${githubRepos.length} repositories from GitHub`,
-      { ...logCtx, count: githubRepos.length },
-    );
+    this.logger.log(`Fetched ${githubRepos.length} repositories from GitHub`, {
+      ...logCtx,
+      count: githubRepos.length,
+    });
 
     // Query existing database repositories for this installation or matching accessible GitHub IDs
     const githubRepoIds = githubRepos.map((r) => r.githubRepositoryId);
@@ -150,10 +169,17 @@ export class RepositoriesService {
       where: {
         OR: [
           { installationId: installation.id },
-          ...(githubRepoIds.length > 0 ? [{ githubRepositoryId: { in: githubRepoIds } }] : []),
+          ...(githubRepoIds.length > 0
+            ? [{ githubRepositoryId: { in: githubRepoIds } }]
+            : []),
         ],
       },
-      select: { id: true, githubRepositoryId: true, fullName: true, isActive: true },
+      select: {
+        id: true,
+        githubRepositoryId: true,
+        fullName: true,
+        isActive: true,
+      },
     });
 
     const githubIds = new Set(githubRepoIds);
@@ -226,19 +252,22 @@ export class RepositoriesService {
     const duration = Date.now() - startedAt;
 
     // Structured logging as per prompt specifications
-    this.logger.log(`Installation ${installation.installationId} reconciliation summary`, {
-      installationId: installation.installationId,
-      repositoryIds: githubRepos.map((r) => r.githubRepositoryId),
-      repositoryNames: githubRepos.map((r) => r.fullName),
-      repositoriesAdded: addedNames,
-      repositoriesRemoved: removedNames,
-      gitHubRepositoriesCount: githubRepos.length,
-      databaseRepositoriesCount: dbRepos.length,
-      added: createdCount,
-      removed: removedIds.length,
-      updated: updatedCount,
-      duration,
-    });
+    this.logger.log(
+      `Installation ${installation.installationId} reconciliation summary`,
+      {
+        installationId: installation.installationId,
+        repositoryIds: githubRepos.map((r) => r.githubRepositoryId),
+        repositoryNames: githubRepos.map((r) => r.fullName),
+        repositoriesAdded: addedNames,
+        repositoriesRemoved: removedNames,
+        gitHubRepositoriesCount: githubRepos.length,
+        databaseRepositoriesCount: dbRepos.length,
+        added: createdCount,
+        removed: removedIds.length,
+        updated: updatedCount,
+        duration,
+      },
+    );
 
     return {
       installationId: installation.installationId,
@@ -269,14 +298,15 @@ export class RepositoriesService {
     updated: number;
     removed?: number;
   }> {
-    const installation = await this.installationsPersistence.findByInstallationId(
-      githubInstallationId,
-    );
+    const installation =
+      await this.installationsPersistence.findByInstallationId(
+        githubInstallationId,
+      );
 
     if (!installation) {
       throw new NotFoundException(
         `Installation ${githubInstallationId} not found in database. ` +
-          'Ensure the installation webhook has been received before syncing.',
+          "Ensure the installation webhook has been received before syncing.",
       );
     }
 
@@ -285,7 +315,7 @@ export class RepositoriesService {
         `User ${user.id} attempted to sync installation ${githubInstallationId} ` +
           `which belongs to user ${installation.userId}`,
       );
-      throw new ForbiddenException('Not authorized to sync this installation');
+      throw new ForbiddenException("Not authorized to sync this installation");
     }
 
     return this.syncInstallationRepositoriesInternal(installation);
@@ -308,9 +338,10 @@ export class RepositoriesService {
     updated: number;
     removed?: number;
   } | null> {
-    const installation = await this.installationsPersistence.findByInstallationId(
-      githubInstallationId,
-    );
+    const installation =
+      await this.installationsPersistence.findByInstallationId(
+        githubInstallationId,
+      );
 
     if (!installation) {
       this.logger.warn(
@@ -328,9 +359,10 @@ export class RepositoriesService {
   async deactivateInstallationRepositoriesByGithubId(
     githubInstallationId: number,
   ): Promise<void> {
-    const installation = await this.installationsPersistence.findByInstallationId(
-      githubInstallationId,
-    );
+    const installation =
+      await this.installationsPersistence.findByInstallationId(
+        githubInstallationId,
+      );
     if (installation) {
       const now = new Date();
       await this.prisma.repository.updateMany({
@@ -348,9 +380,7 @@ export class RepositoriesService {
    *
    * @param githubRepositoryIds - Array of GitHub repository IDs to mark inactive
    */
-  async markRepositoriesInactive(
-    githubRepositoryIds: number[],
-  ): Promise<void> {
+  async markRepositoriesInactive(githubRepositoryIds: number[]): Promise<void> {
     if (githubRepositoryIds.length === 0) {
       return;
     }
@@ -372,28 +402,38 @@ export class RepositoriesService {
     user: User,
   ): Promise<RepositoryResponseDto> {
     const { installationId, owner, repositoryName } = connectRepositoryDto;
-    const logContext = { userId: user.id, installationId, owner, repositoryName };
+    const logContext = {
+      userId: user.id,
+      installationId,
+      owner,
+      repositoryName,
+    };
 
-    this.logger.log('Connecting repository', logContext);
+    this.logger.log("Connecting repository", logContext);
 
-    const installation = await this.findOwnedInstallation(installationId, user.id);
+    const installation = await this.findOwnedInstallation(
+      installationId,
+      user.id,
+    );
 
     // Fetch metadata from GitHub using an Installation Access Token.
     // GitHubRepositoryService handles 404/403 and throws the appropriate
     // NestJS exceptions — no error mapping needed here.
-    const repoMetadata = await this.gitHubRepositoryService.fetchRepositoryMetadata(
-      installation.installationId,
-      owner,
-      repositoryName,
-    );
+    const repoMetadata =
+      await this.gitHubRepositoryService.fetchRepositoryMetadata(
+        installation.installationId,
+        owner,
+        repositoryName,
+      );
 
     // Check if repository already connected
-    const existingRepository = await this.repositoriesPersistence.findByGithubRepositoryId(
-      repoMetadata.githubRepositoryId,
-    );
+    const existingRepository =
+      await this.repositoriesPersistence.findByGithubRepositoryId(
+        repoMetadata.githubRepositoryId,
+      );
     if (existingRepository) {
-      this.logger.warn('Repository already connected', logContext);
-      throw new ConflictException('Repository already connected');
+      this.logger.warn("Repository already connected", logContext);
+      throw new ConflictException("Repository already connected");
     }
 
     // Persist the repository using the typed metadata.
@@ -412,9 +452,9 @@ export class RepositoriesService {
       visibility: repoMetadata.visibility,
       isActive: true,
       ownerId: user.id,
-      branchStrategy: 'DOCUMENTATION_BRANCH',
-      documentationBranchName: 'docpulse/docs',
-      documentationDirectory: 'docs',
+      branchStrategy: "DOCUMENTATION_BRANCH",
+      documentationBranchName: "docpulse/docs",
+      documentationDirectory: "docs",
     });
 
     this.logger.log(
@@ -434,63 +474,82 @@ export class RepositoriesService {
     const repository = await this.findOwnedRepository(id, user.id);
 
     // Reconcile strategy and documentation branch name for validation
-    const strategy = updateRepositoryDto.branchStrategy ?? repository.branchStrategy;
+    const strategy =
+      updateRepositoryDto.branchStrategy ?? repository.branchStrategy;
     let branchName = repository.documentationBranchName;
     if (updateRepositoryDto.documentationBranchName !== undefined) {
       branchName = updateRepositoryDto.documentationBranchName;
     }
 
-    if (strategy === 'DOCUMENTATION_BRANCH') {
-      if (!branchName || branchName.trim() === '') {
-        throw new BadRequestException('documentationBranchName is required when using DOCUMENTATION_BRANCH strategy.');
+    if (strategy === "DOCUMENTATION_BRANCH") {
+      if (!branchName || branchName.trim() === "") {
+        throw new BadRequestException(
+          "documentationBranchName is required when using DOCUMENTATION_BRANCH strategy.",
+        );
       }
       if (!isValidGitBranchName(branchName)) {
-        throw new BadRequestException('Invalid documentation branch name.');
+        throw new BadRequestException("Invalid documentation branch name.");
       }
-    } else if (strategy === 'CURRENT_BRANCH') {
+    } else if (strategy === "CURRENT_BRANCH") {
       // Keep data model clean by setting configuration branch to null
       updateRepositoryDto.documentationBranchName = null;
     }
 
     // Reconcile, validate, and normalize documentationDirectory
-    const rawDir = updateRepositoryDto.documentationDirectory !== undefined
-      ? updateRepositoryDto.documentationDirectory
-      : repository.documentationDirectory;
+    const rawDir =
+      updateRepositoryDto.documentationDirectory !== undefined
+        ? updateRepositoryDto.documentationDirectory
+        : repository.documentationDirectory;
 
     if (!isValidDocumentationDirectory(rawDir)) {
-      throw new BadRequestException('Invalid documentation directory path.');
+      throw new BadRequestException("Invalid documentation directory path.");
     }
 
     const normalizedDir = normalizeDocumentationDirectory(rawDir);
     updateRepositoryDto.documentationDirectory = normalizedDir;
 
-    const updatedRepository = await this.repositoriesPersistence.update(id, updateRepositoryDto);
+    const updatedRepository = await this.repositoriesPersistence.update(
+      id,
+      updateRepositoryDto,
+    );
 
-    this.logger.log(`Repository updated: ${updatedRepository.fullName} (ID: ${updatedRepository.id})`);
+    this.logger.log(
+      `Repository updated: ${updatedRepository.fullName} (ID: ${updatedRepository.id})`,
+    );
 
     return this.toResponseDto(updatedRepository);
   }
 
-  async activateRepository(id: string, user: User): Promise<RepositoryResponseDto> {
+  async activateRepository(
+    id: string,
+    user: User,
+  ): Promise<RepositoryResponseDto> {
     this.logger.log(`Activating repository ${id} for user ${user.id}`);
     const repository = await this.findOwnedRepository(id, user.id);
     const updatedRepository = await this.repositoriesPersistence.update(id, {
       isActive: true,
     });
 
-    this.logger.log(`Repository activated: ${updatedRepository.fullName} (ID: ${updatedRepository.id})`);
+    this.logger.log(
+      `Repository activated: ${updatedRepository.fullName} (ID: ${updatedRepository.id})`,
+    );
 
     return this.toResponseDto(updatedRepository);
   }
 
-  async deactivateRepository(id: string, user: User): Promise<RepositoryResponseDto> {
+  async deactivateRepository(
+    id: string,
+    user: User,
+  ): Promise<RepositoryResponseDto> {
     this.logger.log(`Deactivating repository ${id} for user ${user.id}`);
     const repository = await this.findOwnedRepository(id, user.id);
     const updatedRepository = await this.repositoriesPersistence.update(id, {
       isActive: false,
     });
 
-    this.logger.log(`Repository deactivated: ${updatedRepository.fullName} (ID: ${updatedRepository.id})`);
+    this.logger.log(
+      `Repository deactivated: ${updatedRepository.fullName} (ID: ${updatedRepository.id})`,
+    );
 
     return this.toResponseDto(updatedRepository);
   }
@@ -504,10 +563,15 @@ export class RepositoriesService {
     try {
       await this.workspaceLifecycleService.deleteWorkspace(id);
     } catch (error) {
-      this.logger.error(`Failed to clean up workspace for deleted repository ${id}:`, error);
+      this.logger.error(
+        `Failed to clean up workspace for deleted repository ${id}:`,
+        error,
+      );
     }
 
-    this.logger.log(`Repository deleted: ${repository.fullName} (ID: ${repository.id})`);
+    this.logger.log(
+      `Repository deleted: ${repository.fullName} (ID: ${repository.id})`,
+    );
   }
 
   async removeRepository(repositoryId: string): Promise<void> {

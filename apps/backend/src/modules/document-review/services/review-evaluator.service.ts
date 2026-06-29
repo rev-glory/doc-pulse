@@ -1,14 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, Logger } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
 import {
   CriticReview,
   DocumentationReview,
   GeneratedDocumentType,
   ReviewIssue,
   ReviewMetrics,
-} from '../../../domain/workflow';
-import { MarkdownValidationResult } from '../../document-generation/services/markdown-validator.service';
-import { RawCriticReviewOutput } from '../../document-generation/services/output-parser.service';
+} from "../../../domain/workflow";
+import { MarkdownValidationResult } from "../../document-generation/services/markdown-validator.service";
+import { RawCriticReviewOutput } from "../../document-generation/services/output-parser.service";
 
 @Injectable()
 export class ReviewEvaluatorService {
@@ -26,19 +26,22 @@ export class ReviewEvaluatorService {
     documentType: GeneratedDocumentType,
     metrics: ReviewMetrics,
   ): DocumentationReview {
-    const threshold = this.configService.get<number>('CRITIC_APPROVAL_THRESHOLD', 85);
+    const threshold = this.configService.get<number>(
+      "CRITIC_APPROVAL_THRESHOLD",
+      85,
+    );
 
     // Convert markdown diagnostics to ReviewIssue
     const markdownIssues: ReviewIssue[] = [
       ...validationResult.errors.map((err) => ({
-        severity: 'CRITICAL' as const,
-        category: 'Markdown Structure',
+        severity: "CRITICAL" as const,
+        category: "Markdown Structure",
         message: err.message,
         location: err.line ? `Line ${err.line}` : undefined,
       })),
       ...validationResult.warnings.map((warn) => ({
-        severity: 'MINOR' as const,
-        category: 'Markdown Formatting',
+        severity: "MINOR" as const,
+        category: "Markdown Formatting",
         message: warn.message,
         location: warn.line ? `Line ${warn.line}` : undefined,
       })),
@@ -49,7 +52,13 @@ export class ReviewEvaluatorService {
     // Calculate score deductions
     const errorPenalty = validationResult.errors.length * 15;
     const warningPenalty = validationResult.warnings.length * 2;
-    const finalScore = Math.max(0, Math.min(100, Math.round(rawOutput.score - errorPenalty - warningPenalty)));
+    const finalScore = Math.max(
+      0,
+      Math.min(
+        100,
+        Math.round(rawOutput.score - errorPenalty - warningPenalty),
+      ),
+    );
 
     const approved = finalScore >= threshold && validationResult.valid;
 
@@ -78,7 +87,7 @@ export class ReviewEvaluatorService {
         approvedCount: 0,
         failedCount: 0,
         totalDocuments: 0,
-        issues: ['No document reviews available to aggregate'],
+        issues: ["No document reviews available to aggregate"],
         suggestions: [],
         reviews: [],
       };
@@ -98,8 +107,10 @@ export class ReviewEvaluatorService {
 
     for (const rev of reviews) {
       for (const iss of rev.issues) {
-        const locStr = iss.location ? ` (${iss.location})` : '';
-        formattedIssues.push(`[${rev.documentType}] [${iss.severity}] ${iss.category}: ${iss.message}${locStr}`);
+        const locStr = iss.location ? ` (${iss.location})` : "";
+        formattedIssues.push(
+          `[${rev.documentType}] [${iss.severity}] ${iss.category}: ${iss.message}${locStr}`,
+        );
       }
       for (const sug of rev.suggestions) {
         allSuggestions.add(`[${rev.documentType}] ${sug}`);

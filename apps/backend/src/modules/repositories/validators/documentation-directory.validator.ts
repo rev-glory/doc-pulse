@@ -1,4 +1,8 @@
-import { registerDecorator, ValidationOptions, ValidationArguments } from 'class-validator';
+import {
+  registerDecorator,
+  ValidationOptions,
+  ValidationArguments,
+} from "class-validator";
 
 /**
  * Normalizes documentation directory inputs:
@@ -9,29 +13,34 @@ import { registerDecorator, ValidationOptions, ValidationArguments } from 'class
  * - Trims starting and trailing slashes
  */
 export function normalizeDocumentationDirectory(dir: string): string {
-  if (!dir || typeof dir !== 'string') {
-    return '.';
+  if (!dir || typeof dir !== "string") {
+    return ".";
   }
-  
+
   const trimmed = dir.trim();
-  if (trimmed === '' || trimmed === '.' || trimmed === '/' || trimmed === '\\') {
-    return '.';
+  if (
+    trimmed === "" ||
+    trimmed === "." ||
+    trimmed === "/" ||
+    trimmed === "\\"
+  ) {
+    return ".";
   }
 
   // Replace backslashes with forward slashes
-  let normalized = trimmed.replace(/\\/g, '/');
+  let normalized = trimmed.replace(/\\/g, "/");
 
   // Collapse duplicate slashes
-  normalized = normalized.replace(/\/+/g, '/');
+  normalized = normalized.replace(/\/+/g, "/");
 
   // Strip leading slash
-  normalized = normalized.replace(/^\//, '');
+  normalized = normalized.replace(/^\//, "");
 
   // Strip trailing slash
-  normalized = normalized.replace(/\/$/, '');
+  normalized = normalized.replace(/\/$/, "");
 
-  if (normalized === '' || normalized === '.') {
-    return '.';
+  if (normalized === "" || normalized === ".") {
+    return ".";
   }
 
   return normalized;
@@ -43,29 +52,39 @@ export function normalizeDocumentationDirectory(dir: string): string {
  * - Must not be absolute (no leading slash, and no Windows drive letter patterns)
  */
 export function isValidDocumentationDirectory(dir: string): boolean {
-  if (!dir || typeof dir !== 'string') {
+  if (!dir || typeof dir !== "string") {
     return false;
   }
 
   const normalized = normalizeDocumentationDirectory(dir);
 
   // Reject traversal
-  if (normalized.startsWith('..') || normalized.includes('/../') || normalized.includes('\\..\\')) {
+  if (
+    normalized.startsWith("..") ||
+    normalized.includes("/../") ||
+    normalized.includes("\\..\\")
+  ) {
     return false;
   }
 
   // Reject absolute paths
-  if (dir.trim().startsWith('/') || dir.trim().startsWith('\\') || /^[a-zA-Z]:/.test(dir.trim())) {
+  if (
+    dir.trim().startsWith("/") ||
+    dir.trim().startsWith("\\") ||
+    /^[a-zA-Z]:/.test(dir.trim())
+  ) {
     return false;
   }
 
   return true;
 }
 
-export function IsDocumentationDirectory(validationOptions?: ValidationOptions) {
+export function IsDocumentationDirectory(
+  validationOptions?: ValidationOptions,
+) {
   return function (object: Object, propertyName: string) {
     registerDecorator({
-      name: 'isDocumentationDirectory',
+      name: "isDocumentationDirectory",
       target: object.constructor,
       propertyName: propertyName,
       options: validationOptions,

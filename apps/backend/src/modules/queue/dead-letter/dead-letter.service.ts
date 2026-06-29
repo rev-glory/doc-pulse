@@ -1,9 +1,9 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { InjectQueue } from '@nestjs/bullmq';
-import type { Queue } from 'bullmq';
+import { Injectable, Logger } from "@nestjs/common";
+import { InjectQueue } from "@nestjs/bullmq";
+import type { Queue } from "bullmq";
 
-import { WORKFLOW_DLQ_QUEUE } from '../constants/queue.constants';
-import type { WorkflowJobPayload } from '../interfaces/workflow-job.interface';
+import { WORKFLOW_DLQ_QUEUE } from "../constants/queue.constants";
+import type { WorkflowJobPayload } from "../interfaces/workflow-job.interface";
 
 export interface DlqJobRecord {
   originalJobId: string;
@@ -36,8 +36,12 @@ export class DeadLetterService {
     attemptsMade: number;
   }): Promise<string> {
     const failedAt = new Date().toISOString();
-    const failureReason = params.error instanceof Error ? params.error.message : String(params.error);
-    const stackTrace = params.error instanceof Error ? params.error.stack : undefined;
+    const failureReason =
+      params.error instanceof Error
+        ? params.error.message
+        : String(params.error);
+    const stackTrace =
+      params.error instanceof Error ? params.error.stack : undefined;
 
     const record: DlqJobRecord = {
       originalJobId: params.jobId,
@@ -55,9 +59,9 @@ export class DeadLetterService {
       removeOnFail: false,
     });
 
-    const dlqJobId = dlqJob.id ?? 'unknown';
+    const dlqJobId = dlqJob.id ?? "unknown";
 
-    this.logger.error('Job routed to Dead Letter Queue (DLQ)', {
+    this.logger.error("Job routed to Dead Letter Queue (DLQ)", {
       dlqJobId,
       originalJobId: params.jobId,
       runId: params.payload.runId,

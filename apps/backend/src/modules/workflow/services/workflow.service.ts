@@ -1,7 +1,7 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { WorkflowExecutorService } from '../graph/workflow-executor.service';
-import { WorkflowExecutionInput } from '../graph/graph.types';
-import { WorkflowState } from '../../../domain/workflow';
+import { Injectable, Logger } from "@nestjs/common";
+import { WorkflowExecutorService } from "../graph/workflow-executor.service";
+import { WorkflowExecutionInput } from "../graph/graph.types";
+import { WorkflowState } from "../../../domain/workflow";
 
 /**
  * Unified execution facade for LangGraph documentation workflows.
@@ -16,19 +16,26 @@ export class WorkflowService {
   /**
    * Executes or resumes a workflow run.
    */
-  public async run(input: WorkflowExecutionInput, executionMode: 'start' | 'resume' | 'restart' = 'start'): Promise<WorkflowState> {
-    this.logger.debug(`Delegating workflow run [${input.runId}] (mode: ${executionMode}) to WorkflowExecutorService...`);
+  public async run(
+    input: WorkflowExecutionInput,
+    executionMode: "start" | "resume" | "restart" = "start",
+  ): Promise<WorkflowState> {
+    this.logger.debug(
+      `Delegating workflow run [${input.runId}] (mode: ${executionMode}) to WorkflowExecutorService...`,
+    );
 
-    if (!input.repositoryId || input.repositoryId === 'unknown') {
-      throw new Error('Missing or invalid repositoryId in workflow execution input');
+    if (!input.repositoryId || input.repositoryId === "unknown") {
+      throw new Error(
+        "Missing or invalid repositoryId in workflow execution input",
+      );
     }
 
     switch (executionMode) {
-      case 'resume':
+      case "resume":
         return this.executorService.resume(input);
-      case 'restart':
+      case "restart":
         return this.executorService.restart(input);
-      case 'start':
+      case "start":
       default:
         return this.executorService.start(input);
     }

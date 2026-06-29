@@ -1,20 +1,19 @@
+"use client";
 
-'use client';
-
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '@/features/auth/providers/auth-provider';
-import { useRouter, useSearchParams } from 'next/navigation';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/features/auth/providers/auth-provider";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage(): React.JSX.Element {
   const { login, isAuthenticated, loading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const errorParam = searchParams.get('error');
+  const errorParam = searchParams.get("error");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   useEffect(() => {
     if (isAuthenticated && !loading) {
-      router.push('/dashboard');
+      router.push("/dashboard");
     }
   }, [isAuthenticated, loading, router]);
 
@@ -25,16 +24,21 @@ export default function LoginPage(): React.JSX.Element {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--bg-base)' }}>
+      <div
+        className="min-h-screen flex items-center justify-center"
+        style={{ background: "var(--bg-base)" }}
+      >
         <div className="flex flex-col items-center gap-4">
           <div
             className="w-10 h-10 rounded-full border-2 border-transparent"
             style={{
-              borderTopColor: 'var(--accent)',
-              animation: 'spin-slow 0.8s linear infinite',
+              borderTopColor: "var(--accent)",
+              animation: "spin-slow 0.8s linear infinite",
             }}
           />
-          <span style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Authenticating…</span>
+          <span style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>
+            Authenticating…
+          </span>
         </div>
       </div>
     );
@@ -44,50 +48,53 @@ export default function LoginPage(): React.JSX.Element {
     <div
       id="login-page"
       className="min-h-screen flex items-center justify-center relative overflow-hidden"
-      style={{ background: 'var(--bg-base)' }}
+      style={{ background: "var(--bg-base)" }}
     >
       {/* ── Ambient glow orbs ── */}
       <div
         aria-hidden="true"
         style={{
-          position: 'absolute',
-          top: '-10%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '700px',
-          height: '700px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)',
-          pointerEvents: 'none',
-          animation: 'orb-float 8s ease-in-out infinite',
+          position: "absolute",
+          top: "-10%",
+          left: "50%",
+          transform: "translateX(-50%)",
+          width: "700px",
+          height: "700px",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)",
+          pointerEvents: "none",
+          animation: "orb-float 8s ease-in-out infinite",
         }}
       />
       <div
         aria-hidden="true"
         style={{
-          position: 'absolute',
-          bottom: '-15%',
-          right: '-10%',
-          width: '500px',
-          height: '500px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(129,140,248,0.12) 0%, transparent 70%)',
-          pointerEvents: 'none',
-          animation: 'orb-float 10s ease-in-out infinite reverse',
+          position: "absolute",
+          bottom: "-15%",
+          right: "-10%",
+          width: "500px",
+          height: "500px",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(129,140,248,0.12) 0%, transparent 70%)",
+          pointerEvents: "none",
+          animation: "orb-float 10s ease-in-out infinite reverse",
         }}
       />
       <div
         aria-hidden="true"
         style={{
-          position: 'absolute',
-          bottom: '10%',
-          left: '-5%',
-          width: '350px',
-          height: '350px',
-          borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)',
-          pointerEvents: 'none',
-          animation: 'orb-float 12s ease-in-out infinite 2s',
+          position: "absolute",
+          bottom: "10%",
+          left: "-5%",
+          width: "350px",
+          height: "350px",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, rgba(99,102,241,0.08) 0%, transparent 70%)",
+          pointerEvents: "none",
+          animation: "orb-float 12s ease-in-out infinite 2s",
         }}
       />
 
@@ -95,15 +102,16 @@ export default function LoginPage(): React.JSX.Element {
       <div
         aria-hidden="true"
         style={{
-          position: 'absolute',
+          position: "absolute",
           inset: 0,
           backgroundImage: `
             linear-gradient(rgba(255,255,255,0.015) 1px, transparent 1px),
             linear-gradient(90deg, rgba(255,255,255,0.015) 1px, transparent 1px)
           `,
-          backgroundSize: '48px 48px',
-          pointerEvents: 'none',
-          maskImage: 'radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 100%)',
+          backgroundSize: "48px 48px",
+          pointerEvents: "none",
+          maskImage:
+            "radial-gradient(ellipse 80% 60% at 50% 50%, black 30%, transparent 100%)",
         }}
       />
 
@@ -111,16 +119,17 @@ export default function LoginPage(): React.JSX.Element {
       <div
         id="login-card"
         className="animate-slide-up relative z-10 w-full mx-4"
-        style={{ maxWidth: '420px' }}
+        style={{ maxWidth: "420px" }}
       >
         {/* Glowing border wrapper */}
         <div
           style={{
-            position: 'absolute',
-            inset: '-1px',
-            borderRadius: 'calc(var(--radius-xl) + 1px)',
-            background: 'linear-gradient(135deg, rgba(99,102,241,0.4) 0%, transparent 50%, rgba(129,140,248,0.2) 100%)',
-            pointerEvents: 'none',
+            position: "absolute",
+            inset: "-1px",
+            borderRadius: "calc(var(--radius-xl) + 1px)",
+            background:
+              "linear-gradient(135deg, rgba(99,102,241,0.4) 0%, transparent 50%, rgba(129,140,248,0.2) 100%)",
+            pointerEvents: "none",
             zIndex: 0,
           }}
         />
@@ -128,8 +137,8 @@ export default function LoginPage(): React.JSX.Element {
         <div
           className="glass relative"
           style={{
-            borderRadius: 'var(--radius-xl)',
-            padding: '2.5rem',
+            borderRadius: "var(--radius-xl)",
+            padding: "2.5rem",
             zIndex: 1,
           }}
         >
@@ -137,19 +146,20 @@ export default function LoginPage(): React.JSX.Element {
           <div className="flex flex-col items-center mb-8">
             <div
               style={{
-                width: '52px',
-                height: '52px',
-                borderRadius: 'var(--radius-md)',
-                background: 'linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                marginBottom: '1rem',
-                boxShadow: 'var(--shadow-accent)',
-                fontSize: '1.5rem',
+                width: "52px",
+                height: "52px",
+                borderRadius: "var(--radius-md)",
+                background:
+                  "linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                marginBottom: "1rem",
+                boxShadow: "var(--shadow-accent)",
+                fontSize: "1.5rem",
                 fontWeight: 900,
-                color: '#fff',
-                letterSpacing: '-1px',
+                color: "#fff",
+                letterSpacing: "-1px",
               }}
             >
               D
@@ -157,15 +167,21 @@ export default function LoginPage(): React.JSX.Element {
             <h1
               className="text-gradient"
               style={{
-                fontSize: '1.75rem',
+                fontSize: "1.75rem",
                 fontWeight: 800,
-                letterSpacing: '-0.04em',
-                marginBottom: '0.35rem',
+                letterSpacing: "-0.04em",
+                marginBottom: "0.35rem",
               }}
             >
               DocPulse
             </h1>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem', textAlign: 'center' }}>
+            <p
+              style={{
+                color: "var(--text-secondary)",
+                fontSize: "0.875rem",
+                textAlign: "center",
+              }}
+            >
               AI-powered documentation automation
             </p>
           </div>
@@ -173,9 +189,10 @@ export default function LoginPage(): React.JSX.Element {
           {/* Divider */}
           <div
             style={{
-              height: '1px',
-              background: 'linear-gradient(90deg, transparent, var(--border-hover), transparent)',
-              marginBottom: '1.75rem',
+              height: "1px",
+              background:
+                "linear-gradient(90deg, transparent, var(--border-hover), transparent)",
+              marginBottom: "1.75rem",
             }}
           />
 
@@ -184,14 +201,20 @@ export default function LoginPage(): React.JSX.Element {
             <div
               className="animate-fade-in"
               style={{
-                marginBottom: '1.25rem',
-                padding: '0.875rem 1rem',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--danger-dim)',
-                border: '1px solid rgba(244,63,94,0.3)',
+                marginBottom: "1.25rem",
+                padding: "0.875rem 1rem",
+                borderRadius: "var(--radius-md)",
+                background: "var(--danger-dim)",
+                border: "1px solid rgba(244,63,94,0.3)",
               }}
             >
-              <p style={{ color: 'var(--danger)', fontSize: '0.8rem', fontWeight: 500 }}>
+              <p
+                style={{
+                  color: "var(--danger)",
+                  fontSize: "0.8rem",
+                  fontWeight: 500,
+                }}
+              >
                 ⚠ Authentication failed. Please try again.
               </p>
             </div>
@@ -203,49 +226,51 @@ export default function LoginPage(): React.JSX.Element {
             onClick={handleLogin}
             disabled={isLoggingIn}
             style={{
-              width: '100%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '0.75rem',
-              padding: '0.8rem 1.25rem',
-              borderRadius: 'var(--radius-md)',
-              background: isLoggingIn ? 'var(--bg-elevated)' : 'var(--bg-elevated)',
-              border: '1px solid var(--border-hover)',
-              color: 'var(--text-primary)',
+              width: "100%",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "0.75rem",
+              padding: "0.8rem 1.25rem",
+              borderRadius: "var(--radius-md)",
+              background: isLoggingIn
+                ? "var(--bg-elevated)"
+                : "var(--bg-elevated)",
+              border: "1px solid var(--border-hover)",
+              color: "var(--text-primary)",
               fontWeight: 600,
-              fontSize: '0.9rem',
-              cursor: isLoggingIn ? 'not-allowed' : 'pointer',
+              fontSize: "0.9rem",
+              cursor: isLoggingIn ? "not-allowed" : "pointer",
               opacity: isLoggingIn ? 0.6 : 1,
-              transition: 'all 0.2s ease',
-              position: 'relative',
-              overflow: 'hidden',
+              transition: "all 0.2s ease",
+              position: "relative",
+              overflow: "hidden",
             }}
             onMouseEnter={(e) => {
               if (!isLoggingIn) {
                 const t = e.currentTarget;
-                t.style.borderColor = 'var(--accent)';
-                t.style.background = 'var(--bg-hover)';
-                t.style.boxShadow = 'var(--shadow-accent)';
+                t.style.borderColor = "var(--accent)";
+                t.style.background = "var(--bg-hover)";
+                t.style.boxShadow = "var(--shadow-accent)";
               }
             }}
             onMouseLeave={(e) => {
               const t = e.currentTarget;
-              t.style.borderColor = 'var(--border-hover)';
-              t.style.background = 'var(--bg-elevated)';
-              t.style.boxShadow = 'none';
+              t.style.borderColor = "var(--border-hover)";
+              t.style.background = "var(--bg-elevated)";
+              t.style.boxShadow = "none";
             }}
           >
             {isLoggingIn ? (
               <>
                 <div
                   style={{
-                    width: '16px',
-                    height: '16px',
-                    borderRadius: '50%',
-                    border: '2px solid var(--border-hover)',
-                    borderTopColor: 'var(--accent-light)',
-                    animation: 'spin-slow 0.7s linear infinite',
+                    width: "16px",
+                    height: "16px",
+                    borderRadius: "50%",
+                    border: "2px solid var(--border-hover)",
+                    borderTopColor: "var(--accent-light)",
+                    animation: "spin-slow 0.7s linear infinite",
                     flexShrink: 0,
                   }}
                 />
@@ -274,17 +299,21 @@ export default function LoginPage(): React.JSX.Element {
           {/* Footer text */}
           <p
             style={{
-              marginTop: '1.5rem',
-              textAlign: 'center',
-              color: 'var(--text-muted)',
-              fontSize: '0.75rem',
+              marginTop: "1.5rem",
+              textAlign: "center",
+              color: "var(--text-muted)",
+              fontSize: "0.75rem",
               lineHeight: 1.6,
             }}
           >
-            By continuing, you agree to our{' '}
-            <span style={{ color: 'var(--text-secondary)' }}>Terms of Service</span>{' '}
-            and{' '}
-            <span style={{ color: 'var(--text-secondary)' }}>Privacy Policy</span>
+            By continuing, you agree to our{" "}
+            <span style={{ color: "var(--text-secondary)" }}>
+              Terms of Service
+            </span>{" "}
+            and{" "}
+            <span style={{ color: "var(--text-secondary)" }}>
+              Privacy Policy
+            </span>
           </p>
         </div>
       </div>
@@ -292,14 +321,14 @@ export default function LoginPage(): React.JSX.Element {
       {/* Bottom brand tag */}
       <div
         style={{
-          position: 'absolute',
-          bottom: '1.5rem',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          color: 'var(--text-muted)',
-          fontSize: '0.72rem',
-          letterSpacing: '0.04em',
-          whiteSpace: 'nowrap',
+          position: "absolute",
+          bottom: "1.5rem",
+          left: "50%",
+          transform: "translateX(-50%)",
+          color: "var(--text-muted)",
+          fontSize: "0.72rem",
+          letterSpacing: "0.04em",
+          whiteSpace: "nowrap",
         }}
       >
         DocPulse AI · v1.0 · Powered by LangGraph

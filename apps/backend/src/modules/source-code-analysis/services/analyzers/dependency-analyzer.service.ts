@@ -1,7 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { CodebaseAnalyzer } from '../../interfaces/analyzer.interface';
-import { RepositoryIndex, RepositoryScannerService } from '../repository-scanner.service';
-import { SourceCodeAnalysis, DependencySummary, DetectedTechnology } from '../../../../domain/source-code-analysis/source-code-analysis';
+import { Injectable, Logger } from "@nestjs/common";
+import { CodebaseAnalyzer } from "../../interfaces/analyzer.interface";
+import {
+  RepositoryIndex,
+  RepositoryScannerService,
+} from "../repository-scanner.service";
+import {
+  SourceCodeAnalysis,
+  DependencySummary,
+  DetectedTechnology,
+} from "../../../../domain/source-code-analysis/source-code-analysis";
 
 @Injectable()
 export class DependencyAnalyzerService implements CodebaseAnalyzer {
@@ -10,11 +17,13 @@ export class DependencyAnalyzerService implements CodebaseAnalyzer {
   constructor(private readonly scanner: RepositoryScannerService) {}
 
   public supports(index: RepositoryIndex): boolean {
-    return index.files.some((f) => f.relativePath === 'package.json');
+    return index.files.some((f) => f.relativePath === "package.json");
   }
 
-  public async analyze(index: RepositoryIndex): Promise<Partial<SourceCodeAnalysis>> {
-    this.logger.debug('Starting dependency analysis...');
+  public async analyze(
+    index: RepositoryIndex,
+  ): Promise<Partial<SourceCodeAnalysis>> {
+    this.logger.debug("Starting dependency analysis...");
 
     const production: string[] = [];
     const development: string[] = [];
@@ -22,13 +31,18 @@ export class DependencyAnalyzerService implements CodebaseAnalyzer {
     const databases: string[] = [];
     const technologies: DetectedTechnology[] = [];
 
-    const packageJsonFile = index.files.find((f) => f.relativePath === 'package.json');
+    const packageJsonFile = index.files.find(
+      (f) => f.relativePath === "package.json",
+    );
     if (!packageJsonFile) {
       return {};
     }
 
     try {
-      const content = await this.scanner.readFile(index, packageJsonFile.relativePath);
+      const content = await this.scanner.readFile(
+        index,
+        packageJsonFile.relativePath,
+      );
       const pkg = JSON.parse(content);
 
       const deps = pkg.dependencies || {};
@@ -50,25 +64,25 @@ export class DependencyAnalyzerService implements CodebaseAnalyzer {
 
       // 3. Detect Frameworks, Databases, and Technologies
       const frameworkKeywords = {
-        nestjs: 'NestJS',
-        express: 'Express',
-        react: 'React',
-        next: 'Next.js',
-        vue: 'Vue',
-        angular: 'Angular',
-        fastify: 'Fastify',
-        koa: 'Koa',
+        nestjs: "NestJS",
+        express: "Express",
+        react: "React",
+        next: "Next.js",
+        vue: "Vue",
+        angular: "Angular",
+        fastify: "Fastify",
+        koa: "Koa",
       };
 
       const databaseKeywords = {
-        prisma: 'Prisma ORM',
-        mongoose: 'Mongoose',
-        typeorm: 'TypeORM',
-        sequelize: 'Sequelize',
-        pg: 'PostgreSQL Driver',
-        mysql: 'MySQL Driver',
-        redis: 'Redis Driver',
-        mongodb: 'MongoDB Driver',
+        prisma: "Prisma ORM",
+        mongoose: "Mongoose",
+        typeorm: "TypeORM",
+        sequelize: "Sequelize",
+        pg: "PostgreSQL Driver",
+        mysql: "MySQL Driver",
+        redis: "Redis Driver",
+        mongodb: "MongoDB Driver",
       };
 
       // Scan production and dev dependencies
@@ -81,7 +95,7 @@ export class DependencyAnalyzerService implements CodebaseAnalyzer {
         for (const [kw, name] of Object.entries(frameworkKeywords)) {
           if (lowerName.includes(kw) && !frameworks.includes(name)) {
             if (frameworks.length < 50) frameworks.push(name);
-            technologies.push({ name, category: 'framework', confidence: 1.0 });
+            technologies.push({ name, category: "framework", confidence: 1.0 });
           }
         }
 
@@ -89,31 +103,55 @@ export class DependencyAnalyzerService implements CodebaseAnalyzer {
         for (const [kw, name] of Object.entries(databaseKeywords)) {
           if (lowerName.includes(kw) && !databases.includes(name)) {
             if (databases.length < 50) databases.push(name);
-            technologies.push({ name, category: 'database', confidence: 1.0 });
+            technologies.push({ name, category: "database", confidence: 1.0 });
           }
         }
       }
 
       // Add project runtime/language technologies
-      if (allDeps['typescript']) {
-        technologies.push({ name: 'TypeScript', category: 'language', confidence: 1.0 });
-      } else if (index.files.some((f) => f.extension === '.ts' || f.extension === '.tsx')) {
-        technologies.push({ name: 'TypeScript', category: 'language', confidence: 0.95 });
+      if (allDeps["typescript"]) {
+        technologies.push({
+          name: "TypeScript",
+          category: "language",
+          confidence: 1.0,
+        });
+      } else if (
+        index.files.some((f) => f.extension === ".ts" || f.extension === ".tsx")
+      ) {
+        technologies.push({
+          name: "TypeScript",
+          category: "language",
+          confidence: 0.95,
+        });
       }
 
-      if (index.files.some((f) => f.extension === '.js' || f.extension === '.jsx')) {
-        technologies.push({ name: 'JavaScript', category: 'language', confidence: 0.9 });
+      if (
+        index.files.some((f) => f.extension === ".js" || f.extension === ".jsx")
+      ) {
+        technologies.push({
+          name: "JavaScript",
+          category: "language",
+          confidence: 0.9,
+        });
       }
 
-      if (allDeps['tailwindcss']) {
-        technologies.push({ name: 'Tailwind CSS', category: 'styling', confidence: 1.0 });
+      if (allDeps["tailwindcss"]) {
+        technologies.push({
+          name: "Tailwind CSS",
+          category: "styling",
+          confidence: 1.0,
+        });
       }
 
-      if (allDeps['graphql']) {
-        technologies.push({ name: 'GraphQL', category: 'api-protocol', confidence: 1.0 });
+      if (allDeps["graphql"]) {
+        technologies.push({
+          name: "GraphQL",
+          category: "api-protocol",
+          confidence: 1.0,
+        });
       }
     } catch (err) {
-      this.logger.error('Failed to parse package.json dependencies', err);
+      this.logger.error("Failed to parse package.json dependencies", err);
     }
 
     const dependencies: DependencySummary = {
