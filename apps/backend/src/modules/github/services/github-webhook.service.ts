@@ -115,16 +115,12 @@ export class GitHubWebhookService {
     });
 
     const parsedPayload = payload;
-    let repositoryId: string | undefined;
-
-    // Try to find the repository ID if available
-    if (payload?.repository?.id) {
-      const repo = await this.prisma.repository.findUnique({
-        where: { githubRepositoryId: Number(payload.repository.id) },
-        select: { id: true },
-      });
-      repositoryId = repo?.id;
-    }
+    const repository = payload?.repository?.id
+      ? await this.prisma.repository.findUnique({
+          where: { githubRepositoryId: Number(payload.repository.id) },
+        })
+      : null;
+    const repositoryId = repository?.id;
 
     const normalizedEvent = event?.toLowerCase()?.trim() || '';
 
@@ -199,8 +195,46 @@ export class GitHubWebhookService {
             break;
           }
 
+          const refBranch = pushPayload?.ref?.startsWith('refs/heads/')
+            ? pushPayload.ref.substring('refs/heads/'.length)
+            : pushPayload?.ref;
+
+          if (!refBranch) {
+            throw new Error('Unable to determine pushed branch from webhook payload.');
+          }
+
+          const defaultBranch = pushPayload?.repository?.default_branch ?? repository?.defaultBranch;
+
+          if (
+            pushPayload?.repository?.default_branch &&
+            repository &&
+            pushPayload.repository.default_branch !== repository.defaultBranch
+          ) {
+            this.logger.log(`Updating repository default branch from '${repository.defaultBranch}' to '${pushPayload.repository.default_branch}' to match current GitHub configuration.`);
+            await this.prisma.repository.update({
+              where: { id: repository.id },
+              data: { defaultBranch: pushPayload.repository.default_branch },
+            });
+            repository.defaultBranch = pushPayload.repository.default_branch;
+          }
+
+          if (!defaultBranch) {
+            throw new Error(`Could not determine default branch for repository ${pushRepoName}`);
+          }
+
+          if (refBranch !== defaultBranch) {
+            this.logger.log(`Push received on branch '${refBranch}'`);
+            this.logger.log(`Repository default branch is '${defaultBranch}'`);
+            this.logger.log(`Skipping documentation generation because push is not on the default branch.`);
+            this.logger.log(`Skipping workflow: repository=${pushRepoName} branch=${refBranch} defaultBranch=${defaultBranch} deliveryId=${deliveryId}`);
+            break;
+          }
+
+          this.logger.log(`Push received on branch '${refBranch}'`);
+          this.logger.log(`Default branch matched.`);
+          this.logger.log(`Enqueuing documentation workflow.`);
+
           const afterSha = pushPayload?.after || pushPayload?.head_commit?.id || '';
-          const refBranch = pushPayload?.ref?.replace('refs/heads/', '') || 'main';
           const commitMsg = pushPayload?.head_commit?.message || 'Update documentation';
 
           const workflowRun = await this.prisma.workflowRun.create({
