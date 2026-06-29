@@ -1,0 +1,125 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate Codebase
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install Dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma Client
+        id: prisma
+        run: pnpm --filter ./apps/backend prisma:generate
+
+      - name: Format Check
+        id: format
+        run: pnpm format:check
+
+      - name: Lint
+        id: lint
+        run: pnpm lint
+
+      - name: Type Check
+        id: typecheck
+        run: pnpm typecheck
+
+      - name: Unit Tests
+        id: test
+        run: pnpm test
+
+      - name: Build Applications
+        id: build
+        run: pnpm build
+
+      - name: Upload Backend Artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: apps/backend/dist
+          retention-days: 7
+
+      - name: Publish Job Summary
+        if: always()
+        shell: bash
+        run: |
+          # Fetch tools versions
+          NODE_VER=$(node --version)
+          PNPM_VER=$(pnpm --version)
+
+          # Status indicators function
+          get_status() {
+            if [ "$1" = "success" ]; then
+              echo "✔"
+            elif [ "$1" = "failure" ]; then
+              echo "❌"
+            elif [ "$1" = "cancelled" ]; then
+              echo "🛑"
+            else
+              echo "⏭"
+            fi
+          }
+
+          STATUS_PRISMA=$(get_status "${{ steps.prisma.outcome }}")
+          STATUS_FORMAT=$(get_status "${{ steps.format.outcome }}")
+          STATUS_LINT=$(get_status "${{ steps.lint.outcome }}")
+          STATUS_TYPECHECK=$(get_status "${{ steps.typecheck.outcome }}")
+          STATUS_TEST=$(get_status "${{ steps.test.outcome }}")
+          STATUS_BUILD=$(get_status "${{ steps.build.outcome }}")
+
+          # Build markdown summary
+          echo "## CI/CD Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Metadata | Value |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Repository** | \`${{ github.repository }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Branch** | \`${{ github.ref_name }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Commit SHA** | \`${{ github.sha }}\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **Node.js Version** | \`$NODE_VER\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| **pnpm Version** | \`$PNPM_VER\` |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Validation Pipeline Checks" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status | Step ID |" >> $GITHUB_STEP_SUMMARY
+          echo "| --- | --- | --- |" >> $GITHUB_STEP_SUMMARY
+          echo "| Generate Prisma Client | $STATUS_PRISMA | \`prisma\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Format Check | $STATUS_FORMAT | \`format\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint Check | $STATUS_LINT | \`lint\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type Check | $STATUS_TYPECHECK | \`typecheck\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Unit Tests | $STATUS_TEST | \`test\` |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build Applications | $STATUS_BUILD | \`build\` |" >> $GITHUB_STEP_SUMMARY
