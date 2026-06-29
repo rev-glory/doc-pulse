@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { PrismaService } from '@/database';
-import type { Repository, Prisma } from '@/generated/prisma/client';
+import type { Repository, Prisma, BranchStrategy } from '@/generated/prisma/client';
 import type { IRepositoriesRepository, SyncUpsertRepositoryData } from '../interfaces/repositories.interfaces';
 
 @Injectable()
@@ -23,6 +23,8 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
     visibility: string;
     isActive: boolean;
     ownerId: string;
+    branchStrategy?: BranchStrategy;
+    documentationBranchName?: string | null;
   }): Promise<Repository> {
     return this.prisma.repository.create({
       data,
@@ -66,6 +68,8 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
         isActive: true,
         ownerId: data.ownerId,
         lastSyncedAt: now,
+        branchStrategy: 'DOCUMENTATION_BRANCH',
+        documentationBranchName: 'docpulse/docs',
       },
       update: {
         // Refresh all GitHub-sourced metadata that can change over time.
@@ -93,6 +97,8 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
     data: Partial<{
       isActive: boolean;
       docPaths: string[];
+      branchStrategy: BranchStrategy;
+      documentationBranchName: string | null;
     }>,
   ): Promise<Repository> {
     return this.prisma.repository.update({

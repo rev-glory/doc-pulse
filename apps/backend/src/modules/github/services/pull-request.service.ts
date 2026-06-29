@@ -42,6 +42,41 @@ export class PullRequestService {
       const octokit = await this.gitHubApiService.getInstallationClient(installationId);
       const baseBranch = await this.getDefaultBranch(installationId, owner, repo);
 
+      // Check if an open Pull Request already exists with matching head and base branches
+      const openPRsResponse = await octokit.pulls.list({
+        owner,
+        repo,
+        state: 'open',
+      });
+      
+      const existingPR = openPRsResponse.data.find(
+        (pr) => pr.head.ref === headBranch && pr.base.ref === baseBranch,
+      );
+
+      if (existingPR) {
+        const prNumber = existingPR.number;
+        const prUrl = existingPR.html_url;
+        const durationMs = Date.now() - startTime;
+
+        this.logger.log({
+          event: 'pull_request_reused',
+          owner,
+          repo,
+          pullRequestNumber: prNumber,
+          pullRequestUrl: prUrl,
+          durationMs,
+        });
+
+        return {
+          number: prNumber,
+          url: prUrl,
+          headBranch,
+          baseBranch,
+          title: existingPR.title,
+          body: existingPR.body || undefined,
+        };
+      }
+
       const title = this.templateService.generateTitle(state);
       const body = this.templateService.generateBody(state);
 

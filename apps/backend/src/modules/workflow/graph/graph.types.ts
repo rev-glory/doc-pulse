@@ -9,6 +9,12 @@ import {
   WorkflowStatus,
   GitOperationStatus,
 } from '../../../domain/workflow';
+import { BranchStrategy } from '@/generated/prisma/client';
+
+export interface WorkflowExecutionConfig {
+  branchStrategy: BranchStrategy;
+  documentationBranchName: string | null;
+}
 
 export interface WorkflowError {
   node: string;
@@ -39,7 +45,7 @@ export const WorkflowGraphAnnotation = Annotation.Root({
   generatedDocuments: Annotation<GeneratedDocument[] | undefined>(),
   criticReview: Annotation<CriticReview | undefined>(),
   pullRequest: Annotation<PullRequestSummary | undefined>(),
-  branchName: Annotation<string | undefined>(),
+  targetBranch: Annotation<string | undefined>(),
   commitSha: Annotation<string | undefined>(),
   pullRequestNumber: Annotation<number | undefined>(),
   pullRequestUrl: Annotation<string | undefined>(),

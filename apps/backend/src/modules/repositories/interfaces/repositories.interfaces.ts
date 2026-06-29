@@ -1,4 +1,4 @@
-import type { Repository } from '@/generated/prisma/client';
+import type { Repository, BranchStrategy } from '@/generated/prisma/client';
 
 export interface SyncUpsertRepositoryData {
   githubRepositoryId: number;
@@ -33,6 +33,8 @@ export interface IRepositoriesRepository {
     visibility: string;
     isActive: boolean;
     ownerId: string;
+    branchStrategy?: BranchStrategy;
+    documentationBranchName?: string | null;
   }): Promise<Repository>;
 
   syncUpsert(data: SyncUpsertRepositoryData, tx?: unknown): Promise<Repository>;
@@ -42,6 +44,8 @@ export interface IRepositoriesRepository {
     data: Partial<{
       isActive: boolean;
       docPaths: string[];
+      branchStrategy: BranchStrategy;
+      documentationBranchName: string | null;
     }>,
   ): Promise<Repository>;
 

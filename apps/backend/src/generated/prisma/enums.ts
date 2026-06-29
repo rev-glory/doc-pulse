@@ -9,6 +9,14 @@
 * 🟢 You can import this file directly.
 */
 
+export const BranchStrategy = {
+  CURRENT_BRANCH: 'CURRENT_BRANCH',
+  DOCUMENTATION_BRANCH: 'DOCUMENTATION_BRANCH'
+} as const
+
+export type BranchStrategy = (typeof BranchStrategy)[keyof typeof BranchStrategy]
+
+
 export const RunStatus = {
   QUEUED: 'QUEUED',
   RUNNING: 'RUNNING',

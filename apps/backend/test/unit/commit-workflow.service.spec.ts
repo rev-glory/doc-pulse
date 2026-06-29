@@ -95,7 +95,7 @@ describe('Commit 6 – Git Operations & Pull Request Automation Unit Tests', () 
       const node = new CreatePullRequestNode(mockPrService);
       const state = {
         runId: 'run-pr',
-        branchName: 'docpulse/docs-update/run-pr',
+        targetBranch: 'docpulse/docs-update/run-pr',
         repository: { name: 'repo', owner: 'docpulse' },
       } as any;
 

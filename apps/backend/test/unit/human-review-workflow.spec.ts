@@ -90,7 +90,7 @@ describe('Human Review, Checkpoint & PR Persistence Unit Tests', () => {
       const node = new CreatePullRequestNode(mockPrService, mockPrisma);
       const state = {
         runId: 'run-pr-123',
-        branchName: 'docpulse/branch',
+        targetBranch: 'docpulse/branch',
         repository: { name: 'repo', owner: 'org' },
         metadata: { installationId: '456' },
       } as any;

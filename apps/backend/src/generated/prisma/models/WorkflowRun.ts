@@ -44,6 +44,7 @@ export type WorkflowRunMinAggregateOutputType = {
   webhookDeliveryId: string | null
   commitSha: string | null
   branch: string | null
+  targetBranch: string | null
   commitMessage: string | null
   startedAt: Date | null
   completedAt: Date | null
@@ -65,6 +66,7 @@ export type WorkflowRunMaxAggregateOutputType = {
   webhookDeliveryId: string | null
   commitSha: string | null
   branch: string | null
+  targetBranch: string | null
   commitMessage: string | null
   startedAt: Date | null
   completedAt: Date | null
@@ -86,6 +88,7 @@ export type WorkflowRunCountAggregateOutputType = {
   webhookDeliveryId: number
   commitSha: number
   branch: number
+  targetBranch: number
   commitMessage: number
   startedAt: number
   completedAt: number
@@ -121,6 +124,7 @@ export type WorkflowRunMinAggregateInputType = {
   webhookDeliveryId?: true
   commitSha?: true
   branch?: true
+  targetBranch?: true
   commitMessage?: true
   startedAt?: true
   completedAt?: true
@@ -142,6 +146,7 @@ export type WorkflowRunMaxAggregateInputType = {
   webhookDeliveryId?: true
   commitSha?: true
   branch?: true
+  targetBranch?: true
   commitMessage?: true
   startedAt?: true
   completedAt?: true
@@ -163,6 +168,7 @@ export type WorkflowRunCountAggregateInputType = {
   webhookDeliveryId?: true
   commitSha?: true
   branch?: true
+  targetBranch?: true
   commitMessage?: true
   startedAt?: true
   completedAt?: true
@@ -275,6 +281,7 @@ export type WorkflowRunGroupByOutputType = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch: string | null
   commitMessage: string | null
   startedAt: Date | null
   completedAt: Date | null
@@ -323,6 +330,7 @@ export type WorkflowRunWhereInput = {
   webhookDeliveryId?: Prisma.StringFilter<"WorkflowRun"> | string
   commitSha?: Prisma.StringFilter<"WorkflowRun"> | string
   branch?: Prisma.StringFilter<"WorkflowRun"> | string
+  targetBranch?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   commitMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
@@ -354,6 +362,7 @@ export type WorkflowRunOrderByWithRelationInput = {
   webhookDeliveryId?: Prisma.SortOrder
   commitSha?: Prisma.SortOrder
   branch?: Prisma.SortOrder
+  targetBranch?: Prisma.SortOrderInput | Prisma.SortOrder
   commitMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -388,6 +397,7 @@ export type WorkflowRunWhereUniqueInput = Prisma.AtLeast<{
   status?: Prisma.EnumRunStatusFilter<"WorkflowRun"> | $Enums.RunStatus
   commitSha?: Prisma.StringFilter<"WorkflowRun"> | string
   branch?: Prisma.StringFilter<"WorkflowRun"> | string
+  targetBranch?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   commitMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
@@ -419,6 +429,7 @@ export type WorkflowRunOrderByWithAggregationInput = {
   webhookDeliveryId?: Prisma.SortOrder
   commitSha?: Prisma.SortOrder
   branch?: Prisma.SortOrder
+  targetBranch?: Prisma.SortOrderInput | Prisma.SortOrder
   commitMessage?: Prisma.SortOrderInput | Prisma.SortOrder
   startedAt?: Prisma.SortOrderInput | Prisma.SortOrder
   completedAt?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -452,6 +463,7 @@ export type WorkflowRunScalarWhereWithAggregatesInput = {
   webhookDeliveryId?: Prisma.StringWithAggregatesFilter<"WorkflowRun"> | string
   commitSha?: Prisma.StringWithAggregatesFilter<"WorkflowRun"> | string
   branch?: Prisma.StringWithAggregatesFilter<"WorkflowRun"> | string
+  targetBranch?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
   commitMessage?: Prisma.StringNullableWithAggregatesFilter<"WorkflowRun"> | string | null
   startedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"WorkflowRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"WorkflowRun"> | Date | string | null
@@ -477,6 +489,7 @@ export type WorkflowRunCreateInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -505,6 +518,7 @@ export type WorkflowRunUncheckedCreateInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -533,6 +547,7 @@ export type WorkflowRunUpdateInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -561,6 +576,7 @@ export type WorkflowRunUncheckedUpdateInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -589,6 +605,7 @@ export type WorkflowRunCreateManyInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -614,6 +631,7 @@ export type WorkflowRunUpdateManyMutationInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -636,6 +654,7 @@ export type WorkflowRunUncheckedUpdateManyInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -671,6 +690,7 @@ export type WorkflowRunCountOrderByAggregateInput = {
   webhookDeliveryId?: Prisma.SortOrder
   commitSha?: Prisma.SortOrder
   branch?: Prisma.SortOrder
+  targetBranch?: Prisma.SortOrder
   commitMessage?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -700,6 +720,7 @@ export type WorkflowRunMaxOrderByAggregateInput = {
   webhookDeliveryId?: Prisma.SortOrder
   commitSha?: Prisma.SortOrder
   branch?: Prisma.SortOrder
+  targetBranch?: Prisma.SortOrder
   commitMessage?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -721,6 +742,7 @@ export type WorkflowRunMinOrderByAggregateInput = {
   webhookDeliveryId?: Prisma.SortOrder
   commitSha?: Prisma.SortOrder
   branch?: Prisma.SortOrder
+  targetBranch?: Prisma.SortOrder
   commitMessage?: Prisma.SortOrder
   startedAt?: Prisma.SortOrder
   completedAt?: Prisma.SortOrder
@@ -934,6 +956,7 @@ export type WorkflowRunCreateWithoutTriggeredByInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -961,6 +984,7 @@ export type WorkflowRunUncheckedCreateWithoutTriggeredByInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1017,6 +1041,7 @@ export type WorkflowRunScalarWhereInput = {
   webhookDeliveryId?: Prisma.StringFilter<"WorkflowRun"> | string
   commitSha?: Prisma.StringFilter<"WorkflowRun"> | string
   branch?: Prisma.StringFilter<"WorkflowRun"> | string
+  targetBranch?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   commitMessage?: Prisma.StringNullableFilter<"WorkflowRun"> | string | null
   startedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
   completedAt?: Prisma.DateTimeNullableFilter<"WorkflowRun"> | Date | string | null
@@ -1042,6 +1067,7 @@ export type WorkflowRunCreateWithoutRepositoryInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1069,6 +1095,7 @@ export type WorkflowRunUncheckedCreateWithoutRepositoryInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1122,6 +1149,7 @@ export type WorkflowRunCreateWithoutReviewsInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1149,6 +1177,7 @@ export type WorkflowRunUncheckedCreateWithoutReviewsInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1181,6 +1210,7 @@ export type WorkflowRunCreateWithoutCurrentReviewInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1208,6 +1238,7 @@ export type WorkflowRunUncheckedCreateWithoutCurrentReviewInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1256,6 +1287,7 @@ export type WorkflowRunUpdateWithoutReviewsInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1283,6 +1315,7 @@ export type WorkflowRunUncheckedUpdateWithoutReviewsInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1326,6 +1359,7 @@ export type WorkflowRunCreateWithoutPullRequestInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1353,6 +1387,7 @@ export type WorkflowRunUncheckedCreateWithoutPullRequestInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1396,6 +1431,7 @@ export type WorkflowRunUpdateWithoutPullRequestInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1423,6 +1459,7 @@ export type WorkflowRunUncheckedUpdateWithoutPullRequestInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1450,6 +1487,7 @@ export type WorkflowRunCreateWithoutNotificationsInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1477,6 +1515,7 @@ export type WorkflowRunUncheckedCreateWithoutNotificationsInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1520,6 +1559,7 @@ export type WorkflowRunUpdateWithoutNotificationsInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1547,6 +1587,7 @@ export type WorkflowRunUncheckedUpdateWithoutNotificationsInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1574,6 +1615,7 @@ export type WorkflowRunCreateManyTriggeredByInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1598,6 +1640,7 @@ export type WorkflowRunUpdateWithoutTriggeredByInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1625,6 +1668,7 @@ export type WorkflowRunUncheckedUpdateWithoutTriggeredByInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1652,6 +1696,7 @@ export type WorkflowRunUncheckedUpdateManyWithoutTriggeredByInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1676,6 +1721,7 @@ export type WorkflowRunCreateManyRepositoryInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1700,6 +1746,7 @@ export type WorkflowRunUpdateWithoutRepositoryInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1727,6 +1774,7 @@ export type WorkflowRunUncheckedUpdateWithoutRepositoryInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1754,6 +1802,7 @@ export type WorkflowRunUncheckedUpdateManyWithoutRepositoryInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1778,6 +1827,7 @@ export type WorkflowRunCreateManyCurrentReviewInput = {
   webhookDeliveryId: string
   commitSha: string
   branch: string
+  targetBranch?: string | null
   commitMessage?: string | null
   startedAt?: Date | string | null
   completedAt?: Date | string | null
@@ -1802,6 +1852,7 @@ export type WorkflowRunUpdateWithoutCurrentReviewInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1829,6 +1880,7 @@ export type WorkflowRunUncheckedUpdateWithoutCurrentReviewInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1856,6 +1908,7 @@ export type WorkflowRunUncheckedUpdateManyWithoutCurrentReviewInput = {
   webhookDeliveryId?: Prisma.StringFieldUpdateOperationsInput | string
   commitSha?: Prisma.StringFieldUpdateOperationsInput | string
   branch?: Prisma.StringFieldUpdateOperationsInput | string
+  targetBranch?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   commitMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   startedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   completedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
@@ -1920,6 +1973,7 @@ export type WorkflowRunSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   webhookDeliveryId?: boolean
   commitSha?: boolean
   branch?: boolean
+  targetBranch?: boolean
   commitMessage?: boolean
   startedAt?: boolean
   completedAt?: boolean
@@ -1952,6 +2006,7 @@ export type WorkflowRunSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   webhookDeliveryId?: boolean
   commitSha?: boolean
   branch?: boolean
+  targetBranch?: boolean
   commitMessage?: boolean
   startedAt?: boolean
   completedAt?: boolean
@@ -1980,6 +2035,7 @@ export type WorkflowRunSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   webhookDeliveryId?: boolean
   commitSha?: boolean
   branch?: boolean
+  targetBranch?: boolean
   commitMessage?: boolean
   startedAt?: boolean
   completedAt?: boolean
@@ -2008,6 +2064,7 @@ export type WorkflowRunSelectScalar = {
   webhookDeliveryId?: boolean
   commitSha?: boolean
   branch?: boolean
+  targetBranch?: boolean
   commitMessage?: boolean
   startedAt?: boolean
   completedAt?: boolean
@@ -2024,7 +2081,7 @@ export type WorkflowRunSelectScalar = {
   currentReviewId?: boolean
 }
 
-export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "correlationId" | "webhookDeliveryId" | "commitSha" | "branch" | "commitMessage" | "startedAt" | "completedAt" | "errorMessage" | "repositoryId" | "triggeredById" | "version" | "currentNode" | "currentStage" | "checkpointSnapshot" | "nodeRetries" | "lastError" | "executionMetadata" | "currentReviewId", ExtArgs["result"]["workflowRun"]>
+export type WorkflowRunOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "status" | "correlationId" | "webhookDeliveryId" | "commitSha" | "branch" | "targetBranch" | "commitMessage" | "startedAt" | "completedAt" | "errorMessage" | "repositoryId" | "triggeredById" | "version" | "currentNode" | "currentStage" | "checkpointSnapshot" | "nodeRetries" | "lastError" | "executionMetadata" | "currentReviewId", ExtArgs["result"]["workflowRun"]>
 export type WorkflowRunInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   notifications?: boolean | Prisma.WorkflowRun$notificationsArgs<ExtArgs>
   pullRequest?: boolean | Prisma.WorkflowRun$pullRequestArgs<ExtArgs>
@@ -2064,6 +2121,7 @@ export type $WorkflowRunPayload<ExtArgs extends runtime.Types.Extensions.Interna
     webhookDeliveryId: string
     commitSha: string
     branch: string
+    targetBranch: string | null
     commitMessage: string | null
     startedAt: Date | null
     completedAt: Date | null
@@ -2515,6 +2573,7 @@ export interface WorkflowRunFieldRefs {
   readonly webhookDeliveryId: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly commitSha: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly branch: Prisma.FieldRef<"WorkflowRun", 'String'>
+  readonly targetBranch: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly commitMessage: Prisma.FieldRef<"WorkflowRun", 'String'>
   readonly startedAt: Prisma.FieldRef<"WorkflowRun", 'DateTime'>
   readonly completedAt: Prisma.FieldRef<"WorkflowRun", 'DateTime'>

@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ConflictException,
   ForbiddenException,
+  BadRequestException,
   Inject,
   forwardRef,
 } from '@nestjs/common';
@@ -19,6 +20,7 @@ import { ConnectRepositoryDto } from '../dto/connect-repository.dto';
 import { UpdateRepositoryDto } from '../dto/update-repository.dto';
 import { RepositoryResponseDto } from '../dto/repository-response.dto';
 import { RepositoriesPersistence } from '../persistence/repositories.persistence';
+import { isValidGitBranchName } from '../validators/branch-name.validator';
 
 @Injectable()
 export class RepositoriesService {
@@ -409,6 +411,8 @@ export class RepositoriesService {
       visibility: repoMetadata.visibility,
       isActive: true,
       ownerId: user.id,
+      branchStrategy: 'DOCUMENTATION_BRANCH',
+      documentationBranchName: 'docpulse/docs',
     });
 
     this.logger.log(
@@ -426,6 +430,26 @@ export class RepositoriesService {
   ): Promise<RepositoryResponseDto> {
     this.logger.log(`Updating repository ${id} for user ${user.id}`);
     const repository = await this.findOwnedRepository(id, user.id);
+
+    // Reconcile strategy and documentation branch name for validation
+    const strategy = updateRepositoryDto.branchStrategy ?? repository.branchStrategy;
+    let branchName = repository.documentationBranchName;
+    if (updateRepositoryDto.documentationBranchName !== undefined) {
+      branchName = updateRepositoryDto.documentationBranchName;
+    }
+
+    if (strategy === 'DOCUMENTATION_BRANCH') {
+      if (!branchName || branchName.trim() === '') {
+        throw new BadRequestException('documentationBranchName is required when using DOCUMENTATION_BRANCH strategy.');
+      }
+      if (!isValidGitBranchName(branchName)) {
+        throw new BadRequestException('Invalid documentation branch name.');
+      }
+    } else if (strategy === 'CURRENT_BRANCH') {
+      // Keep data model clean by setting configuration branch to null
+      updateRepositoryDto.documentationBranchName = null;
+    }
+
     const updatedRepository = await this.repositoriesPersistence.update(id, updateRepositoryDto);
 
     this.logger.log(`Repository updated: ${updatedRepository.fullName} (ID: ${updatedRepository.id})`);

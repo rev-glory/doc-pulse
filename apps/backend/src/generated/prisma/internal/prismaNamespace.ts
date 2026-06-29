@@ -1081,6 +1081,8 @@ export const RepositoryScalarFieldEnum = {
   name: 'name',
   fullName: 'fullName',
   defaultBranch: 'defaultBranch',
+  branchStrategy: 'branchStrategy',
+  documentationBranchName: 'documentationBranchName',
   private: 'private',
   description: 'description',
   language: 'language',
@@ -1107,6 +1109,7 @@ export const WorkflowRunScalarFieldEnum = {
   webhookDeliveryId: 'webhookDeliveryId',
   commitSha: 'commitSha',
   branch: 'branch',
+  targetBranch: 'targetBranch',
   commitMessage: 'commitMessage',
   startedAt: 'startedAt',
   completedAt: 'completedAt',
@@ -1306,6 +1309,20 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
+
+/**
+ * Reference to a field of type 'BranchStrategy'
+ */
+export type EnumBranchStrategyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BranchStrategy'>
+    
+
+
+/**
+ * Reference to a field of type 'BranchStrategy[]'
+ */
+export type ListEnumBranchStrategyFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'BranchStrategy[]'>
     
 
 

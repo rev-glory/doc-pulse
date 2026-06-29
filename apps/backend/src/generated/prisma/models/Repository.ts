@@ -46,6 +46,8 @@ export type RepositoryMinAggregateOutputType = {
   name: string | null
   fullName: string | null
   defaultBranch: string | null
+  branchStrategy: $Enums.BranchStrategy | null
+  documentationBranchName: string | null
   private: boolean | null
   description: string | null
   language: string | null
@@ -69,6 +71,8 @@ export type RepositoryMaxAggregateOutputType = {
   name: string | null
   fullName: string | null
   defaultBranch: string | null
+  branchStrategy: $Enums.BranchStrategy | null
+  documentationBranchName: string | null
   private: boolean | null
   description: string | null
   language: string | null
@@ -92,6 +96,8 @@ export type RepositoryCountAggregateOutputType = {
   name: number
   fullName: number
   defaultBranch: number
+  branchStrategy: number
+  documentationBranchName: number
   private: number
   description: number
   language: number
@@ -128,6 +134,8 @@ export type RepositoryMinAggregateInputType = {
   name?: true
   fullName?: true
   defaultBranch?: true
+  branchStrategy?: true
+  documentationBranchName?: true
   private?: true
   description?: true
   language?: true
@@ -151,6 +159,8 @@ export type RepositoryMaxAggregateInputType = {
   name?: true
   fullName?: true
   defaultBranch?: true
+  branchStrategy?: true
+  documentationBranchName?: true
   private?: true
   description?: true
   language?: true
@@ -174,6 +184,8 @@ export type RepositoryCountAggregateInputType = {
   name?: true
   fullName?: true
   defaultBranch?: true
+  branchStrategy?: true
+  documentationBranchName?: true
   private?: true
   description?: true
   language?: true
@@ -285,6 +297,8 @@ export type RepositoryGroupByOutputType = {
   name: string
   fullName: string
   defaultBranch: string
+  branchStrategy: $Enums.BranchStrategy
+  documentationBranchName: string | null
   private: boolean
   description: string | null
   language: string | null
@@ -332,6 +346,8 @@ export type RepositoryWhereInput = {
   name?: Prisma.StringFilter<"Repository"> | string
   fullName?: Prisma.StringFilter<"Repository"> | string
   defaultBranch?: Prisma.StringFilter<"Repository"> | string
+  branchStrategy?: Prisma.EnumBranchStrategyFilter<"Repository"> | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.StringNullableFilter<"Repository"> | string | null
   private?: Prisma.BoolFilter<"Repository"> | boolean
   description?: Prisma.StringNullableFilter<"Repository"> | string | null
   language?: Prisma.StringNullableFilter<"Repository"> | string | null
@@ -360,6 +376,8 @@ export type RepositoryOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
+  branchStrategy?: Prisma.SortOrder
+  documentationBranchName?: Prisma.SortOrderInput | Prisma.SortOrder
   private?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   language?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -391,6 +409,8 @@ export type RepositoryWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Repository"> | string
   fullName?: Prisma.StringFilter<"Repository"> | string
   defaultBranch?: Prisma.StringFilter<"Repository"> | string
+  branchStrategy?: Prisma.EnumBranchStrategyFilter<"Repository"> | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.StringNullableFilter<"Repository"> | string | null
   private?: Prisma.BoolFilter<"Repository"> | boolean
   description?: Prisma.StringNullableFilter<"Repository"> | string | null
   language?: Prisma.StringNullableFilter<"Repository"> | string | null
@@ -419,6 +439,8 @@ export type RepositoryOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
+  branchStrategy?: Prisma.SortOrder
+  documentationBranchName?: Prisma.SortOrderInput | Prisma.SortOrder
   private?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
   language?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -451,6 +473,8 @@ export type RepositoryScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Repository"> | string
   fullName?: Prisma.StringWithAggregatesFilter<"Repository"> | string
   defaultBranch?: Prisma.StringWithAggregatesFilter<"Repository"> | string
+  branchStrategy?: Prisma.EnumBranchStrategyWithAggregatesFilter<"Repository"> | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.StringNullableWithAggregatesFilter<"Repository"> | string | null
   private?: Prisma.BoolWithAggregatesFilter<"Repository"> | boolean
   description?: Prisma.StringNullableWithAggregatesFilter<"Repository"> | string | null
   language?: Prisma.StringNullableWithAggregatesFilter<"Repository"> | string | null
@@ -474,6 +498,8 @@ export type RepositoryCreateInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -501,6 +527,8 @@ export type RepositoryUncheckedCreateInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -526,6 +554,8 @@ export type RepositoryUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -553,6 +583,8 @@ export type RepositoryUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -579,6 +611,8 @@ export type RepositoryCreateManyInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -602,6 +636,8 @@ export type RepositoryUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -625,6 +661,8 @@ export type RepositoryUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -667,6 +705,8 @@ export type RepositoryCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
+  branchStrategy?: Prisma.SortOrder
+  documentationBranchName?: Prisma.SortOrder
   private?: Prisma.SortOrder
   description?: Prisma.SortOrder
   language?: Prisma.SortOrder
@@ -696,6 +736,8 @@ export type RepositoryMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
+  branchStrategy?: Prisma.SortOrder
+  documentationBranchName?: Prisma.SortOrder
   private?: Prisma.SortOrder
   description?: Prisma.SortOrder
   language?: Prisma.SortOrder
@@ -719,6 +761,8 @@ export type RepositoryMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   fullName?: Prisma.SortOrder
   defaultBranch?: Prisma.SortOrder
+  branchStrategy?: Prisma.SortOrder
+  documentationBranchName?: Prisma.SortOrder
   private?: Prisma.SortOrder
   description?: Prisma.SortOrder
   language?: Prisma.SortOrder
@@ -835,6 +879,10 @@ export type RepositoryCreatedocPathsInput = {
   set: string[]
 }
 
+export type EnumBranchStrategyFieldUpdateOperationsInput = {
+  set?: $Enums.BranchStrategy
+}
+
 export type NullableDateTimeFieldUpdateOperationsInput = {
   set?: Date | string | null
 }
@@ -891,6 +939,8 @@ export type RepositoryCreateWithoutOwnerInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -917,6 +967,8 @@ export type RepositoryUncheckedCreateWithoutOwnerInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -971,6 +1023,8 @@ export type RepositoryScalarWhereInput = {
   name?: Prisma.StringFilter<"Repository"> | string
   fullName?: Prisma.StringFilter<"Repository"> | string
   defaultBranch?: Prisma.StringFilter<"Repository"> | string
+  branchStrategy?: Prisma.EnumBranchStrategyFilter<"Repository"> | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.StringNullableFilter<"Repository"> | string | null
   private?: Prisma.BoolFilter<"Repository"> | boolean
   description?: Prisma.StringNullableFilter<"Repository"> | string | null
   language?: Prisma.StringNullableFilter<"Repository"> | string | null
@@ -994,6 +1048,8 @@ export type RepositoryCreateWithoutInstallationInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -1019,6 +1075,8 @@ export type RepositoryUncheckedCreateWithoutInstallationInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -1070,6 +1128,8 @@ export type RepositoryCreateWithoutWorkflowRunsInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -1096,6 +1156,8 @@ export type RepositoryUncheckedCreateWithoutWorkflowRunsInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -1136,6 +1198,8 @@ export type RepositoryUpdateWithoutWorkflowRunsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1162,6 +1226,8 @@ export type RepositoryUncheckedUpdateWithoutWorkflowRunsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1186,6 +1252,8 @@ export type RepositoryCreateWithoutWebhookEventsInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -1212,6 +1280,8 @@ export type RepositoryUncheckedCreateWithoutWebhookEventsInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -1252,6 +1322,8 @@ export type RepositoryUpdateWithoutWebhookEventsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1278,6 +1350,8 @@ export type RepositoryUncheckedUpdateWithoutWebhookEventsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1303,6 +1377,8 @@ export type RepositoryCreateManyOwnerInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -1325,6 +1401,8 @@ export type RepositoryUpdateWithoutOwnerInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1351,6 +1429,8 @@ export type RepositoryUncheckedUpdateWithoutOwnerInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1376,6 +1456,8 @@ export type RepositoryUncheckedUpdateManyWithoutOwnerInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1398,6 +1480,8 @@ export type RepositoryCreateManyInstallationInput = {
   name: string
   fullName: string
   defaultBranch?: string
+  branchStrategy?: $Enums.BranchStrategy
+  documentationBranchName?: string | null
   private?: boolean
   description?: string | null
   language?: string | null
@@ -1421,6 +1505,8 @@ export type RepositoryUpdateWithoutInstallationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1446,6 +1532,8 @@ export type RepositoryUncheckedUpdateWithoutInstallationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1471,6 +1559,8 @@ export type RepositoryUncheckedUpdateManyWithoutInstallationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   fullName?: Prisma.StringFieldUpdateOperationsInput | string
   defaultBranch?: Prisma.StringFieldUpdateOperationsInput | string
+  branchStrategy?: Prisma.EnumBranchStrategyFieldUpdateOperationsInput | $Enums.BranchStrategy
+  documentationBranchName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   private?: Prisma.BoolFieldUpdateOperationsInput | boolean
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   language?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1535,6 +1625,8 @@ export type RepositorySelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   name?: boolean
   fullName?: boolean
   defaultBranch?: boolean
+  branchStrategy?: boolean
+  documentationBranchName?: boolean
   private?: boolean
   description?: boolean
   language?: boolean
@@ -1564,6 +1656,8 @@ export type RepositorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   name?: boolean
   fullName?: boolean
   defaultBranch?: boolean
+  branchStrategy?: boolean
+  documentationBranchName?: boolean
   private?: boolean
   description?: boolean
   language?: boolean
@@ -1590,6 +1684,8 @@ export type RepositorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   name?: boolean
   fullName?: boolean
   defaultBranch?: boolean
+  branchStrategy?: boolean
+  documentationBranchName?: boolean
   private?: boolean
   description?: boolean
   language?: boolean
@@ -1616,6 +1712,8 @@ export type RepositorySelectScalar = {
   name?: boolean
   fullName?: boolean
   defaultBranch?: boolean
+  branchStrategy?: boolean
+  documentationBranchName?: boolean
   private?: boolean
   description?: boolean
   language?: boolean
@@ -1630,7 +1728,7 @@ export type RepositorySelectScalar = {
   ownerId?: boolean
 }
 
-export type RepositoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "githubRepositoryId" | "installationId" | "repositoryOwner" | "name" | "fullName" | "defaultBranch" | "private" | "description" | "language" | "cloneUrl" | "htmlUrl" | "visibility" | "isActive" | "lastSyncedAt" | "docPaths" | "webhookId" | "isWebhookActive" | "ownerId", ExtArgs["result"]["repository"]>
+export type RepositoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "createdAt" | "updatedAt" | "githubRepositoryId" | "installationId" | "repositoryOwner" | "name" | "fullName" | "defaultBranch" | "branchStrategy" | "documentationBranchName" | "private" | "description" | "language" | "cloneUrl" | "htmlUrl" | "visibility" | "isActive" | "lastSyncedAt" | "docPaths" | "webhookId" | "isWebhookActive" | "ownerId", ExtArgs["result"]["repository"]>
 export type RepositoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   installation?: boolean | Prisma.InstallationDefaultArgs<ExtArgs>
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
@@ -1665,6 +1763,8 @@ export type $RepositoryPayload<ExtArgs extends runtime.Types.Extensions.Internal
     name: string
     fullName: string
     defaultBranch: string
+    branchStrategy: $Enums.BranchStrategy
+    documentationBranchName: string | null
     private: boolean
     description: string | null
     language: string | null
@@ -2113,6 +2213,8 @@ export interface RepositoryFieldRefs {
   readonly name: Prisma.FieldRef<"Repository", 'String'>
   readonly fullName: Prisma.FieldRef<"Repository", 'String'>
   readonly defaultBranch: Prisma.FieldRef<"Repository", 'String'>
+  readonly branchStrategy: Prisma.FieldRef<"Repository", 'BranchStrategy'>
+  readonly documentationBranchName: Prisma.FieldRef<"Repository", 'String'>
   readonly private: Prisma.FieldRef<"Repository", 'Boolean'>
   readonly description: Prisma.FieldRef<"Repository", 'String'>
   readonly language: Prisma.FieldRef<"Repository", 'String'>

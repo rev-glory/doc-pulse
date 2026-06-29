@@ -223,7 +223,7 @@ export class WorkflowExecutorService implements OnModuleInit {
       documentation: (snapshot as any).documentation ?? undefined,
       generatedDocuments: (snapshot as any).generatedDocuments ?? undefined,
       criticReview: (snapshot as any).criticReview ?? undefined,
-      branchName: (snapshot as any).branchName ?? undefined,
+      targetBranch: (snapshot as any).targetBranch ?? undefined,
       commitSha: (snapshot as any).commitSha ?? undefined,
       humanReviewFeedback: (snapshot as any).humanReviewFeedback ?? undefined,
       generationIteration: (snapshot as any).generationIteration ?? 1,
@@ -246,11 +246,20 @@ export class WorkflowExecutorService implements OnModuleInit {
     const { input, expectedVersion, firstNodeToExecute, completedNodes, nodeRetries, initialStateOverride } = params;
     const startTime = Date.now();
 
+    const repoRecord = await this.prisma.repository.findUnique({
+      where: { id: input.repositoryId },
+    });
+    if (!repoRecord) {
+      throw new Error(`Repository [${input.repositoryId}] not found in database.`);
+    }
+
     const orchestrationContext = {
       expectedVersion,
       firstNodeToExecute,
       completedNodes,
       nodeRetries,
+      branchStrategy: repoRecord.branchStrategy,
+      documentationBranchName: repoRecord.documentationBranchName,
     };
 
     this.adapters.registerExecutionContext(input.runId, orchestrationContext);

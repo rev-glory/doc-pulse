@@ -101,11 +101,23 @@ Git root:             ${gitRoot}
 
       const localBranches = await this.gitService.branchList(repositoryPath);
       if (localBranches.includes(branchName)) {
-        this.logger.log(`Branch [${branchName}] already exists. Checking out...`);
+        this.logger.log(`Branch [${branchName}] exists locally. Checking out and pulling...`);
         await this.gitService.checkout(repositoryPath, branchName);
+        try {
+          await this.gitService.pull(repositoryPath);
+        } catch (pullError: any) {
+          this.logger.warn(`Failed to pull branch [${branchName}] after local checkout: ${pullError.message}`);
+        }
       } else {
-        this.logger.log(`Branch [${branchName}] does not exist. Creating and checking out local branch...`);
-        await this.gitService.checkoutLocalBranch(repositoryPath, branchName);
+        try {
+          this.logger.log(`Branch [${branchName}] not found locally. Attempting remote checkout...`);
+          await this.gitService.checkout(repositoryPath, branchName);
+          this.logger.log(`Remote branch checkout succeeded. Pulling latest...`);
+          await this.gitService.pull(repositoryPath);
+        } catch (checkoutError: any) {
+          this.logger.log(`Branch [${branchName}] does not exist on remote. Creating local branch...`);
+          await this.gitService.checkoutLocalBranch(repositoryPath, branchName);
+        }
       }
 
       // Run Git safety checks on branch and workspace

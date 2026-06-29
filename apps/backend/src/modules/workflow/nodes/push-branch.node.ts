@@ -16,12 +16,12 @@ export class PushBranchNode {
   async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
     const runId = state.runId || 'automated';
     const repoPath = state.workspacePath || state.repository?.rootPath || '';
-    const branchName = state.branchName || '';
+    const targetBranch = state.targetBranch || '';
 
-    this.logger.debug(`Executing PushBranchNode for run [${runId}] pushing [${branchName}]...`);
+    this.logger.debug(`Executing PushBranchNode for run [${runId}] pushing [${targetBranch}]...`);
 
-    if (!repoPath || !branchName) {
-      throw new Error(`PushBranchNode error: Missing workspacePath or branchName in workflow state.`);
+    if (!repoPath || !targetBranch) {
+      throw new Error(`PushBranchNode error: Missing workspacePath or targetBranch in workflow state.`);
     }
 
     // Extract installation metadata (fallback to 0 or metadata)
@@ -37,7 +37,7 @@ export class PushBranchNode {
       }
     }
 
-    await this.gitOpsService.pushBranch(repoPath, branchName, installationId);
+    await this.gitOpsService.pushBranch(repoPath, targetBranch, installationId);
     this.logger.log(`PushBranchNode completed successfully.`);
 
     return {

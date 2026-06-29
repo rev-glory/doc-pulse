@@ -2,7 +2,7 @@ import { Injectable, Logger, Optional } from '@nestjs/common';
 import { PullRequestService } from '../../github/services/pull-request.service';
 import { GitOperationStatus } from '../../../domain/workflow';
 import { PrismaService } from '@/database';
-import type { WorkflowGraphState } from '../graph/graph.types';
+import type { WorkflowGraphState, WorkflowExecutionConfig } from '../graph/graph.types';
 
 @Injectable()
 export class CreatePullRequestNode {
@@ -13,9 +13,18 @@ export class CreatePullRequestNode {
     @Optional() private readonly prisma?: PrismaService,
   ) {}
 
-  async invoke(state: WorkflowGraphState): Promise<Partial<WorkflowGraphState>> {
+  async invoke(state: WorkflowGraphState, ctx?: WorkflowExecutionConfig): Promise<Partial<WorkflowGraphState>> {
     const runId = state.runId || 'automated';
-    const headBranch = state.branchName || '';
+    
+    // Bypass Pull Request creation under CURRENT_BRANCH strategy
+    if (ctx && ctx.branchStrategy === 'CURRENT_BRANCH') {
+      this.logger.log(`[${runId}] Bypassing Pull Request creation because branch strategy is CURRENT_BRANCH.`);
+      return {
+        gitOperationStatus: GitOperationStatus.NoPullRequestRequired,
+      };
+    }
+
+    const headBranch = state.targetBranch || '';
     const repoSummary = state.repository;
 
     this.logger.debug(`Executing CreatePullRequestNode for run [${runId}]...`);

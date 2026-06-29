@@ -55,6 +55,12 @@ export class RepositoryResponseDto {
   @Expose()
   isWebhookActive!: boolean;
 
+  @Expose()
+  branchStrategy!: string;
+
+  @Expose()
+  documentationBranchName!: string | null;
+
   // Don't expose ownerId to API responses
   // ownerId!: string;
 

@@ -213,7 +213,7 @@ export class WorkflowNodeExecutionWrapper {
       documentation: state.documentation ?? undefined,
       generatedDocuments: state.generatedDocuments ?? undefined,
       criticReview: state.criticReview ?? undefined,
-      branchName: state.branchName ?? undefined,
+      targetBranch: state.targetBranch ?? undefined,
       commitSha: state.commitSha ?? undefined,
       humanReviewFeedback: state.humanReviewFeedback ?? undefined,
       generationIteration: state.generationIteration ?? 1,

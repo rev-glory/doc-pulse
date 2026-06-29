@@ -11,6 +11,7 @@ export enum GitOperationStatus {
   Committed = 'Committed',
   Pushed = 'Pushed',
   PullRequestCreated = 'PullRequestCreated',
+  NoPullRequestRequired = 'NoPullRequestRequired',
   RolledBack = 'RolledBack',
   Failed = 'Failed',
 }

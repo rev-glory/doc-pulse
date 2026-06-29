@@ -149,6 +149,7 @@ export class WorkflowCheckpointRepository {
       // 3. Atomically update run record and increment version
       const nextVersion = expectedVersion + 1;
       const now = new Date();
+      const targetBranch = (snapshot as any)?.targetBranch ?? null;
 
       await tx.workflowRun.update({
         where: { id: runId },
@@ -163,6 +164,7 @@ export class WorkflowCheckpointRepository {
           errorMessage: error instanceof Error ? error.message : null,
           executionMetadata: JSON.parse(JSON.stringify(mergedMetadata)) as any,
           updatedAt: now,
+          targetBranch,
           ...(status === 'COMPLETED' ? { completedAt: now } : {}),
         },
       });

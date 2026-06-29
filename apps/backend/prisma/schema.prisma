@@ -48,6 +48,11 @@ model Installation {
   @@map("installations")
 }
 
+enum BranchStrategy {
+  CURRENT_BRANCH
+  DOCUMENTATION_BRANCH
+}
+
 /// Connected GitHub repository with documentation configuration.
 model Repository {
   id               String        @id @default(uuid())
@@ -59,6 +64,8 @@ model Repository {
   name             String        @map("name")
   fullName         String        @map("full_name")
   defaultBranch    String        @default("main") @map("default_branch")
+  branchStrategy   BranchStrategy @default(DOCUMENTATION_BRANCH) @map("branch_strategy")
+  documentationBranchName String? @map("documentation_branch_name")
   private          Boolean       @default(false) @map("private")
   description      String?       @map("description")
   language         String?       @map("language")
@@ -94,6 +101,7 @@ model WorkflowRun {
   webhookDeliveryId String         @unique @map("webhook_delivery_id")
   commitSha         String         @map("commit_sha")
   branch            String
+  targetBranch      String?        @map("target_branch")
   commitMessage     String?        @map("commit_message")
   startedAt         DateTime?      @map("started_at")
   completedAt       DateTime?      @map("completed_at")

@@ -201,6 +201,13 @@ export type BoolWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBoolFilter<$PrismaModel>
 }
 
+export type EnumBranchStrategyFilter<$PrismaModel = never> = {
+  equals?: $Enums.BranchStrategy | Prisma.EnumBranchStrategyFieldRefInput<$PrismaModel>
+  in?: $Enums.BranchStrategy[] | Prisma.ListEnumBranchStrategyFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BranchStrategy[] | Prisma.ListEnumBranchStrategyFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBranchStrategyFilter<$PrismaModel> | $Enums.BranchStrategy
+}
+
 export type DateTimeNullableFilter<$PrismaModel = never> = {
   equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null
   in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -221,6 +228,16 @@ export type IntNullableFilter<$PrismaModel = never> = {
   gt?: number | Prisma.IntFieldRefInput<$PrismaModel>
   gte?: number | Prisma.IntFieldRefInput<$PrismaModel>
   not?: Prisma.NestedIntNullableFilter<$PrismaModel> | number | null
+}
+
+export type EnumBranchStrategyWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BranchStrategy | Prisma.EnumBranchStrategyFieldRefInput<$PrismaModel>
+  in?: $Enums.BranchStrategy[] | Prisma.ListEnumBranchStrategyFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BranchStrategy[] | Prisma.ListEnumBranchStrategyFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBranchStrategyWithAggregatesFilter<$PrismaModel> | $Enums.BranchStrategy
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBranchStrategyFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBranchStrategyFilter<$PrismaModel>
 }
 
 export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
@@ -562,6 +579,13 @@ export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedBoolFilter<$PrismaModel>
 }
 
+export type NestedEnumBranchStrategyFilter<$PrismaModel = never> = {
+  equals?: $Enums.BranchStrategy | Prisma.EnumBranchStrategyFieldRefInput<$PrismaModel>
+  in?: $Enums.BranchStrategy[] | Prisma.ListEnumBranchStrategyFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BranchStrategy[] | Prisma.ListEnumBranchStrategyFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBranchStrategyFilter<$PrismaModel> | $Enums.BranchStrategy
+}
+
 export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
   equals?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel> | null
   in?: Date[] | string[] | Prisma.ListDateTimeFieldRefInput<$PrismaModel> | null
@@ -571,6 +595,16 @@ export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
   gt?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>
   gte?: Date | string | Prisma.DateTimeFieldRefInput<$PrismaModel>
   not?: Prisma.NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+}
+
+export type NestedEnumBranchStrategyWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.BranchStrategy | Prisma.EnumBranchStrategyFieldRefInput<$PrismaModel>
+  in?: $Enums.BranchStrategy[] | Prisma.ListEnumBranchStrategyFieldRefInput<$PrismaModel>
+  notIn?: $Enums.BranchStrategy[] | Prisma.ListEnumBranchStrategyFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumBranchStrategyWithAggregatesFilter<$PrismaModel> | $Enums.BranchStrategy
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumBranchStrategyFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumBranchStrategyFilter<$PrismaModel>
 }
 
 export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {

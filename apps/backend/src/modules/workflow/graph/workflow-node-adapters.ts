@@ -8,7 +8,7 @@ import { HumanReviewNode } from '../nodes/human-review.node';
 import { GitCommitNode } from '../nodes/git-commit.node';
 import { PushBranchNode } from '../nodes/push-branch.node';
 import { CreatePullRequestNode } from '../nodes/create-pull-request.node';
-import { WorkflowGraphState, WorkflowGraphUpdate, WorkflowError } from './graph.types';
+import { WorkflowGraphState, WorkflowGraphUpdate, WorkflowError, WorkflowExecutionConfig } from './graph.types';
 import { WorkflowNodeExecutionWrapper, ExecutionContextRef } from './workflow-node-execution.wrapper';
 import { WorkflowNodeName, WorkflowStage, WorkflowStatus } from '../../../domain/workflow';
 
@@ -23,7 +23,9 @@ export class WorkflowNodeExecutionException extends Error {
   }
 }
 
-export interface ActiveRunOrchestrationContext extends ExecutionContextRef {
+export interface ActiveRunOrchestrationContext
+  extends ExecutionContextRef,
+    WorkflowExecutionConfig {
   firstNodeToExecute: WorkflowNodeName;
 }
 
@@ -167,7 +169,7 @@ export class WorkflowNodeAdapters {
 
     const ctx = this.getOrchestrationContext(state.runId);
     return this.wrapper.executeNode(nodeName, WorkflowStage.COMMITTING, state, ctx, async (st) =>
-      this.gitCommit.invoke(st as any),
+      this.gitCommit.invoke(st as any, ctx),
     );
   }
 
@@ -193,7 +195,7 @@ export class WorkflowNodeAdapters {
 
     const ctx = this.getOrchestrationContext(state.runId);
     return this.wrapper.executeNode(nodeName, WorkflowStage.CREATING_PULL_REQUEST, state, ctx, async (st) =>
-      this.createPullRequest.invoke(st as any),
+      this.createPullRequest.invoke(st as any, ctx),
     );
   }
 
