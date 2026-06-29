@@ -1,5 +1,6 @@
 import { Module, forwardRef } from '@nestjs/common';
 import { GitHubModule } from '../github/github.module';
+import { RepositoriesModule } from '../repositories/repositories.module';
 import { GIT_PROVIDER } from './interfaces/git-provider.interface';
 import { SimpleGitProvider } from './providers/simple-git/simple-git.provider';
 
@@ -11,11 +12,13 @@ import {
   DocumentationWriterService,
   GitOperationsService,
   WorkspaceLifecycleService,
+  WorkspaceCleanupService,
 } from './services';
 
 @Module({
   imports: [
     forwardRef(() => GitHubModule),
+    forwardRef(() => RepositoriesModule),
   ],
   providers: [
     {
@@ -29,7 +32,15 @@ import {
     DocumentationWriterService,
     GitOperationsService,
     WorkspaceLifecycleService,
+    WorkspaceCleanupService,
   ],
-  exports: [RepositoryCloneService, WorkspaceService, DocumentationWriterService, GitOperationsService, WorkspaceLifecycleService],
+  exports: [
+    RepositoryCloneService,
+    WorkspaceService,
+    DocumentationWriterService,
+    GitOperationsService,
+    WorkspaceLifecycleService,
+    WorkspaceCleanupService,
+  ],
 })
 export class GitOperationsModule {}

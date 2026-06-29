@@ -509,4 +509,10 @@ export class RepositoriesService {
 
     this.logger.log(`Repository deleted: ${repository.fullName} (ID: ${repository.id})`);
   }
+
+  async removeRepository(repositoryId: string): Promise<void> {
+    this.logger.log(`Hard deleting repository: ${repositoryId}`);
+    await this.repositoriesPersistence.hardDelete(repositoryId);
+    this.logger.log(`Repository removed from database: ${repositoryId}`);
+  }
 }

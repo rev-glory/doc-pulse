@@ -117,6 +117,18 @@ export class RepositoriesPersistence implements IRepositoriesRepository {
     });
   }
 
+  async hardDelete(id: string): Promise<void> {
+    try {
+      await this.prisma.repository.delete({
+        where: { id },
+      });
+    } catch (error: any) {
+      if (error.code !== 'P2025') {
+        throw error;
+      }
+    }
+  }
+
   async findById(id: string): Promise<Repository | null> {
     return this.prisma.repository.findUnique({
       where: { id },

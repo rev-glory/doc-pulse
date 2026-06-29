@@ -2,6 +2,7 @@ import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs/promises';
 import * as path from 'path';
+import { deleteDirectoryIfExists } from '../utils/fs.util';
 
 import type { StorageConfig } from '@/config';
 import type { RepositoryWorkspace } from '../types';
@@ -89,11 +90,10 @@ export class WorkspaceService implements OnModuleInit {
     }
 
     try {
-      await fs.access(repoPath);
-      await fs.rm(repoPath, { recursive: true, force: true });
+      await deleteDirectoryIfExists(repoPath);
       this.logger.log(`Removed repository ${repositoryId} from storage`);
-    } catch {
-      this.logger.debug(`Repository ${repositoryId} not found, nothing to remove`);
+    } catch (error: any) {
+      this.logger.error(`Failed to remove repository ${repositoryId} from storage: ${error.message}`);
     }
   }
 

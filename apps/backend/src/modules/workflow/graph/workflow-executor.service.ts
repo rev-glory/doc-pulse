@@ -1,4 +1,4 @@
-import { Injectable, Logger, OnModuleInit, BadRequestException, Optional } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit, BadRequestException, Optional, ConflictException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { RealtimeWorkflowStage, WorkflowEventType } from '@docpulse/shared-types';
 import { WorkflowNodeAdapters, WorkflowNodeExecutionException } from './workflow-node-adapters';
@@ -101,7 +101,8 @@ export class WorkflowExecutorService implements OnModuleInit {
         where: { id: runRecord.repositoryId },
       });
       if (!repoRecord) {
-        throw new Error(`Cannot resume workflow: Repository [${runRecord.repositoryId}] not found in database.`);
+        this.logger.error(`Repository access revoked.`);
+        throw new ConflictException('Repository access revoked.');
       }
       await this.repositoryCloneService.cloneRepository({
         id: repoRecord.id,
@@ -252,7 +253,8 @@ export class WorkflowExecutorService implements OnModuleInit {
       where: { id: input.repositoryId },
     });
     if (!repoRecord) {
-      throw new Error(`Repository [${input.repositoryId}] not found in database.`);
+      this.logger.error(`Repository access revoked.`);
+      throw new ConflictException('Repository access revoked.');
     }
 
     const orchestrationContext = {

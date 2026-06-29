@@ -9,6 +9,7 @@ import { RepositoriesService } from '@/modules/repositories/services/repositorie
 import { GitHubInstallationService } from './github-installation.service';
 import { WorkflowQueueService } from '@/modules/queue/services/workflow-queue.service';
 import { WorkspaceService } from '@/modules/git-operations/services/workspace.service';
+import { WorkspaceCleanupService } from '@/modules/git-operations/services/workspace-cleanup.service';
 
 // ---------------------------------------------------------------------------
 // Webhook Event Payload Shapes
@@ -56,6 +57,7 @@ export class GitHubWebhookService {
     @Inject(forwardRef(() => WorkflowQueueService))
     private readonly workflowQueueService: WorkflowQueueService,
     private readonly workspaceService: WorkspaceService,
+    private readonly workspaceCleanupService: WorkspaceCleanupService,
   ) {
     const config = this.configService.get<GitHubConfig>('github')!;
     this.webhookSecret = config.webhookSecret;
@@ -156,10 +158,24 @@ export class GitHubWebhookService {
             this.logger.log('Processing installation.deleted', {
               installationId: instId,
             });
-            await this.gitHubInstallationService.handleInstallationDeleted(Number(instId));
             if (instId) {
-              await this.repositoriesService.deactivateInstallationRepositoriesByGithubId(Number(instId));
+              try {
+                const dbInstallation = await this.prisma.installation.findUnique({
+                  where: { installationId: Number(instId) },
+                  include: { repositories: true },
+                });
+                if (dbInstallation && dbInstallation.repositories.length > 0) {
+                  await Promise.allSettled(
+                    dbInstallation.repositories.map((repo) =>
+                      this.workspaceCleanupService.cleanupRepository(repo.id),
+                    ),
+                  );
+                }
+              } catch (error: any) {
+                this.logger.error(`Error during installation.deleted repositories cleanup: ${error.message}`);
+              }
             }
+            await this.gitHubInstallationService.handleInstallationDeleted(Number(instId));
           }
           break;
         case 'installation_repositories':
@@ -174,6 +190,22 @@ export class GitHubWebhookService {
             repositoriesAdded: reposAdded.map((r: any) => r.full_name),
             repositoriesRemoved: reposRemoved.map((r: any) => r.full_name),
           });
+          if (reposRemoved.length > 0) {
+            try {
+              await Promise.allSettled(
+                reposRemoved.map(async (removedRepo: any) => {
+                  const dbRepo = await this.prisma.repository.findUnique({
+                    where: { githubRepositoryId: Number(removedRepo.id) },
+                  });
+                  if (dbRepo) {
+                    await this.workspaceCleanupService.cleanupRepository(dbRepo.id);
+                  }
+                }),
+              );
+            } catch (error: any) {
+              this.logger.error(`Error during installation_repositories.removed cleanup: ${error.message}`);
+            }
+          }
           if (repoInstId) {
             await this.repositoriesService.syncInstallationRepositoriesFromWebhook(Number(repoInstId));
           }

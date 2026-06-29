@@ -1,4 +1,5 @@
 import { Injectable, Logger, Optional } from '@nestjs/common';
+import { PrismaService } from '@/database';
 import { WorkflowCheckpointRepository } from '../persistence/workflow-checkpoint.repository';
 import { WorkflowGraphState, WorkflowGraphUpdate, WorkflowError } from './graph.types';
 import { WorkflowNodeExecutionException } from './workflow-node-adapters';
@@ -22,6 +23,7 @@ export class WorkflowNodeExecutionWrapper {
 
   constructor(
     private readonly checkpointRepository: WorkflowCheckpointRepository,
+    private readonly prisma: PrismaService,
     @Optional() private readonly eventService?: WorkflowEventService,
   ) {}
 
@@ -41,6 +43,16 @@ export class WorkflowNodeExecutionWrapper {
     const isoStart = new Date().toISOString();
 
     this.logger.debug(`[${runId}] Executing wrapper for node [${nodeName}] (stage: ${stage})`);
+
+    // Verify repository still exists in database (safety check before each node)
+    const repo = await this.prisma.repository.findUnique({
+      where: { id: state.repositoryId },
+    });
+    if (!repo) {
+      this.logger.error(`[${runId}] Repository access revoked. Stopping workflow execution.`);
+      await this.checkpointRepository.markRunFailed(runId, 'Repository access revoked.');
+      throw new Error('Repository access revoked.');
+    }
 
     if (this.eventService) {
       this.eventService.publishNodeExecutionEvent(runId, state.repositoryId || '', runId, {
